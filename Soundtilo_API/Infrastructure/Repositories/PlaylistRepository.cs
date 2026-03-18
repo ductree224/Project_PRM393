@@ -1,0 +1,91 @@
+using Domain.Entities;
+using Domain.Interfaces;
+using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.Repositories;
+
+public class PlaylistRepository : IPlaylistRepository
+{
+    private readonly SoundtiloDbContext _context;
+
+    public PlaylistRepository(SoundtiloDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Playlist?> GetByIdAsync(Guid id)
+    {
+        return await _context.Playlists
+            .Include(p => p.PlaylistTracks)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<IEnumerable<Playlist>> GetByUserIdAsync(Guid userId)
+    {
+        return await _context.Playlists
+            .Include(p => p.PlaylistTracks)
+            .Where(p => p.UserId == userId)
+            .OrderByDescending(p => p.UpdatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<Playlist> CreateAsync(Playlist playlist)
+    {
+        _context.Playlists.Add(playlist);
+        await _context.SaveChangesAsync();
+        return playlist;
+    }
+
+    public async Task UpdateAsync(Playlist playlist)
+    {
+        playlist.UpdatedAt = DateTime.UtcNow;
+        _context.Playlists.Update(playlist);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var playlist = await _context.Playlists.FindAsync(id);
+        if (playlist != null)
+        {
+            _context.Playlists.Remove(playlist);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task AddTrackAsync(PlaylistTrack playlistTrack)
+    {
+        _context.PlaylistTracks.Add(playlistTrack);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveTrackAsync(Guid playlistId, string trackExternalId)
+    {
+        var track = await _context.PlaylistTracks
+            .FirstOrDefaultAsync(pt => pt.PlaylistId == playlistId && pt.TrackExternalId == trackExternalId);
+        if (track != null)
+        {
+            _context.PlaylistTracks.Remove(track);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task ReorderTracksAsync(Guid playlistId, List<string> trackExternalIds)
+    {
+        var tracks = await _context.PlaylistTracks
+            .Where(pt => pt.PlaylistId == playlistId)
+            .ToListAsync();
+
+        for (int i = 0; i < trackExternalIds.Count; i++)
+        {
+            var track = tracks.FirstOrDefault(t => t.TrackExternalId == trackExternalIds[i]);
+            if (track != null)
+            {
+                track.Position = i;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
+}
