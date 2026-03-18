@@ -1,0 +1,30 @@
+<svg width="198" height="376" viewBox="0 0 198 376" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Gradient cho stroke: từ tối (bên trái) sang sáng (bên phải) -->
+        <linearGradient id="arcStrokeV" x1="0" y1="188" x2="198" y2="188" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#171D25" stop-opacity="0.15"/>
+            <stop offset="40%" stop-color="#252D36" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#6E747D" stop-opacity="0.9"/>
+        </linearGradient>
+    </defs>
+
+
+    <!-- Viền mỏng -->
+    <rect x="0.5" y="0.5" width="197" height="375"
+        fill="none" stroke="#222934" stroke-width="1"/>
+
+    <!-- Các đường cong “contour” ở mép phải -->
+    <g fill="none" stroke="url(#arcStrokeV)" stroke-width="0.9">
+        <!-- gần bên trái hơn, cong nhẹ -->
+        <path d="M 0 -30 C 42 90 100 190 70 280 S 135 320 205 38" />
+        <path d="M 10 -30 C 48 95 200 195 76 285 S 141 326 205 38" />
+        <path d="M 20 -30 C 54 100 300 200 82 290 S 147 332 205 38" />
+        <path d="M 30 -30 C 60 105 400 205 88 295 S 153 338 205 38" />
+        <path d="M 40 -30 C 66 110 500 210 94 300 S 159 344 205 38" />
+        <path d="M 50 -30 C 72 115 600 215 100 305 S 165 350 205 39" />
+        <path d="M 60 -30 C 78 120 700 220 106 310 S 171 356 205 39" />
+        <path d="M 70 -30 C 84 125 800 225 112 315 S 177 362 205 39" />
+        <path d="M 80 -30 C 90 130 900 230 118 320 S 183 368 205 39" />
+        <path d="M 90 -30 C 96 135 950 235 124 325 S 189 374 205 39" />
+    </g>
+</svg>

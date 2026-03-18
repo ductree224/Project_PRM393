@@ -1,0 +1,78 @@
+<svg width="432" height="161" viewBox="0 0 432 161" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Nền app (tối) -->
+        <linearGradient id="bgOuter" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#05070C"/>
+            <stop offset="100%" stop-color="#0B1118"/>
+        </linearGradient>
+
+        <!-- Card cam hiện đại -->
+        <linearGradient id="cardOrange" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#FFB347"/>
+            <stop offset="100%" stop-color="#FF7A18"/>
+        </linearGradient>
+
+        <!-- Sóng âm bên phải (cam nhạt) -->
+        <linearGradient id="waveStroke" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#FFE6BF" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#FFF7E5" stop-opacity="0.9"/>
+        </linearGradient>
+
+        <!-- Clip để sóng không tràn khỏi card -->
+        <clipPath id="cardClip">
+            <rect x="8" y="8" width="416" height="145" rx="40" ry="40"/>
+        </clipPath>
+    </defs>
+
+
+    <!-- Card chính -->
+    <rect x="8" y="8" width="416" height="145" rx="40" ry="40" fill="url(#cardOrange)"/>
+
+    <!-- Sóng âm bên phải, giữ trong card -->
+    <g clip-path="url(#cardClip)" fill="none" stroke="url(#waveStroke)" stroke-width="1.3">
+        <!-- tâm sóng ở góc phải -->
+        <path d="M 270 10 C 330 40, 360 80, 390 140" />
+        <path d="M 280 5  C 340 35, 370 78, 400 140" />
+        <path d="M 290 0  C 350 30, 380 76, 410 140" />
+        <path d="M 300 -5 C 360 25, 390 74, 420 140" />
+        <path d="M 310 -10 C 370 20, 400 72, 430 140" />
+        <path d="M 320 -15 C 380 15, 410 70, 440 140" />
+        <path d="M 330 -20 C 390 10, 420 68, 450 140" />
+    </g>
+
+    <!-- Text bên trái -->
+    <!-- Label nhỏ -->
+    <text x="32" y="48"
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="14"
+        letter-spacing="0.08em"
+        fill="#FDFDFD">
+        NEW RELEASE
+    </text>
+
+    <!-- Tiêu đề lớn -->
+    <text x="32" y="80"
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="26"
+        font-weight="700"
+        fill="#FFFFFF">
+        Soundtilo Picks
+    </text>
+
+    <!-- Subtitle -->
+    <text x="32" y="110"
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="16"
+        fill="#FFF7E5">
+        Handpicked tracks for you
+    </text>
+
+    <!-- Tên brand nhỏ dưới cùng bên trái -->
+    <text x="32" y="132"
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="11"
+        letter-spacing="0.12em"
+        fill="#FFE6BF">
+        SOUNDTILO
+    </text>
+</svg>
