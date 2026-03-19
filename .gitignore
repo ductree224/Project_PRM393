@@ -27,7 +27,6 @@ render.experimental.xml
 *.keystore
 
 # Google Services (e.g. APIs or Firebase)
-google-services.json
 
 # Android Profiling
 *.hprof
@@ -41,8 +40,7 @@ obj/
 .vscode/
 build/
 .dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
+
 # Miscellaneous
 *.class
 *.log
@@ -70,9 +68,7 @@ migrate_working_dir/
 
 # Flutter/Dart/Pub related
 **/doc/api/
-**/ios/Flutter/.last_build_id
 .dart_tool/
-.flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
@@ -85,9 +81,6 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+
 
 # Secrets
-.env
