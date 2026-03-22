@@ -69,7 +69,14 @@ Future<void> main() async {
   };
   WidgetsFlutterBinding.ensureInitialized();
   PerfTrace.initFrameTimingTrace();
-  await dotenv.load(fileName: '.env');
+  try{
+    await dotenv.load(fileName: '.env');
+  }
+  catch(e){
+    if (kDebugMode) {
+      print("Warning: .env file not found");
+    }
+  }
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorageDirectory.web
