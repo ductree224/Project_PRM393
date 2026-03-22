@@ -8,6 +8,10 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }
+    public string Role { get; set; } = "user";
+    public bool IsBanned { get; set; } = false;
+    public DateTime? BannedAt { get; set; }
+    public string? BannedReason { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
@@ -18,4 +22,5 @@ public class User
     public UserSetting? UserSetting { get; set; }
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
+    public ICollection<AdminAuditLog> AdminAuditLogs { get; set; } = new List<AdminAuditLog>();
 }

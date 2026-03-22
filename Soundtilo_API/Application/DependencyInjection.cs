@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<HistoryService>();
         services.AddScoped<LyricsService>();
         services.AddScoped<UserService>();
+        services.AddScoped<AdminService>();
 
         return services;
     }

@@ -10,4 +10,12 @@ public interface IUserRepository
     Task<User?> GetByUsernameOrEmailAsync(string usernameOrEmail);
     Task<User> CreateAsync(User user);
     Task UpdateAsync(User user);
+    Task DeleteAsync(User user);
+    Task<(IEnumerable<User> Users, int Total)> GetAllAsync(
+        int page = 1,
+        int pageSize = 20,
+        string? search = null,
+        string? role = null,
+        bool? isBanned = null);
+    Task<int> CountAsync();
 }
