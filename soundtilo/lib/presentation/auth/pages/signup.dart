@@ -8,7 +8,6 @@ import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/auth/pages/signin.dart';
-import 'package:soundtilo/presentation/main_shell.dart';
 
 import '../../../common/widgets/button/basic_app_button.dart';
 import '../../../common/widgets/textFormField/custom_field.dart';
@@ -42,10 +41,32 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
+        if (state is AuthSignUpSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Đăng ký thành công! Vui lòng đăng nhập.',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF323232),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              duration: const Duration(seconds: 3),
+            ),
+          );
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => const MainShell()),
+            MaterialPageRoute(builder: (_) => const SignInPage()),
             (route) => false,
           );
         } else if (state is AuthError) {

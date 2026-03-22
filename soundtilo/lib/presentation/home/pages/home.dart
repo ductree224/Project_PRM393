@@ -199,13 +199,11 @@ class HomePage extends StatelessWidget {
     TrackEntity track,
     List<TrackEntity> queue,
   ) {
-    final libraryBloc = context.read<LibraryBloc>();
     Navigator.push(
       context,
       PlayerPage.createRoute(
         track: track,
         queue: queue,
-        libraryBloc: libraryBloc,
       ),
     );
   }

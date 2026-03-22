@@ -24,23 +24,14 @@ class PlayerPage extends StatefulWidget {
     required TrackEntity track,
     required List<TrackEntity> queue,
     bool autoPlayOnOpen = true,
-    LibraryBloc? libraryBloc,
   }) {
     return MaterialPageRoute<void>(
       settings: const RouteSettings(name: routeName),
-      builder: (_) {
-        final page = PlayerPage(
-          track: track,
-          queue: queue,
-          autoPlayOnOpen: autoPlayOnOpen,
-        );
-
-        if (libraryBloc == null) {
-          return page;
-        }
-
-        return BlocProvider.value(value: libraryBloc, child: page);
-      },
+      builder: (_) => PlayerPage(
+        track: track,
+        queue: queue,
+        autoPlayOnOpen: autoPlayOnOpen,
+      ),
     );
   }
 

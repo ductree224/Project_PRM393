@@ -44,6 +44,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     on<LibraryAddTrackToPlaylist>(_onAddTrackToPlaylist, transformer: droppable());
     on<LibraryRemoveTrackFromPlaylist>(_onRemoveTrackFromPlaylist, transformer: droppable());
     on<LibraryToggleFavorite>(_onToggleFavorite, transformer: droppable());
+    on<LibraryFavoriteSync>(_onFavoriteSync);
   }
 
   Future<void> _onLoad(LibraryLoad event, Emitter<LibraryState> emit) async {
@@ -364,6 +365,28 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       thresholdMs: 100,
       values: <String, Object?>{'trackId': event.trackExternalId},
     );
+  }
+
+  void _onFavoriteSync(
+    LibraryFavoriteSync event,
+    Emitter<LibraryState> emit,
+  ) {
+    final loadedState = _extractLoadedState(state);
+    if (loadedState == null) return;
+
+    final ids = List<String>.from(loadedState.favoriteTrackIds);
+    if (event.isFavorite) {
+      if (!ids.contains(event.trackExternalId)) {
+        ids.add(event.trackExternalId);
+      }
+    } else {
+      ids.remove(event.trackExternalId);
+    }
+
+    emit(LibraryLoaded(
+      playlists: loadedState.playlists,
+      favoriteTrackIds: ids,
+    ));
   }
 
   LibraryLoaded? _extractLoadedState(LibraryState sourceState) {
