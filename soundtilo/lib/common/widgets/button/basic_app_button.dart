@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:soundtilo/core/configs/theme/app_colors.dart';
 
 class BasicAppButton extends StatelessWidget {
   final VoidCallback onPressed;

@@ -42,9 +42,9 @@ class PlaylistRemoteDataSource {
     final response = await _dio.put(
       '/api/playlists/$id',
       data: {
-        if (name != null) 'name': name,
-        if (description != null) 'description': description,
-        if (isPublic != null) 'isPublic': isPublic,
+        'name': ?name,
+        'description': ?description,
+        'isPublic': ?isPublic,
       },
     );
     return PlaylistModel.fromJson(response.data);
