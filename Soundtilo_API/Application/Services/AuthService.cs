@@ -71,6 +71,9 @@ public class AuthService
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
             throw new UnauthorizedAccessException("Tên đăng nhập hoặc mật khẩu không đúng.");
 
+        if (user.IsBanned)
+            throw new UnauthorizedAccessException("Tài khoản của bạn đã bị khóa. Lý do: " + (user.BannedReason ?? "Vi phạm điều khoản dịch vụ."));
+
         return await GenerateAuthResponseAsync(user);
     }
 
@@ -194,7 +197,7 @@ public class AuthService
 
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user)
     {
-        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Username, user.Email);
+        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Username, user.Email, user.Role);
         var refreshTokenValue = _jwtService.GenerateRefreshToken();
 
         var refreshToken = new RefreshToken
@@ -214,6 +217,7 @@ public class AuthService
             Email: user.Email,
             DisplayName: user.DisplayName,
             AvatarUrl: user.AvatarUrl,
+            Role: user.Role,
             AccessToken: accessToken,
             RefreshToken: refreshTokenValue,
             ExpiresAt: DateTime.UtcNow.AddHours(2)

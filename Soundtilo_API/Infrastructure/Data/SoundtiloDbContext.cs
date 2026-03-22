@@ -16,6 +16,7 @@ public class SoundtiloDbContext : DbContext
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,10 +33,15 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.PasswordHash).HasColumnName("password_hash").HasMaxLength(255).IsRequired();
             entity.Property(e => e.DisplayName).HasColumnName("display_name").HasMaxLength(100);
             entity.Property(e => e.AvatarUrl).HasColumnName("avatar_url");
+            entity.Property(e => e.Role).HasColumnName("role").HasMaxLength(20).HasDefaultValue("user");
+            entity.Property(e => e.IsBanned).HasColumnName("is_banned").HasDefaultValue(false);
+            entity.Property(e => e.BannedAt).HasColumnName("banned_at");
+            entity.Property(e => e.BannedReason).HasColumnName("banned_reason");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.Role);
         });
 
         // CachedTrack
@@ -162,6 +168,23 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.UsedAt).HasColumnName("used_at");
             entity.HasOne(e => e.User).WithMany(u => u.PasswordResetTokens).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => e.Token).IsUnique();
+        });
+
+        // AdminAuditLog
+        modelBuilder.Entity<AdminAuditLog>(entity =>
+        {
+            entity.ToTable("admin_audit_logs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.AdminId).HasColumnName("admin_id");
+            entity.Property(e => e.Action).HasColumnName("action").HasMaxLength(100).IsRequired();
+            entity.Property(e => e.TargetType).HasColumnName("target_type").HasMaxLength(50);
+            entity.Property(e => e.TargetId).HasColumnName("target_id").HasMaxLength(255);
+            entity.Property(e => e.Details).HasColumnName("details").HasColumnType("jsonb");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.HasOne(e => e.Admin).WithMany(u => u.AdminAuditLogs).HasForeignKey(e => e.AdminId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.AdminId);
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

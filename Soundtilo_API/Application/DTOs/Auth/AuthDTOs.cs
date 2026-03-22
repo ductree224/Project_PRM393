@@ -44,6 +44,7 @@ public record AuthResponse(
     string Email,
     string? DisplayName,
     string? AvatarUrl,
+    string Role,
     string AccessToken,
     string RefreshToken,
     DateTime ExpiresAt
