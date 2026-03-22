@@ -243,7 +243,6 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
                       id: playlist.id,
                       name: playlist.name,
                       description: playlist.description,
-                      coverImageUrl: playlist.coverImageUrl,
                       isPublic: playlist.isPublic,
                       trackCount: playlist.trackCount + 1,
                       createdAt: playlist.createdAt,
@@ -297,7 +296,6 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
                       id: playlist.id,
                       name: playlist.name,
                       description: playlist.description,
-                      coverImageUrl: playlist.coverImageUrl,
                       isPublic: playlist.isPublic,
                       trackCount: playlist.trackCount > 0
                           ? playlist.trackCount - 1

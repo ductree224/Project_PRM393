@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:soundtilo/common/helper/is_dark_mode.dart';
 import 'package:soundtilo/common/widgets/track/track_card.dart';
 import 'package:soundtilo/common/widgets/track/track_tile.dart';
@@ -17,7 +18,6 @@ import 'package:soundtilo/presentation/search/pages/search.dart';
 
 class HomePage extends StatelessWidget {
   static const int _horizontalPreviewLimit = 8;
-  static const int _verticalListLimit = 12;
 
   const HomePage({super.key});
 
@@ -66,13 +66,23 @@ class HomePage extends StatelessWidget {
             }
 
             if (state is HomeLoaded) {
-              return _buildContent(context, state.trendingTracks);
+              return _buildContent(
+                context,
+                state.trendingTracks,
+                hasMore: state.hasMore,
+                isLoadingMore: state.isLoadingMore,
+              );
             }
 
             if (state is HomeRefreshing) {
               return Stack(
                 children: [
-                  _buildContent(context, state.trendingTracks),
+                  _buildContent(
+                    context,
+                    state.trendingTracks,
+                    hasMore: state.hasMore,
+                    isLoadingMore: false,
+                  ),
                   const Positioned(
                     top: 0,
                     left: 0,
@@ -90,106 +100,186 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, List<TrackEntity> tracks) {
-    final visibleTracks = tracks.length > _verticalListLimit
-        ? tracks.take(_verticalListLimit).toList(growable: false)
-        : tracks;
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<HomeBloc>().add(HomeRefresh());
+  Widget _buildContent(
+    BuildContext context,
+    List<TrackEntity> tracks, {
+    bool hasMore = true,
+    bool isLoadingMore = false,
+  }) {
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollUpdateNotification &&
+            hasMore &&
+            !isLoadingMore &&
+            notification.metrics.pixels >
+                notification.metrics.maxScrollExtent - 400) {
+          context.read<HomeBloc>().add(HomeLoadMore());
+        }
+        return false;
       },
-      child: CustomScrollView(
-        slivers: [
-          // App Bar
-          SliverAppBar(
-            floating: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: SvgPicture.asset(AppVectors.logo, height: 40),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () {
-                  final searchBloc = context.read<SearchBloc>();
-                  final libraryBloc = context.read<LibraryBloc>();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MultiBlocProvider(
-                        providers: [
-                          BlocProvider.value(value: searchBloc),
-                          BlocProvider.value(value: libraryBloc),
-                        ],
-                        child: const SearchPage(),
+      child: RefreshIndicator(
+        onRefresh: () async {
+          context.read<HomeBloc>().add(HomeRefresh());
+        },
+        child: CustomScrollView(
+          slivers: [
+            // App Bar
+            SliverAppBar(
+              floating: true,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: SvgPicture.asset(AppVectors.logo, height: 40),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    final searchBloc = context.read<SearchBloc>();
+                    final libraryBloc = context.read<LibraryBloc>();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(value: searchBloc),
+                            BlocProvider.value(value: libraryBloc),
+                          ],
+                          child: const SearchPage(),
+                        ),
                       ),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            // Section: Thịnh hành (horizontal scroll)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'Thịnh hành',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: context.isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 210,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: tracks.length > _horizontalPreviewLimit
+                      ? _horizontalPreviewLimit
+                      : tracks.length,
+                  itemBuilder: (context, index) {
+                    return TrackCard(
+                      track: tracks[index],
+                      onTap: () => _openPlayer(context, tracks[index], tracks),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            // Section: Danh sách bài hát
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                child: Text(
+                  'Dành cho bạn',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: context.isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final track = tracks[index];
+                return TrackTile(
+                  key: ValueKey(track.externalId),
+                  track: track,
+                  onTap: () => _openPlayer(context, track, tracks),
+                );
+              }, childCount: tracks.length),
+            ),
+
+            // Loading indicator for infinite scroll
+            if (isLoadingMore)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: _buildShimmerLoading(context),
+                ),
+              )
+            else if (!hasMore && tracks.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      'Đã hiển thị tất cả bài hát',
+                      style: TextStyle(color: AppColors.grey, fontSize: 13),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
-
-          // Section: Thịnh hành (horizontal scroll)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                'Thịnh hành',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: context.isDarkMode ? Colors.white : Colors.black,
+                  ),
                 ),
               ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 210,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: tracks.length > _horizontalPreviewLimit
-                    ? _horizontalPreviewLimit
-                    : tracks.length,
-                itemBuilder: (context, index) {
-                  return TrackCard(
-                    track: tracks[index],
-                    onTap: () => _openPlayer(context, tracks[index], tracks),
-                  );
-                },
+
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading(BuildContext context) {
+    final baseColor = context.isDarkMode
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.grey.withValues(alpha: 0.15);
+    final highlightColor = context.isDarkMode
+        ? Colors.white.withValues(alpha: 0.15)
+        : Colors.grey.withValues(alpha: 0.05);
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Column(
+        children: List.generate(3, (_) {
+          return ListTile(
+            leading: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
-          ),
-
-          // Section: Danh sách bài hát
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-              child: Text(
-                'Dành cho bạn',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: context.isDarkMode ? Colors.white : Colors.black,
-                ),
+            title: Container(
+              height: 14,
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final track = visibleTracks[index];
-              return TrackTile(
-                track: track,
-                onTap: () => _openPlayer(context, track, tracks),
-              );
-            }, childCount: visibleTracks.length),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
-        ],
+            subtitle: Container(
+              height: 10,
+              width: 80,
+              margin: const EdgeInsets.only(top: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

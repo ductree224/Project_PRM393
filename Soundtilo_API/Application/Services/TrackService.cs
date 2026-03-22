@@ -133,24 +133,44 @@ public class TrackService
         );
     }
 
-    public async Task<TrendingResponse> GetTrendingAsync(string? genre = null, string? time = null, int limit = 20)
+    public async Task<TrendingResponse> GetTrendingAsync(string? genre = null, string? time = null, int limit = 20, int offset = 0)
     {
+        // For subsequent pages (offset > 0), serve from DB cache only
+        if (offset > 0)
+        {
+            var cachedTracks = (await _trackCache.GetCachedTrendingAsync(genre, limit, offset))
+                .Select(MapCachedTrackToDto)
+                .ToList();
+            return new TrendingResponse(cachedTracks);
+        }
+
+        // First page: fetch from all external APIs, cache everything, return first page
+        var fetchLimit = Math.Max(limit, 50);
         var tracks = new List<TrackDto>();
 
         // Get trending from Audius (primary - full streaming)
-        var audiusTrending = await _audiusApi.GetTrendingAsync(genre, time, limit);
+        var audiusTrending = await _audiusApi.GetTrendingAsync(genre, time, fetchLimit);
         tracks.AddRange(audiusTrending);
 
         // Supplement with Deezer charts
-        var deezerCharts = await _deezerApi.GetChartTracksAsync(limit);
+        var deezerCharts = await _deezerApi.GetChartTracksAsync(fetchLimit);
         tracks.AddRange(deezerCharts);
 
         // Supplement with Jamendo popular tracks (full streaming)
-        var jamendoPopular = await _jamendoApi.GetPopularTracksAsync(limit);
+        var jamendoPopular = await _jamendoApi.GetPopularTracksAsync(fetchLimit);
         tracks.AddRange(jamendoPopular);
 
-        // Cache
-        var cachedEntities = tracks.Select(t => new CachedTrack
+        // Deduplicate by ExternalId
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var uniqueTracks = new List<TrackDto>();
+        foreach (var t in tracks)
+        {
+            if (seen.Add(t.ExternalId))
+                uniqueTracks.Add(t);
+        }
+
+        // Cache all unique tracks
+        var cachedEntities = uniqueTracks.Select(t => new CachedTrack
         {
             Id = Guid.NewGuid(),
             ExternalId = t.ExternalId,
@@ -171,7 +191,9 @@ public class TrackService
 
         await _trackCache.UpsertManyAsync(cachedEntities);
 
-        return new TrendingResponse(tracks);
+        // Return only the requested page
+        var page = uniqueTracks.Take(limit).ToList();
+        return new TrendingResponse(page);
     }
 
     public async Task<TrackDto?> GetTrackAsync(string externalId, string source = "audius")

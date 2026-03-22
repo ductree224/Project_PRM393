@@ -14,20 +14,48 @@ class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
   final List<TrackEntity> trendingTracks;
+  final int currentOffset;
+  final bool hasMore;
+  final bool isLoadingMore;
 
-  const HomeLoaded({required this.trendingTracks});
+  const HomeLoaded({
+    required this.trendingTracks,
+    this.currentOffset = 0,
+    this.hasMore = true,
+    this.isLoadingMore = false,
+  });
+
+  HomeLoaded copyWith({
+    List<TrackEntity>? trendingTracks,
+    int? currentOffset,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return HomeLoaded(
+      trendingTracks: trendingTracks ?? this.trendingTracks,
+      currentOffset: currentOffset ?? this.currentOffset,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 
   @override
-  List<Object?> get props => [trendingTracks];
+  List<Object?> get props => [trendingTracks, currentOffset, hasMore, isLoadingMore];
 }
 
 class HomeRefreshing extends HomeState {
   final List<TrackEntity> trendingTracks;
+  final int currentOffset;
+  final bool hasMore;
 
-  const HomeRefreshing({required this.trendingTracks});
+  const HomeRefreshing({
+    required this.trendingTracks,
+    this.currentOffset = 0,
+    this.hasMore = true,
+  });
 
   @override
-  List<Object?> get props => [trendingTracks];
+  List<Object?> get props => [trendingTracks, currentOffset, hasMore];
 }
 
 class HomeError extends HomeState {
