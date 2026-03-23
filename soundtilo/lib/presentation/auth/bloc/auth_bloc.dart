@@ -26,15 +26,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required ForgotPasswordUseCase forgotPasswordUseCase,
     required ResetPasswordUseCase resetPasswordUseCase,
     required SharedPreferences prefs,
-  })  : _signUpUseCase = signUpUseCase,
-        _signInUseCase = signInUseCase,
-        _isLoggedInUseCase = isLoggedInUseCase,
-        _logoutUseCase = logoutUseCase,
-        _googleSignInUseCase = googleSignInUseCase,
-      _forgotPasswordUseCase = forgotPasswordUseCase,
-      _resetPasswordUseCase = resetPasswordUseCase,
-        _prefs = prefs,
-        super(AuthInitial()) {
+  }) : _signUpUseCase = signUpUseCase,
+       _signInUseCase = signInUseCase,
+       _isLoggedInUseCase = isLoggedInUseCase,
+       _logoutUseCase = logoutUseCase,
+       _googleSignInUseCase = googleSignInUseCase,
+       _forgotPasswordUseCase = forgotPasswordUseCase,
+       _resetPasswordUseCase = resetPasswordUseCase,
+       _prefs = prefs,
+       super(AuthInitial()) {
     on<AuthCheckStatus>(_onCheckStatus);
     on<AuthSignUpRequested>(_onSignUp);
     on<AuthSignInRequested>(_onSignIn);
@@ -45,7 +45,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onCheckStatus(
-      AuthCheckStatus event, Emitter<AuthState> emit) async {
+    AuthCheckStatus event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final isLoggedIn = await _isLoggedInUseCase();
     if (isLoggedIn) {
@@ -64,7 +66,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSignUp(
-      AuthSignUpRequested event, Emitter<AuthState> emit) async {
+    AuthSignUpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final result = await _signUpUseCase(
       username: event.username,
@@ -74,31 +78,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (error) => emit(AuthError(error)),
-      (data) => emit(AuthSignUpSuccess()),
+      (data) => emit(AuthAuthenticated(data.$1)),
     );
   }
 
   Future<void> _onSignIn(
-      AuthSignInRequested event, Emitter<AuthState> emit) async {
+    AuthSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final result = await _signInUseCase(
       usernameOrEmail: event.usernameOrEmail,
       password: event.password,
     );
-    await result.fold(
-      (error) async => emit(AuthError(error)),
-      (data) async {
-        await _persistRememberMe(
-          rememberMe: event.rememberMe,
-          email: event.usernameOrEmail,
-        );
-        emit(AuthAuthenticated(data.$1));
-      },
-    );
+    await result.fold((error) async => emit(AuthError(error)), (data) async {
+      await _persistRememberMe(
+        rememberMe: event.rememberMe,
+        email: event.usernameOrEmail,
+      );
+      emit(AuthAuthenticated(data.$1));
+    });
   }
 
   Future<void> _onGoogleSignIn(
-      AuthGoogleSignInRequested event, Emitter<AuthState> emit) async {
+    AuthGoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final result = await _googleSignInUseCase();
     result.fold(
@@ -108,13 +113,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLogout(
-      AuthLogoutRequested event, Emitter<AuthState> emit) async {
+    AuthLogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     await _logoutUseCase();
     emit(AuthUnauthenticated());
   }
 
   Future<void> _onForgotPassword(
-      AuthForgotPasswordRequested event, Emitter<AuthState> emit) async {
+    AuthForgotPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final result = await _forgotPasswordUseCase(event.email);
     result.fold(
@@ -124,7 +133,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onResetPassword(
-      AuthResetPasswordRequested event, Emitter<AuthState> emit) async {
+    AuthResetPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final result = await _resetPasswordUseCase(
       token: event.token,

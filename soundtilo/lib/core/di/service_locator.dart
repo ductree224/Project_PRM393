@@ -13,7 +13,7 @@ import 'package:soundtilo/data/sources/playlist_remote_data_source.dart';
 import 'package:soundtilo/data/sources/favorite_remote_data_source.dart';
 import 'package:soundtilo/data/sources/history_remote_data_source.dart';
 import 'package:soundtilo/data/sources/lyrics_remote_data_source.dart';
-import 'package:soundtilo/data/sources/comment_remote_data_source.dart';
+import 'package:soundtilo/data/sources/admin_remote_data_source.dart';
 
 // Repository Implementations
 import 'package:soundtilo/data/repository/auth_repository_impl.dart';
@@ -22,7 +22,7 @@ import 'package:soundtilo/data/repository/playlist_repository_impl.dart';
 import 'package:soundtilo/data/repository/favorite_repository_impl.dart';
 import 'package:soundtilo/data/repository/history_repository_impl.dart';
 import 'package:soundtilo/data/repository/lyrics_repository_impl.dart';
-import 'package:soundtilo/data/repository/comment_repository_impl.dart';
+import 'package:soundtilo/data/repository/admin_repository_impl.dart';
 
 // Domain Repositories (abstract)
 import 'package:soundtilo/domain/repository/auth_repository.dart';
@@ -31,14 +31,14 @@ import 'package:soundtilo/domain/repository/playlist_repository.dart';
 import 'package:soundtilo/domain/repository/favorite_repository.dart';
 import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/repository/lyrics_repository.dart';
-import 'package:soundtilo/domain/repository/comment_repository.dart';
+import 'package:soundtilo/domain/repository/admin_repository.dart';
 
 // Use Cases
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
 import 'package:soundtilo/domain/usecases/track_usecases.dart';
 import 'package:soundtilo/domain/usecases/playlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
-import 'package:soundtilo/domain/usecases/comment_usecases.dart';
+import 'package:soundtilo/domain/usecases/admin_user_usecases.dart';
 
 final sl = GetIt.instance;
 
@@ -85,8 +85,8 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<LyricsRemoteDataSource>(
     () => LyricsRemoteDataSource(sl<ApiClient>().dio),
   );
-  sl.registerLazySingleton<CommentRemoteDataSource>(
-    () => CommentRemoteDataSource(sl<ApiClient>().dio),
+  sl.registerLazySingleton<AdminRemoteDataSource>(
+    () => AdminRemoteDataSource(sl<ApiClient>().dio),
   );
 
   // ===================== Repositories =====================
@@ -109,8 +109,8 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<LyricsRepository>(
     () => LyricsRepositoryImpl(sl<LyricsRemoteDataSource>()),
   );
-  sl.registerLazySingleton<CommentRepository>(
-    () => CommentRepositoryImpl(sl<CommentRemoteDataSource>()),
+  sl.registerLazySingleton<AdminRepository>(
+    () => AdminRepositoryImpl(sl<AdminRemoteDataSource>()),
   );
 
   // ===================== API Client (with JWT interceptor) =====================
@@ -164,14 +164,21 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => GetFavoritesUseCase(sl<FavoriteRepository>()));
   sl.registerLazySingleton(() => IsFavoriteUseCase(sl<FavoriteRepository>()));
 
-  // Comments
+  // Admin Users
+  sl.registerLazySingleton(() => GetAdminUsersUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => BanAdminUserUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => UnbanAdminUserUseCase(sl<AdminRepository>()));
   sl.registerLazySingleton(
-    () => GetCommentsUseCase(sl<CommentRepository>()),
+    () => ChangeAdminUserRoleUseCase(sl<AdminRepository>()),
+  );
+  sl.registerLazySingleton(() => DeleteAdminUserUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(
+    () => GetAdminUserHistoryUseCase(sl<AdminRepository>()),
   );
   sl.registerLazySingleton(
-    () => AddCommentUseCase(sl<CommentRepository>()),
+    () => GetAdminUserFavoritesUseCase(sl<AdminRepository>()),
   );
   sl.registerLazySingleton(
-    () => DeleteCommentUseCase(sl<CommentRepository>()),
+    () => GetAdminUserPlaylistsUseCase(sl<AdminRepository>()),
   );
 }

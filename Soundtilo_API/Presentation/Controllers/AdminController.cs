@@ -54,6 +54,60 @@ public class AdminController : ControllerBase
         }
     }
 
+    /// <summary>GET /api/admin/users/{id}/history?page=1&amp;pageSize=20</summary>
+    [HttpGet("users/{id:guid}/history")]
+    public async Task<IActionResult> GetUserHistory(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _adminService.GetUserHistoryAsync(id, page, pageSize);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Không tìm thấy người dùng." });
+        }
+    }
+
+    /// <summary>GET /api/admin/users/{id}/favorites?page=1&amp;pageSize=20</summary>
+    [HttpGet("users/{id:guid}/favorites")]
+    public async Task<IActionResult> GetUserFavorites(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _adminService.GetUserFavoritesAsync(id, page, pageSize);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Không tìm thấy người dùng." });
+        }
+    }
+
+    /// <summary>GET /api/admin/users/{id}/playlists?page=1&amp;pageSize=20</summary>
+    [HttpGet("users/{id:guid}/playlists")]
+    public async Task<IActionResult> GetUserPlaylists(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _adminService.GetUserPlaylistsAsync(id, page, pageSize);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Không tìm thấy người dùng." });
+        }
+    }
+
     /// <summary>POST /api/admin/users/{id}/ban</summary>
     [HttpPost("users/{id:guid}/ban")]
     public async Task<IActionResult> BanUser(Guid id, [FromBody] BanUserRequest request)

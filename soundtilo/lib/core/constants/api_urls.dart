@@ -45,4 +45,19 @@ class ApiUrls {
 
   // Users
   static const String userProfile = '/api/users/profile';
+
+  // Admin - Users
+  static const String adminUsers = '/api/admin/users';
+  static String adminUserById(String userId) => '/api/admin/users/$userId';
+  static String adminBanUser(String userId) => '/api/admin/users/$userId/ban';
+  static String adminUnbanUser(String userId) =>
+      '/api/admin/users/$userId/unban';
+  static String adminChangeUserRole(String userId) =>
+      '/api/admin/users/$userId/role';
+  static String adminUserHistory(String userId) =>
+      '/api/admin/users/$userId/history';
+  static String adminUserFavorites(String userId) =>
+      '/api/admin/users/$userId/favorites';
+  static String adminUserPlaylists(String userId) =>
+      '/api/admin/users/$userId/playlists';
 }
