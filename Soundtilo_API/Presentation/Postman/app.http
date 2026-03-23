@@ -1,0 +1,62 @@
+@host = https://localhost:7065
+@adminToken = REPLACE_WITH_ADMIN_BEARER_TOKEN
+
+### =========================================
+### PRIORITY 1 - SUMMARY
+### =========================================
+
+### Get dashboard summary - explicit month
+GET {{host}}/api/admin/dashboard/summary?month=2026-03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Get dashboard summary - current/default month
+GET {{host}}/api/admin/dashboard/summary
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Get dashboard summary - invalid month format
+GET {{host}}/api/admin/dashboard/summary?month=03-2026
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Get dashboard summary - invalid month value
+GET {{host}}/api/admin/dashboard/summary?month=2026-13
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+
+### =========================================
+### PRIORITY 1 - CONTRACT / HEALTH OF RESPONSE SHAPE
+### =========================================
+
+### Re-test summary contract with another month
+GET {{host}}/api/admin/dashboard/summary?month=2026-02
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+
+### =========================================
+### NEXT BRANCH READY - USER GROWTH
+### Uncomment when feat/be-admin-dashboard-user-growth is done
+### =========================================
+
+### Get user growth - explicit month
+# GET {{host}}/api/admin/dashboard/user-growth?month=2026-03
+# Authorization: Bearer {{adminToken}}
+# Accept: application/json
+
+### Get user growth - default current month
+# GET {{host}}/api/admin/dashboard/user-growth
+# Authorization: Bearer {{adminToken}}
+# Accept: application/json
+
+### Get user growth - invalid month format
+# GET {{host}}/api/admin/dashboard/user-growth?month=2026/03
+# Authorization: Bearer {{adminToken}}
+# Accept: application/json
+
+### Get user growth - invalid month value
+# GET {{host}}/api/admin/dashboard/user-growth?month=2026-99
+# Authorization: Bearer {{adminToken}}
+# Accept: application/json
