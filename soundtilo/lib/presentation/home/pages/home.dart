@@ -8,6 +8,7 @@ import 'package:soundtilo/common/widgets/track/track_tile.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
+import 'package:soundtilo/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:soundtilo/presentation/home/bloc/home_bloc.dart';
 import 'package:soundtilo/presentation/home/bloc/home_event.dart';
 import 'package:soundtilo/presentation/home/bloc/home_state.dart';
@@ -128,28 +129,47 @@ class HomePage extends StatelessWidget {
               floating: true,
               backgroundColor: Colors.transparent,
               elevation: 0,
-              title: SvgPicture.asset(AppVectors.logo, height: 40),
+              leading: IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  final searchBloc = context.read<SearchBloc>();
+                  final libraryBloc = context.read<LibraryBloc>();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MultiBlocProvider(
+                        providers: [
+                          BlocProvider.value(value: searchBloc),
+                          BlocProvider.value(value: libraryBloc),
+                        ],
+                        child: const SearchPage(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              title: SvgPicture.asset(AppVectors.logo, height: 35),
               centerTitle: true,
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () {
-                    final searchBloc = context.read<SearchBloc>();
-                    final libraryBloc = context.read<LibraryBloc>();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MultiBlocProvider(
-                          providers: [
-                            BlocProvider.value(value: searchBloc),
-                            BlocProvider.value(value: libraryBloc),
-                          ],
-                          child: const SearchPage(),
-                        ),
+                // Nút chuyển đổi Mode (Light/Dark)
+                BlocBuilder<ThemeCubit, ThemeMode>(
+                  builder: (context, mode) {
+                    final isDark = mode == ThemeMode.dark || 
+                                  (mode == ThemeMode.system && context.isDarkMode);
+                    return IconButton(
+                      icon: Icon(
+                        isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                        color: isDark ? Colors.orangeAccent : Colors.indigo,
                       ),
+                      onPressed: () {
+                        context.read<ThemeCubit>().updateTheme(
+                          isDark ? ThemeMode.light : ThemeMode.dark
+                        );
+                      },
                     );
                   },
                 ),
+                const SizedBox(width: 8),
               ],
             ),
 
