@@ -60,3 +60,64 @@ Accept: application/json
 # GET {{host}}/api/admin/dashboard/user-growth?month=2026-99
 # Authorization: Bearer {{adminToken}}
 # Accept: application/json
+
+
+### Get play trend - explicit month
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Get play trend - another month
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-02
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Get play trend - default current month
+GET {{host}}/api/admin/dashboard/play-trend
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Invalid month format - slash
+GET {{host}}/api/admin/dashboard/play-trend?month=2026/03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Invalid month format - wrong order
+GET {{host}}/api/admin/dashboard/play-trend?month=03-2026
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Invalid month format - single digit month
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-3
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Invalid month value - month 00
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-00
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Invalid month value - month 13
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-13
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Unauthorized test
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-03
+Accept: application/json

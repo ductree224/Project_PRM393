@@ -81,7 +81,7 @@ public class AdminDashboardRepository : GenericRepository<User>, IAdminDashboard
             })
             .ToList();
     }
-
+    /*
     public async Task<IReadOnlyList<AdminDashboardDailyMetricDto>> GetPlayTrendAsync(
     AdminDashboardFilterDto filter ,
     CancellationToken cancellationToken = default)
@@ -105,6 +105,60 @@ public class AdminDashboardRepository : GenericRepository<User>, IAdminDashboard
             })
             .ToList();
     }
+    */
+
+    public async Task<IReadOnlyList<AdminDashboardDailyMetricDto>> GetPlayTrendAsync(
+        AdminDashboardFilterDto filter ,
+        CancellationToken cancellationToken = default)
+    {
+        var timeZone = ResolveTimeZone(filter.TimeZoneId);
+
+        var listenedAtUtcValues = await _context.ListeningHistories
+            .AsNoTracking()
+            .Where(x => x.ListenedAt >= filter.RangeStartUtc
+                     && x.ListenedAt < filter.RangeEndUtc)
+            .Select(x => x.ListenedAt)
+            .ToListAsync(cancellationToken);
+
+        var result = listenedAtUtcValues
+            .Select(x => ConvertUtcToLocalDate(x , timeZone))
+            .GroupBy(x => x)
+            .Select(g => new AdminDashboardDailyMetricDto
+            {
+                Date = g.Key.ToString("yyyy-MM-dd") ,
+                Value = g.LongCount()
+            })
+            .OrderBy(x => x.Date)
+            .ToList();
+
+        return result;
+    }
+
+    private static DateTime ConvertUtcToLocalDate(DateTime utcDateTime , TimeZoneInfo timeZone)
+    {
+        var normalizedUtc = utcDateTime.Kind == DateTimeKind.Utc
+            ? utcDateTime
+            : DateTime.SpecifyKind(utcDateTime , DateTimeKind.Utc);
+
+        return TimeZoneInfo.ConvertTimeFromUtc(normalizedUtc , timeZone).Date;
+    }
+
+    private static TimeZoneInfo ResolveTimeZone(string timeZoneId)
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        }
+        catch ( TimeZoneNotFoundException )
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        }
+        catch ( InvalidTimeZoneException )
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        }
+    }
+
 
     public async Task<IReadOnlyList<AdminDashboardTopTrackItemDto>> GetTopTracksAsync(
     AdminDashboardFilterDto filter ,
