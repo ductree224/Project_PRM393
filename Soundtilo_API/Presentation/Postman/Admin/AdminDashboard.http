@@ -1,0 +1,77 @@
+@Host = http://localhost:5196
+
+### Admin Dashboard - Summary
+GET {{Host}}/api/admin/dashboard/summary
+Accept: application/json
+
+###
+
+### Admin Dashboard - User Growth - default current month
+GET {{Host}}/api/admin/dashboard/user-growth
+Accept: application/json
+
+###
+
+### Admin Dashboard - User Growth - specific month
+GET {{Host}}/api/admin/dashboard/user-growth?month=2026-03
+Accept: application/json
+
+###
+
+### Admin Dashboard - Play Trend - default current month
+GET {{Host}}/api/admin/dashboard/play-trend
+Accept: application/json
+
+###
+
+### Admin Dashboard - Play Trend - specific month
+GET {{Host}}/api/admin/dashboard/play-trend?month=2026-03
+Accept: application/json
+
+###
+
+### Admin Dashboard - Top Tracks - default
+GET {{Host}}/api/admin/dashboard/top-tracks
+Accept: application/json
+
+###
+
+### Admin Dashboard - Top Tracks - month + limit
+GET {{Host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=10
+Accept: application/json
+
+###
+
+### Admin Dashboard - Top Tracks - limit = 5
+GET {{Host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=5
+Accept: application/json
+
+###
+
+### Invalid month format - user growth
+GET {{Host}}/api/admin/dashboard/user-growth?month=2026-03
+Accept: application/json
+
+###
+
+### Invalid month format - play trend
+GET {{Host}}/api/admin/dashboard/play-trend?month=2026-03
+Accept: application/json
+
+###
+
+### Invalid month format - top tracks
+GET {{Host}}/api/admin/dashboard/top-tracks?month=2026-03
+Accept: application/json
+
+###
+
+### Invalid limit - too small
+GET {{Host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=0
+Accept: application/json
+
+###
+
+### Invalid limit - too large
+GET {{Host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=100
+Accept: application/json
