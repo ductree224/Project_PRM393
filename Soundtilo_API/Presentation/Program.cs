@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using Application;
 using Infrastructure;
@@ -93,7 +93,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Note: HttpsRedirection can sometimes cause CORS issues during local development with Web/Desktop
+// app.UseHttpsRedirection();
 
 app.UseCors("AllowFlutterApp");
 
