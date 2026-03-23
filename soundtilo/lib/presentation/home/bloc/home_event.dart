@@ -12,3 +12,11 @@ class HomeLoadTrending extends HomeEvent {}
 class HomeRefresh extends HomeEvent {}
 
 class HomeLoadMore extends HomeEvent {}
+
+class HomeLoadByTag extends HomeEvent {
+  final String tag;
+  const HomeLoadByTag(this.tag);
+
+  @override
+  List<Object?> get props => [tag];
+}
