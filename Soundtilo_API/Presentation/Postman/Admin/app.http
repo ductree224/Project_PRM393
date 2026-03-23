@@ -1,0 +1,187 @@
+﻿@host = https://localhost:7065
+@adminToken = REPLACE_WITH_ADMIN_BEARER_TOKEN
+
+### =========================================================
+### ADMIN DASHBOARD - BACKEND REGRESSION
+### Base route: /api/admin/dashboard
+### =========================================================
+
+
+### =========================================================
+### 1) SUMMARY
+### =========================================================
+
+### Summary
+GET {{host}}/api/admin/dashboard/summary
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Summary - unauthorized
+GET {{host}}/api/admin/dashboard/summary
+Accept: application/json
+
+
+### =========================================================
+### 2) USER GROWTH
+### =========================================================
+
+### User growth - current/default month
+GET {{host}}/api/admin/dashboard/user-growth
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### User growth - explicit month
+GET {{host}}/api/admin/dashboard/user-growth?month=2026-03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### User growth - another month
+GET {{host}}/api/admin/dashboard/user-growth?month=2026-02
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### User growth - invalid format (slash)
+GET {{host}}/api/admin/dashboard/user-growth?month=2026/03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### User growth - invalid format (wrong order)
+GET {{host}}/api/admin/dashboard/user-growth?month=03-2026
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### User growth - invalid format (single digit month)
+GET {{host}}/api/admin/dashboard/user-growth?month=2026-3
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### User growth - invalid value (month 00)
+GET {{host}}/api/admin/dashboard/user-growth?month=2026-00
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### User growth - invalid value (month 13)
+GET {{host}}/api/admin/dashboard/user-growth?month=2026-13
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+
+### =========================================================
+### 3) PLAY TREND
+### =========================================================
+
+### Play trend - current/default month
+GET {{host}}/api/admin/dashboard/play-trend
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Play trend - explicit month
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Play trend - another month
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-02
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Play trend - invalid format (slash)
+GET {{host}}/api/admin/dashboard/play-trend?month=2026/03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Play trend - invalid format (wrong order)
+GET {{host}}/api/admin/dashboard/play-trend?month=03-2026
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Play trend - invalid format (single digit month)
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-3
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Play trend - invalid value (month 00)
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-00
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Play trend - invalid value (month 13)
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-13
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+
+### =========================================================
+### 4) TOP TRACKS
+### =========================================================
+
+### Top tracks - current/default month, default limit
+GET {{host}}/api/admin/dashboard/top-tracks
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - explicit month
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026-03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - explicit month + limit
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=5
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - another month + limit
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026-02&limit=10
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - invalid month format
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026/03&limit=5
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - invalid month value
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026-13&limit=5
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - invalid limit (zero)
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=0
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - invalid limit (negative)
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=-1
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - large limit (invalid)
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=100
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+
+### =========================================================
+### 5) QUICK REGRESSION FLOW
+### Chạy nhanh full bộ cho 1 tháng cụ thể
+### =========================================================
+
+### Summary
+GET {{host}}/api/admin/dashboard/summary
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### User growth - 2026-03
+GET {{host}}/api/admin/dashboard/user-growth?month=2026-03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Play trend - 2026-03
+GET {{host}}/api/admin/dashboard/play-trend?month=2026-03
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Top tracks - 2026-03
+GET {{host}}/api/admin/dashboard/top-tracks?month=2026-03&limit=5
+# Authorization: Bearer {{adminToken}}
+Accept: application/json
