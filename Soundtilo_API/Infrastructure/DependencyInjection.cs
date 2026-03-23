@@ -28,11 +28,15 @@ public static class DependencyInjection
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IAdminAuditLogRepository, AdminAuditLogRepository>();
         services.AddScoped<IAdminAnalyticsRepository, AdminAnalyticsRepository>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
 
-        // External API clients
-        services.AddHttpClient<IAudiusApiClient, AudiusApiClient>();
-        services.AddHttpClient<IDeezerApiClient, DeezerApiClient>();
-        services.AddHttpClient<IJamendoApiClient, JamendoApiClient>();
+        // External API clients — 10 s timeout so slow providers fail fast
+        services.AddHttpClient<IAudiusApiClient, AudiusApiClient>()
+            .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHttpClient<IDeezerApiClient, DeezerApiClient>()
+            .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHttpClient<IJamendoApiClient, JamendoApiClient>()
+            .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(10));
         services.AddHttpClient<ILyricsApiClient, LyricsApiClient>();
 
         // Services

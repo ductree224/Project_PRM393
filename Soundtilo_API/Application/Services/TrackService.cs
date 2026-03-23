@@ -135,30 +135,27 @@ public class TrackService
 
     public async Task<TrendingResponse> GetTrendingAsync(string? genre = null, string? time = null, int limit = 20, int offset = 0)
     {
-        // For subsequent pages (offset > 0), serve from DB cache only
+        // Serve from DB cache first (any page) — avoids hitting external APIs if data is fresh
+        var cached = (await _trackCache.GetCachedTrendingAsync(genre, limit, offset)).ToList();
+        if (cached.Any())
+            return new TrendingResponse(cached.Select(MapCachedTrackToDto).ToList());
+
+        // Cache miss — only external API fallback is available for page 0
         if (offset > 0)
-        {
-            var cachedTracks = (await _trackCache.GetCachedTrendingAsync(genre, limit, offset))
-                .Select(MapCachedTrackToDto)
-                .ToList();
-            return new TrendingResponse(cachedTracks);
-        }
+            return new TrendingResponse([]);
 
-        // First page: fetch from all external APIs, cache everything, return first page
+        // Page 0 cache miss: fetch all external APIs in parallel to minimize latency
         var fetchLimit = Math.Max(limit, 50);
+
+        var audiusTask = _audiusApi.GetTrendingAsync(genre, time, fetchLimit);
+        var deezerTask = _deezerApi.GetChartTracksAsync(fetchLimit);
+        var jamendoTask = _jamendoApi.GetPopularTracksAsync(fetchLimit);
+        await Task.WhenAll(audiusTask, deezerTask, jamendoTask);
+
         var tracks = new List<TrackDto>();
-
-        // Get trending from Audius (primary - full streaming)
-        var audiusTrending = await _audiusApi.GetTrendingAsync(genre, time, fetchLimit);
-        tracks.AddRange(audiusTrending);
-
-        // Supplement with Deezer charts
-        var deezerCharts = await _deezerApi.GetChartTracksAsync(fetchLimit);
-        tracks.AddRange(deezerCharts);
-
-        // Supplement with Jamendo popular tracks (full streaming)
-        var jamendoPopular = await _jamendoApi.GetPopularTracksAsync(fetchLimit);
-        tracks.AddRange(jamendoPopular);
+        tracks.AddRange(audiusTask.Result);
+        tracks.AddRange(deezerTask.Result);
+        tracks.AddRange(jamendoTask.Result);
 
         // Deduplicate by ExternalId
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

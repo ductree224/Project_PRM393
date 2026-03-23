@@ -12,6 +12,7 @@ import 'package:soundtilo/presentation/lyrics/pages/lyrics_sheet.dart';
 import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_event.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
+import 'package:soundtilo/presentation/player/widgets/comment_sheet.dart';
 
 class PlayerPage extends StatefulWidget {
   static const String routeName = '/player';
@@ -447,13 +448,20 @@ class _PlayerPageState extends State<PlayerPage> {
           ),
           IconButton(
             icon: Icon(
-              Icons.share_outlined,
+              Icons.comment_outlined,
               color: context.isDarkMode ? Colors.white70 : Colors.black54,
             ),
             onPressed: () {
-              // share functionality
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => CommentSheet(
+                  trackExternalId: currentTrack.externalId,
+                ),
+              );
             },
-            tooltip: 'Chia sẻ',
+            tooltip: 'Bình luận',
           ),
           IconButton(
             icon: Icon(

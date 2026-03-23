@@ -1,0 +1,60 @@
+Read [](file:///c%3A/Users/NITRO/Desktop/Dev/Flutter/Project/Soundtilo_API/Infrastructure)
+
+Searched for files matching `**/Soundtilo_API/**/Migrations/**`, 7 matches
+
+Searched for text `ConnectionStrings` (`**/Soundtilo_API/Presentation/**`), 6 results
+
+Read [](file:///c%3A/Users/NITRO/Desktop/Dev/Flutter/Project/Soundtilo_API/Infrastructure/Infrastructure.csproj#1-1), lines 1 to 20
+
+Read [](file:///c%3A/Users/NITRO/Desktop/Dev/Flutter/Project/Soundtilo_API/Presentation/appsettings.json)
+
+**Pre-Write Audit Log:** No project-specific skills applicable. This is a CLI command question.
+
+---
+
+Dự án dùng **EF Core Code First** với `Npgsql` và connection string Supabase đã có sẵn. Đây là các lệnh cần chạy từ thư mục Soundtilo_API:
+
+### Bước 1: Tạo migration mới cho Comments
+
+```powershell
+cd "c:\Users\NITRO\Desktop\Dev\Flutter\Project\Soundtilo_API"
+
+dotnet ef migrations add AddComments `
+  --project Infrastructure `
+  --startup-project Presentation `
+  --context SoundtiloDbContext `
+  --output-dir Data/Migrations
+```
+
+### Bước 2: Apply migration lên Supabase
+
+```powershell
+dotnet ef database update `
+  --project Infrastructure `
+  --startup-project Presentation `
+  --context SoundtiloDbContext
+```
+
+### Nếu chưa cài EF Core tools:
+
+```powershell
+dotnet tool install --global dotnet-ef
+# hoặc nếu đã cài nhưng cần update:
+dotnet tool update --global dotnet-ef
+```
+
+### Kiểm tra migration đã tạo đúng chưa (xem SQL trước khi apply):
+
+```powershell
+dotnet ef migrations script `
+  --project Infrastructure `
+  --startup-project Presentation `
+  --context SoundtiloDbContext `
+  --idempotent `
+  --output migration_preview.sql
+```
+
+---
+
+**Lưu ý:** Vì connection string đã có trong appsettings.json trỏ thẳng vào Supabase pooler (`aws-1-ap-northeast-1.pooler.supabase.com`), lệnh `database update` sẽ apply trực tiếp lên database production. File SQL migration thủ công đã được tạo sẵn ở 20260323-add-comments-table.sql nếu bạn muốn chạy qua Supabase Dashboard. 
+
