@@ -58,12 +58,14 @@ class TrackRepositoryImpl implements TrackRepository {
     String? genre,
     String? time,
     int limit = 20,
+    int offset = 0,
   }) async {
     try {
       final tracks = await _remoteDataSource.getTrending(
         genre: genre,
         time: time,
         limit: limit,
+        offset: offset,
       );
       return Right(tracks);
     } on DioException catch (e) {

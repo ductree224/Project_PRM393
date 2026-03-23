@@ -17,6 +17,7 @@ public class SoundtiloDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
+    public DbSet<Comment> Comments => Set<Comment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -185,6 +186,20 @@ public class SoundtiloDbContext : DbContext
             entity.HasOne(e => e.Admin).WithMany(u => u.AdminAuditLogs).HasForeignKey(e => e.AdminId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => e.AdminId);
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // Comment
+        modelBuilder.Entity<Comment>(entity =>
+        {
+            entity.ToTable("comments");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.TrackExternalId).HasColumnName("track_external_id").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Content).HasColumnName("content").HasMaxLength(500).IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.HasOne(e => e.User).WithMany(u => u.Comments).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.TrackExternalId, e.CreatedAt });
         });
     }
 }

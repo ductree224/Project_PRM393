@@ -6,7 +6,6 @@ class PlaylistDetailModel extends PlaylistDetailEntity {
     required super.id,
     required super.name,
     super.description,
-    super.coverImageUrl,
     required super.isPublic,
     required super.tracks,
     required super.createdAt,
@@ -28,7 +27,6 @@ class PlaylistDetailModel extends PlaylistDetailEntity {
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       description: json['description'],
-      coverImageUrl: json['coverImageUrl'],
       isPublic: json['isPublic'] ?? false,
       tracks: tracks,
       createdAt: json['createdAt'] != null

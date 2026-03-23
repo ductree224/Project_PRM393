@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/debug/perf_trace.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
-import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
-import 'package:soundtilo/domain/usecases/playlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/track_usecases.dart';
 import 'package:soundtilo/presentation/home/bloc/home_bloc.dart';
 import 'package:soundtilo/presentation/home/bloc/home_event.dart';
@@ -29,7 +27,6 @@ class _MainShellState extends State<MainShell> {
   bool _libraryLoadRequested = false;
   late final HomeBloc _homeBloc;
   late final SearchBloc _searchBloc;
-  late final LibraryBloc _libraryBloc;
 
   late final List<Widget> _pages;
 
@@ -49,17 +46,6 @@ class _MainShellState extends State<MainShell> {
 
     _searchBloc = SearchBloc(
       searchTracksUseCase: sl<SearchTracksUseCase>(),
-    );
-
-    _libraryBloc = LibraryBloc(
-      getPlaylistsUseCase: sl<GetPlaylistsUseCase>(),
-      createPlaylistUseCase: sl<CreatePlaylistUseCase>(),
-      updatePlaylistUseCase: sl<UpdatePlaylistUseCase>(),
-      deletePlaylistUseCase: sl<DeletePlaylistUseCase>(),
-      addTrackToPlaylistUseCase: sl<AddTrackToPlaylistUseCase>(),
-      removeTrackFromPlaylistUseCase: sl<RemoveTrackFromPlaylistUseCase>(),
-      toggleFavoriteUseCase: sl<ToggleFavoriteUseCase>(),
-      getFavoritesUseCase: sl<GetFavoritesUseCase>(),
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -83,7 +69,7 @@ class _MainShellState extends State<MainShell> {
     }
     if (tabIndex == 2 && !_libraryLoadRequested) {
       _libraryLoadRequested = true;
-      _libraryBloc.add(LibraryLoad());
+      context.read<LibraryBloc>().add(LibraryLoad());
     }
   }
 
@@ -91,7 +77,6 @@ class _MainShellState extends State<MainShell> {
   void dispose() {
     _homeBloc.close();
     _searchBloc.close();
-    _libraryBloc.close();
     _currentIndex.dispose();
     super.dispose();
   }
@@ -102,7 +87,6 @@ class _MainShellState extends State<MainShell> {
       providers: [
         BlocProvider.value(value: _homeBloc),
         BlocProvider.value(value: _searchBloc),
-        BlocProvider.value(value: _libraryBloc),
       ],
       child: Scaffold(
         body: ValueListenableBuilder<int>(

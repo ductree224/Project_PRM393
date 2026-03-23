@@ -46,9 +46,16 @@ public class TracksController : ControllerBase
 
     [HttpGet("trending")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetTrending([FromQuery] string? genre = null, [FromQuery] string? time = null, [FromQuery] int limit = 20)
+    public async Task<IActionResult> GetTrending(
+        [FromQuery] string? genre = null,
+        [FromQuery] string? time = null,
+        [FromQuery] int limit = 20,
+        [FromQuery] int offset = 0)
     {
-        var result = await _trackService.GetTrendingAsync(genre, time, limit);
+        var safeLimit = Math.Clamp(limit, 1, 50);
+        var safeOffset = Math.Max(offset, 0);
+
+        var result = await _trackService.GetTrendingAsync(genre, time, safeLimit, safeOffset);
         return Ok(result);
     }
 

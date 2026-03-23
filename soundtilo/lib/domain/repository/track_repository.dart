@@ -10,7 +10,7 @@ abstract class TrackRepository {
     bool cacheOnly = false,
     bool fallbackExternal = true,
   });
-  Future<Either<String, List<TrackEntity>>> getTrending({String? genre, String? time, int limit = 20});
+  Future<Either<String, List<TrackEntity>>> getTrending({String? genre, String? time, int limit = 20, int offset = 0});
   Future<Either<String, TrackEntity>> getTrack(String externalId, {String source = 'audius'});
   Future<Either<String, String>> getStreamUrl(String trackId);
 }

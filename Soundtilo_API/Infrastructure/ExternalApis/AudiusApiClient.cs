@@ -15,7 +15,6 @@ namespace Infrastructure.ExternalApis;
 public class AudiusApiClient : IAudiusApiClient
 {
     private readonly HttpClient _httpClient;
-    private string? _baseUrl;
     private const string AppName = "Soundtilo";
     private const string DiscoveryUrl = "https://api.audius.co";
 
@@ -24,28 +23,13 @@ public class AudiusApiClient : IAudiusApiClient
         _httpClient = httpClient;
     }
 
-    private async Task<string> GetBaseUrlAsync()
-    {
-        if (_baseUrl != null) return _baseUrl;
-
-        try
-        {
-            var response = await _httpClient.GetFromJsonAsync<JsonElement>($"{DiscoveryUrl}/v1/tracks/trending?app_name={AppName}");
-            _baseUrl = $"{DiscoveryUrl}/v1";
-        }
-        catch
-        {
-            _baseUrl = $"{DiscoveryUrl}/v1";
-        }
-
-        return _baseUrl;
-    }
+    private string GetBaseUrl() => $"{DiscoveryUrl}/v1";
 
     public async Task<IEnumerable<TrackDto>> GetTrendingAsync(string? genre = null, string? time = null, int limit = 20)
     {
         try
         {
-            var baseUrl = await GetBaseUrlAsync();
+            var baseUrl = GetBaseUrl();
             var url = $"{baseUrl}/tracks/trending?app_name={AppName}&limit={limit}";
             if (!string.IsNullOrEmpty(genre)) url += $"&genre={Uri.EscapeDataString(genre)}";
             if (!string.IsNullOrEmpty(time)) url += $"&time={time}";
@@ -65,7 +49,7 @@ public class AudiusApiClient : IAudiusApiClient
     {
         try
         {
-            var baseUrl = await GetBaseUrlAsync();
+            var baseUrl = GetBaseUrl();
             var url = $"{baseUrl}/tracks/search?query={Uri.EscapeDataString(query)}&app_name={AppName}&limit={limit}";
 
             var response = await _httpClient.GetFromJsonAsync<AudiusResponse<List<AudiusTrack>>>(url);
@@ -84,7 +68,7 @@ public class AudiusApiClient : IAudiusApiClient
         try
         {
             var normalizedTrackId = NormalizeTrackId(trackId);
-            var baseUrl = await GetBaseUrlAsync();
+            var baseUrl = GetBaseUrl();
             var url = $"{baseUrl}/tracks/{normalizedTrackId}?app_name={AppName}";
 
             var response = await _httpClient.GetFromJsonAsync<AudiusResponse<AudiusTrack>>(url);
@@ -98,11 +82,11 @@ public class AudiusApiClient : IAudiusApiClient
         }
     }
 
-    public async Task<string?> GetStreamUrlAsync(string trackId)
+    public Task<string?> GetStreamUrlAsync(string trackId)
     {
         var normalizedTrackId = NormalizeTrackId(trackId);
-        var baseUrl = await GetBaseUrlAsync();
-        return $"{baseUrl}/tracks/{normalizedTrackId}/stream?app_name={AppName}";
+        var baseUrl = GetBaseUrl();
+        return Task.FromResult<string?>($"{baseUrl}/tracks/{normalizedTrackId}/stream?app_name={AppName}");
     }
 
     private static TrackDto MapToTrackDto(AudiusTrack track)

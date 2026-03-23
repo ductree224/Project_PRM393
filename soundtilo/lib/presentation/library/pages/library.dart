@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/common/helper/is_dark_mode.dart';
@@ -292,18 +291,7 @@ class _PlaylistTile extends StatelessWidget {
           width: 50,
           height: 50,
           color: AppColors.grey.withValues(alpha: 0.3),
-          child: playlist.coverImageUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: playlist.coverImageUrl!,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 100,
-                  memCacheHeight: 100,
-                  placeholder: (context, url) =>
-                      const Icon(Icons.queue_music, color: AppColors.grey),
-                  errorWidget: (context, url, error) =>
-                      const Icon(Icons.queue_music, color: AppColors.grey),
-                )
-              : const Icon(Icons.queue_music, color: AppColors.grey),
+          child: const Icon(Icons.queue_music, color: AppColors.grey),
         ),
       ),
       title: Text(

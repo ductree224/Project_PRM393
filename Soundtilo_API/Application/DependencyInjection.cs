@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<LyricsService>();
         services.AddScoped<UserService>();
         services.AddScoped<AdminService>();
+        services.AddScoped<CommentService>();
 
         return services;
     }

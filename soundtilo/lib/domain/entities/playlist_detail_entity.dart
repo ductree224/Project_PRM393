@@ -5,7 +5,6 @@ class PlaylistDetailEntity extends Equatable {
   final String id;
   final String name;
   final String? description;
-  final String? coverImageUrl;
   final bool isPublic;
   final List<PlaylistTrackEntity> tracks;
   final DateTime createdAt;
@@ -15,7 +14,6 @@ class PlaylistDetailEntity extends Equatable {
     required this.id,
     required this.name,
     this.description,
-    this.coverImageUrl,
     required this.isPublic,
     required this.tracks,
     required this.createdAt,
