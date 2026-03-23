@@ -185,13 +185,11 @@ class _SearchPageState extends State<SearchPage> {
                           track: track,
                           onMoreTap: () => _showTrackActions(context, track),
                           onTap: () {
-                            final libraryBloc = context.read<LibraryBloc>();
                             Navigator.push(
                               context,
                               PlayerPage.createRoute(
                                 track: track,
                                 queue: state.results,
-                                libraryBloc: libraryBloc,
                               ),
                             );
                           },

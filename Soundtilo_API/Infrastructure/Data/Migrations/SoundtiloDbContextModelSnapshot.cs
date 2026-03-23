@@ -152,6 +152,42 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("cached_tracks", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Comment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("TrackExternalId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("track_external_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("TrackExternalId", "CreatedAt");
+
+                    b.ToTable("comments", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Favorite", b =>
                 {
                     b.Property<Guid>("Id")
@@ -495,6 +531,17 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Admin");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Comment", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany("Comments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Favorite", b =>
                 {
                     b.HasOne("Domain.Entities.User", "User")
@@ -580,6 +627,8 @@ namespace Infrastructure.Data.Migrations
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Navigation("AdminAuditLogs");
+
+                    b.Navigation("Comments");
 
                     b.Navigation("Favorites");
 

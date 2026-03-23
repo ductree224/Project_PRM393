@@ -1,13 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/common/selection/multi_select_controller.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/usecases/track_usecases.dart';
-import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -191,22 +189,11 @@ class _HistoryPageState extends State<HistoryPage> {
   void _openPlayer(_HistoryEntry entry) {
     final queue = _entries.map((item) => item.track).toList(growable: false);
 
-    late final LibraryBloc libraryBloc;
-    try {
-      libraryBloc = BlocProvider.of<LibraryBloc>(context);
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không tìm thấy thư viện để phát nhạc.')),
-      );
-      return;
-    }
-
     Navigator.push(
       context,
       PlayerPage.createRoute(
         track: entry.track,
         queue: queue,
-        libraryBloc: libraryBloc,
       ),
     );
   }

@@ -43,11 +43,12 @@ class TrackRemoteDataSource {
     return compute(_parseTrackModels, tracks);
   }
 
-  Future<List<TrackModel>> getTrending({String? genre, String? time, int limit = 20}) async {
+  Future<List<TrackModel>> getTrending({String? genre, String? time, int limit = 20, int offset = 0}) async {
     final response = await _dio.get('/api/tracks/trending', queryParameters: {
       ...?genre != null ? {'genre': genre} : null,
       ...?time != null ? {'time': time} : null,
       'limit': limit,
+      'offset': offset,
     });
     final tracks = _normalizeTracks(response.data);
     if (tracks.isEmpty) {

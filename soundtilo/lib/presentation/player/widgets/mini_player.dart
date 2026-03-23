@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/navigation/app_navigator.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
-import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_event.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
@@ -38,12 +37,6 @@ class MiniPlayer extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             onTap: () {
               final state = context.read<PlayerBloc>().state;
-              LibraryBloc? libraryBloc;
-              try {
-                libraryBloc = context.read<LibraryBloc>();
-              } catch (_) {
-                libraryBloc = null;
-              }
               final currentTrack = state.currentTrack;
               if (currentTrack == null) {
                 return;
@@ -62,7 +55,6 @@ class MiniPlayer extends StatelessWidget {
                   track: currentTrack,
                   queue: queue,
                   autoPlayOnOpen: false,
-                  libraryBloc: libraryBloc,
                 ),
               );
             },

@@ -138,7 +138,6 @@ class _FavoriteTracksListState extends State<_FavoriteTracksList> {
                   PlayerPage.createRoute(
                     track: track,
                     queue: tracks,
-                    libraryBloc: context.read<LibraryBloc>(),
                   ),
                 );
               },

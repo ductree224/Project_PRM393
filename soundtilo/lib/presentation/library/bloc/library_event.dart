@@ -79,3 +79,18 @@ class LibraryToggleFavorite extends LibraryEvent {
   @override
   List<Object?> get props => [trackExternalId];
 }
+
+/// Syncs the favorite status from another BLoC (e.g. PlayerBloc) without
+/// making an additional API call — just patches local state.
+class LibraryFavoriteSync extends LibraryEvent {
+  final String trackExternalId;
+  final bool isFavorite;
+
+  const LibraryFavoriteSync({
+    required this.trackExternalId,
+    required this.isFavorite,
+  });
+
+  @override
+  List<Object?> get props => [trackExternalId, isFavorite];
+}

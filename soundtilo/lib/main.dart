@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:just_audio/just_audio.dart' hide PlayerState;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundtilo/core/configs/theme/app_theme.dart';
@@ -14,13 +14,17 @@ import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/repository/track_repository.dart';
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
+import 'package:soundtilo/domain/usecases/playlist_usecases.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_event.dart';
+import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
+import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
+import 'package:soundtilo/presentation/library/bloc/library_event.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/splash/pages/splash.dart';
 
@@ -110,6 +114,18 @@ class MyApp extends StatelessWidget {
             historyRepository: sl<HistoryRepository>(),
           ),
         ),
+        BlocProvider(
+          create: (_) => LibraryBloc(
+            getPlaylistsUseCase: sl<GetPlaylistsUseCase>(),
+            createPlaylistUseCase: sl<CreatePlaylistUseCase>(),
+            updatePlaylistUseCase: sl<UpdatePlaylistUseCase>(),
+            deletePlaylistUseCase: sl<DeletePlaylistUseCase>(),
+            addTrackToPlaylistUseCase: sl<AddTrackToPlaylistUseCase>(),
+            removeTrackFromPlaylistUseCase: sl<RemoveTrackFromPlaylistUseCase>(),
+            toggleFavoriteUseCase: sl<ToggleFavoriteUseCase>(),
+            getFavoritesUseCase: sl<GetFavoritesUseCase>(),
+          ),
+        ),
       ],
       child: MultiBlocListener(
         listeners: [
@@ -118,6 +134,19 @@ class MyApp extends StatelessWidget {
               if (state is AuthUnauthenticated) {
                 context.read<PlayerBloc>().add(PlayerStop());
               }
+            },
+          ),
+          BlocListener<PlayerBloc, PlayerState>(
+            listenWhen: (prev, curr) =>
+                prev.isFavorite != curr.isFavorite &&
+                curr.currentTrack != null,
+            listener: (context, state) {
+              context.read<LibraryBloc>().add(
+                LibraryFavoriteSync(
+                  trackExternalId: state.currentTrack!.externalId,
+                  isFavorite: state.isFavorite,
+                ),
+              );
             },
           ),
         ],

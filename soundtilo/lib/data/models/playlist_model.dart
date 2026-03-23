@@ -5,7 +5,6 @@ class PlaylistModel extends PlaylistEntity {
     required super.id,
     required super.name,
     super.description,
-    super.coverImageUrl,
     super.isPublic,
     super.trackCount,
     required super.createdAt,
@@ -17,7 +16,6 @@ class PlaylistModel extends PlaylistEntity {
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       description: json['description'],
-      coverImageUrl: json['coverImageUrl'],
       isPublic: json['isPublic'] ?? false,
       trackCount: json['trackCount'] ?? 0,
       createdAt: json['createdAt'] != null
@@ -34,7 +32,6 @@ class PlaylistModel extends PlaylistEntity {
       'id': id,
       'name': name,
       'description': description,
-      'coverImageUrl': coverImageUrl,
       'isPublic': isPublic,
       'trackCount': trackCount,
       'createdAt': createdAt.toIso8601String(),

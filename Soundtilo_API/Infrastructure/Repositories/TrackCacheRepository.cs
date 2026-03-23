@@ -47,62 +47,84 @@ public class TrackCacheRepository : ITrackCacheRepository
             .ToListAsync();
     }
 
-    public async Task<CachedTrack> UpsertAsync(CachedTrack track)
+    public async Task<IEnumerable<CachedTrack>> GetCachedTrendingAsync(string? genre = null, int limit = 20, int offset = 0)
     {
-        var existing = await _context.CachedTracks.FirstOrDefaultAsync(t => t.ExternalId == track.ExternalId);
-        if (existing != null)
+        var safeLimit = Math.Clamp(limit, 1, 50);
+        var safeOffset = Math.Max(offset, 0);
+
+        var query = _context.CachedTracks
+            .Where(t => t.ExpiresAt > DateTime.UtcNow);
+
+        if (!string.IsNullOrWhiteSpace(genre))
         {
-            existing.Title = track.Title;
-            existing.ArtistName = track.ArtistName;
-            existing.AlbumName = track.AlbumName;
-            existing.ArtworkUrl = track.ArtworkUrl;
-            existing.StreamUrl = track.StreamUrl;
-            existing.PreviewUrl = track.PreviewUrl;
-            existing.DurationSeconds = track.DurationSeconds;
-            existing.Genre = track.Genre;
-            existing.Mood = track.Mood;
-            existing.PlayCount = track.PlayCount;
-            existing.ExternalData = track.ExternalData;
-            existing.CachedAt = DateTime.UtcNow;
-            existing.ExpiresAt = DateTime.UtcNow.AddHours(24);
-        }
-        else
-        {
-            _context.CachedTracks.Add(track);
+            query = query.Where(t => t.Genre != null && EF.Functions.ILike(t.Genre, $"%{genre}%"));
         }
 
-        await _context.SaveChangesAsync();
-        return existing ?? track;
+        return await query
+            .OrderByDescending(t => t.PlayCount)
+            .ThenByDescending(t => t.CachedAt)
+            .Skip(safeOffset)
+            .Take(safeLimit)
+            .ToListAsync();
+    }
+
+    public async Task<CachedTrack> UpsertAsync(CachedTrack track)
+    {
+        if (track.Id == Guid.Empty)
+            track.Id = Guid.NewGuid();
+
+        track.CachedAt = DateTime.UtcNow;
+        track.ExpiresAt = DateTime.UtcNow.AddHours(24);
+
+        await _context.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            INSERT INTO cached_tracks (id, album_name, artist_name, artwork_url, cached_at, duration_seconds, expires_at, external_data, external_id, genre, mood, play_count, preview_url, source, stream_url, title)
+            VALUES ({track.Id}, {track.AlbumName}, {track.ArtistName}, {track.ArtworkUrl}, {track.CachedAt}, {track.DurationSeconds}, {track.ExpiresAt}, {track.ExternalData}, {track.ExternalId}, {track.Genre}, {track.Mood}, {track.PlayCount}, {track.PreviewUrl}, {track.Source}, {track.StreamUrl}, {track.Title})
+            ON CONFLICT (external_id) DO UPDATE SET
+                album_name = EXCLUDED.album_name, artist_name = EXCLUDED.artist_name,
+                artwork_url = EXCLUDED.artwork_url, cached_at = EXCLUDED.cached_at,
+                duration_seconds = EXCLUDED.duration_seconds, expires_at = EXCLUDED.expires_at,
+                external_data = EXCLUDED.external_data, genre = EXCLUDED.genre,
+                mood = EXCLUDED.mood, play_count = EXCLUDED.play_count,
+                preview_url = EXCLUDED.preview_url, source = EXCLUDED.source,
+                stream_url = EXCLUDED.stream_url, title = EXCLUDED.title
+            """);
+
+        return track;
     }
 
     public async Task UpsertManyAsync(IEnumerable<CachedTrack> tracks)
     {
+        // Deduplicate input by ExternalId (last wins)
+        var uniqueTracks = new Dictionary<string, CachedTrack>(StringComparer.OrdinalIgnoreCase);
         foreach (var track in tracks)
-        {
-            var existing = await _context.CachedTracks.FirstOrDefaultAsync(t => t.ExternalId == track.ExternalId);
-            if (existing != null)
-            {
-                existing.Title = track.Title;
-                existing.ArtistName = track.ArtistName;
-                existing.AlbumName = track.AlbumName;
-                existing.ArtworkUrl = track.ArtworkUrl;
-                existing.StreamUrl = track.StreamUrl;
-                existing.PreviewUrl = track.PreviewUrl;
-                existing.DurationSeconds = track.DurationSeconds;
-                existing.Genre = track.Genre;
-                existing.Mood = track.Mood;
-                existing.PlayCount = track.PlayCount;
-                existing.ExternalData = track.ExternalData;
-                existing.CachedAt = DateTime.UtcNow;
-                existing.ExpiresAt = DateTime.UtcNow.AddHours(24);
-            }
-            else
-            {
-                _context.CachedTracks.Add(track);
-            }
-        }
+            uniqueTracks[track.ExternalId] = track;
 
-        await _context.SaveChangesAsync();
+        if (uniqueTracks.Count == 0) return;
+
+        var now = DateTime.UtcNow;
+        foreach (var track in uniqueTracks.Values)
+        {
+            if (track.Id == Guid.Empty)
+                track.Id = Guid.NewGuid();
+
+            track.CachedAt = now;
+            track.ExpiresAt = now.AddHours(24);
+
+            await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                INSERT INTO cached_tracks (id, album_name, artist_name, artwork_url, cached_at, duration_seconds, expires_at, external_data, external_id, genre, mood, play_count, preview_url, source, stream_url, title)
+                VALUES ({track.Id}, {track.AlbumName}, {track.ArtistName}, {track.ArtworkUrl}, {track.CachedAt}, {track.DurationSeconds}, {track.ExpiresAt}, {track.ExternalData}, {track.ExternalId}, {track.Genre}, {track.Mood}, {track.PlayCount}, {track.PreviewUrl}, {track.Source}, {track.StreamUrl}, {track.Title})
+                ON CONFLICT (external_id) DO UPDATE SET
+                    album_name = EXCLUDED.album_name, artist_name = EXCLUDED.artist_name,
+                    artwork_url = EXCLUDED.artwork_url, cached_at = EXCLUDED.cached_at,
+                    duration_seconds = EXCLUDED.duration_seconds, expires_at = EXCLUDED.expires_at,
+                    external_data = EXCLUDED.external_data, genre = EXCLUDED.genre,
+                    mood = EXCLUDED.mood, play_count = EXCLUDED.play_count,
+                    preview_url = EXCLUDED.preview_url, source = EXCLUDED.source,
+                    stream_url = EXCLUDED.stream_url, title = EXCLUDED.title
+                """);
+        }
     }
 
     public async Task CleanExpiredAsync()

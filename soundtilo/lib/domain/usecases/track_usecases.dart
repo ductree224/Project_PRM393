@@ -31,8 +31,8 @@ class GetTrendingUseCase {
 
   GetTrendingUseCase(this.repository);
 
-  Future<Either<String, List<TrackEntity>>> call({String? genre, String? time, int limit = 20}) {
-    return repository.getTrending(genre: genre, time: time, limit: limit);
+  Future<Either<String, List<TrackEntity>>> call({String? genre, String? time, int limit = 20, int offset = 0}) {
+    return repository.getTrending(genre: genre, time: time, limit: limit, offset: offset);
   }
 }
 
