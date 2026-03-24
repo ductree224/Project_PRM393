@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
-import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
@@ -46,6 +45,13 @@ class _SignUpPageState extends State<SignUpPage> {
             MaterialPageRoute(builder: (_) => const SignInPage()),
             (route) => false,
           );
+        } else if (state is AuthAuthenticated) {
+            // Trường hợp đăng ký bằng Google thành công và tự động đăng nhập
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const SignInPage()),
+                (route) => false,
+            );
         } else if (state is AuthError) {
           _showErrorSnackBar(context, state.message);
         }
@@ -65,10 +71,7 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
         body: Stack(
           children: [
-            // 1. NỀN ĐỘNG (Đồng bộ)
             Positioned.fill(child: _SoundParticlesWidget()),
-            
-            // 2. LỚP PHỦ GRADIENT
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -78,7 +81,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
             ),
-
             SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
@@ -86,16 +88,11 @@ class _SignUpPageState extends State<SignUpPage> {
                   key: formKey,
                   child: Column(
                     children: [
-                      // 3. TIÊU ĐỀ
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 100),
                         child: Text(
                           'Tạo tài khoản mới',
-                          style: GoogleFonts.inter(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
+                          style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -103,16 +100,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         delay: const Duration(milliseconds: 200),
                         child: Text(
                           'Bắt đầu hành trình âm nhạc của bạn',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.grey.shade400,
-                          ),
+                          style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade400),
                         ),
                       ),
-                      
                       const SizedBox(height: 30),
-
-                      // 4. FORM CARD (Glassmorphism)
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 300),
                         child: ClipRRect(
@@ -128,37 +119,20 @@ class _SignUpPageState extends State<SignUpPage> {
                               ),
                               child: Column(
                                 children: [
-                                  CustomField(
-                                    labelText: 'Tên đăng nhập',
-                                    controller: nameController,
-                                  ),
+                                  CustomField(labelText: 'Tên đăng nhập', controller: nameController),
                                   const SizedBox(height: 15),
-                                  CustomField(
-                                    labelText: 'Email',
-                                    controller: emailController,
-                                  ),
+                                  CustomField(labelText: 'Email', controller: emailController),
                                   const SizedBox(height: 15),
-                                  CustomField(
-                                    labelText: 'Mật khẩu',
-                                    controller: passwordController,
-                                    isObscureText: true,
-                                  ),
+                                  CustomField(labelText: 'Mật khẩu', controller: passwordController, isObscureText: true),
                                   const SizedBox(height: 15),
-                                  CustomField(
-                                    labelText: 'Xác nhận mật khẩu',
-                                    controller: confirmPasswordController,
-                                    isObscureText: true,
-                                  ),
+                                  CustomField(labelText: 'Xác nhận mật khẩu', controller: confirmPasswordController, isObscureText: true),
                                 ],
                               ),
                             ),
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 25),
-
-                      // 5. NÚT ĐĂNG KÝ
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 400),
                         child: BlocBuilder<AuthBloc, AuthState>(
@@ -166,17 +140,11 @@ class _SignUpPageState extends State<SignUpPage> {
                             if (state is AuthLoading) {
                               return const Center(child: CircularProgressIndicator(color: Color(0xFF6B4EEA)));
                             }
-                            return _BasicGradientAppButton(
-                              onPressed: _onSignUp,
-                              title: 'Đăng ký',
-                            );
+                            return _BasicGradientAppButton(onPressed: _onSignUp, title: 'Đăng ký');
                           },
                         ),
                       ),
-
                       const SizedBox(height: 25),
-
-                      // 6. DẤU PHÂN CÁCH
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 500),
                         child: Row(
@@ -190,10 +158,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 25),
-
-                      // 7. GOOGLE SIGNUP
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 600),
                         child: SizedBox(
@@ -210,10 +175,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                         ),
                       ),
-                      
                       const SizedBox(height: 30),
-                      
-                      // FOOTER
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 700),
                         child: Row(
@@ -276,9 +238,6 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 }
 
-// --------------------------------------------------------------------------
-// REUSE CUSTOM WIDGETS
-// --------------------------------------------------------------------------
 class _DelayedWidget extends StatefulWidget {
   final Widget child;
   final Duration delay;
@@ -295,9 +254,7 @@ class _DelayedWidgetState extends State<_DelayedWidget> {
     Future.delayed(widget.delay, () { if (mounted) setState(() => _show = true); });
   }
   @override
-  Widget build(BuildContext context) {
-    return _show ? widget.child : const SizedBox.shrink();
-  }
+  Widget build(BuildContext context) { return _show ? widget.child : const SizedBox.shrink(); }
 }
 
 class _SoundParticlesWidget extends StatefulWidget {
@@ -308,13 +265,12 @@ class _SoundParticlesWidget extends StatefulWidget {
 class _SoundParticlesWidgetState extends State<_SoundParticlesWidget> with TickerProviderStateMixin {
   late final AnimationController _controller;
   final List<_Particle> _particles = [];
-  final int _numberOfParticles = 70;
-  final math.Random _random = math.Random();
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
-    for (int i = 0; i < _numberOfParticles; i++) { _particles.add(_Particle(_random)); }
+    final random = math.Random();
+    for (int i = 0; i < 70; i++) { _particles.add(_Particle(random)); }
   }
   @override
   void dispose() { _controller.dispose(); super.dispose(); }

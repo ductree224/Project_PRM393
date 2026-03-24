@@ -81,15 +81,41 @@ class HomePage extends StatelessWidget {
       floating: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.search),
-        onPressed: () => _openSearch(context),
+      leadingWidth: 70, 
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 12),
+        child: SvgPicture.asset(AppVectors.logo, height: 30, alignment: Alignment.centerLeft),
       ),
-      title: SvgPicture.asset(AppVectors.logo, height: 35),
+      title: GestureDetector(
+        onTap: () => _openSearch(context),
+        child: Container(
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: context.isDarkMode ? Colors.white10 : Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.search, size: 18, color: AppColors.grey),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  'Tìm kiếm bài hát...',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(fontSize: 13, color: AppColors.grey),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       centerTitle: true,
       actions: [
         _buildThemeSwitcher(),
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
       ],
     );
   }
@@ -115,13 +141,13 @@ class HomePage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   decoration: BoxDecoration(
                     gradient: isSelected ? const LinearGradient(
-                      colors: [Color(0xFF6B4EEA), Color(0xFFE56BFA)],
+                      colors: [AppColors.primary, AppColors.thirdly],
                     ) : null,
                     color: isSelected ? null : (context.isDarkMode ? Colors.white10 : Colors.grey.shade200),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: isSelected ? [
                       BoxShadow(
-                        color: const Color(0xFF6B4EEA).withOpacity(0.3),
+                        color: AppColors.primary.withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       )
@@ -163,7 +189,6 @@ class HomePage extends StatelessWidget {
         decoration: const BoxDecoration(),
         child: Stack(
           children: [
-            // 1. Khối màu Tím mờ dần (Radial Gradient)
             Positioned(
               left: -50,
               top: 0,
@@ -174,15 +199,13 @@ class HomePage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF6B4EEA).withOpacity(context.isDarkMode ? 0.2 : 0.1),
-                      const Color(0xFF6B4EEA).withOpacity(0),
+                      AppColors.primary.withOpacity(context.isDarkMode ? 0.2 : 0.1),
+                      AppColors.primary.withOpacity(0),
                     ],
                   ),
                 ),
               ),
             ),
-            
-            // 2. Khối màu Hồng mờ dần (Radial Gradient)
             Positioned(
               right: -30,
               bottom: -20,
@@ -193,29 +216,25 @@ class HomePage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFE56BFA).withOpacity(context.isDarkMode ? 0.2 : 0.1),
-                      const Color(0xFFE56BFA).withOpacity(0),
+                      AppColors.thirdly.withOpacity(context.isDarkMode ? 0.2 : 0.1),
+                      AppColors.thirdly.withOpacity(0),
                     ],
                   ),
                 ),
               ),
             ),
-            
-            // 3. Lớp Blur cực mạnh để hòa quyện (Sigma 80)
             Positioned.fill(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
                 child: Container(color: Colors.transparent),
               ),
             ),
-            
-            // 4. Danh sách nhạc nằm trên cùng
             GridView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                mainAxisExtent: 300,
+                mainAxisExtent: 280,
                 mainAxisSpacing: 15,
                 crossAxisSpacing: 10,
               ),
@@ -242,17 +261,17 @@ class HomePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: CachedNetworkImage(
                 imageUrl: track.artworkUrl ?? '',
-                width: 60,
-                height: 60,
+                width: 55,
+                height: 55,
                 fit: BoxFit.cover,
                 errorWidget: (_, __, ___) => Container(
-                  width: 60, height: 60,
+                  width: 55, height: 55,
                   color: AppColors.grey.withOpacity(0.1),
                   child: const Icon(Icons.music_note, color: AppColors.grey),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,17 +283,17 @@ class HomePage extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                      fontSize: 13,
                       color: context.isDarkMode ? Colors.white : Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     track.artistName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: AppColors.grey,
                     ),
                   ),
@@ -290,7 +309,7 @@ class HomePage extends StatelessWidget {
   Widget _buildTrendingList(List<TrackEntity> tracks) {
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 225,
+        height: 230, // Tăng từ 220 lên 230 để tránh tràn bottom 1px
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -330,7 +349,7 @@ class HomePage extends StatelessWidget {
         child: Text(
           title,
           style: GoogleFonts.inter(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w800,
             color: context.isDarkMode ? Colors.white : Colors.black,
           ),
@@ -347,14 +366,13 @@ class HomePage extends StatelessWidget {
           icon: Icon(
             isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
             color: isDark ? Colors.orangeAccent : Colors.indigo,
+            size: 20,
           ),
           onPressed: () => context.read<ThemeCubit>().updateTheme(isDark ? ThemeMode.light : ThemeMode.dark),
         );
       },
     );
   }
-
-  // --- Helper Methods ---
 
   void _openSearch(BuildContext context) {
     final searchBloc = context.read<SearchBloc>();
@@ -404,14 +422,14 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          mainAxisExtent: 300,
+          mainAxisExtent: 280,
           mainAxisSpacing: 15,
           crossAxisSpacing: 10,
         ),
         itemCount: 6,
         itemBuilder: (_, __) => Row(
           children: [
-            Container(width: 60, height: 60, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
+            Container(width: 55, height: 55, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
             const SizedBox(width: 12),
             Expanded(child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
