@@ -13,10 +13,16 @@ public class User
     public string Role { get; set; } = "User";
 
     // Navigation properties
+    [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<Playlist> Playlists { get; set; } = new List<Playlist>();
+    [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+    [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<ListeningHistory> ListeningHistories { get; set; } = new List<ListeningHistory>();
+    [System.Text.Json.Serialization.JsonIgnore]
     public UserSetting? UserSetting { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+    [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
 }

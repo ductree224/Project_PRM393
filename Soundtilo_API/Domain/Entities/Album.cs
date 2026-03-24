@@ -21,5 +21,6 @@ public class Album
     public DateTime UpdatedAt { get; set; }
 
     // Navigation properties
+    [System.Text.Json.Serialization.JsonIgnore]
     public Artist? Artist { get; set; }
 }

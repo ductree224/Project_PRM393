@@ -8,5 +8,6 @@ public class Favorite
     public DateTime CreatedAt { get; set; }
 
     // Navigation properties
+    [System.Text.Json.Serialization.JsonIgnore]
     public User User { get; set; } = null!;
 }

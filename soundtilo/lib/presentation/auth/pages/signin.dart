@@ -65,7 +65,7 @@ class _SignInPageState extends State<SignInPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          if (state.user.role == 'Admin') {
+          if (state.user.role == 'admin') {
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (_) => const AdminMainShell()),

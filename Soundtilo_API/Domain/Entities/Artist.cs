@@ -19,5 +19,6 @@ public class Artist
     public DateTime UpdatedAt { get; set; }
 
     // Navigation properties
+    [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<Album> Albums { get; set; } = new List<Album>();
 }

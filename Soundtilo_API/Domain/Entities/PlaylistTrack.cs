@@ -9,5 +9,6 @@ public class PlaylistTrack
     public DateTime AddedAt { get; set; }
 
     // Navigation properties
+    [System.Text.Json.Serialization.JsonIgnore]
     public Playlist Playlist { get; set; } = null!;
 }

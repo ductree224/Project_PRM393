@@ -13,6 +13,8 @@ import 'package:soundtilo/data/sources/playlist_remote_data_source.dart';
 import 'package:soundtilo/data/sources/favorite_remote_data_source.dart';
 import 'package:soundtilo/data/sources/history_remote_data_source.dart';
 import 'package:soundtilo/data/sources/lyrics_remote_data_source.dart';
+import 'package:soundtilo/data/sources/artist_remote_data_source.dart';
+import 'package:soundtilo/data/sources/album_remote_data_source.dart';
 
 // Repository Implementations
 import 'package:soundtilo/data/repository/auth_repository_impl.dart';
@@ -21,6 +23,8 @@ import 'package:soundtilo/data/repository/playlist_repository_impl.dart';
 import 'package:soundtilo/data/repository/favorite_repository_impl.dart';
 import 'package:soundtilo/data/repository/history_repository_impl.dart';
 import 'package:soundtilo/data/repository/lyrics_repository_impl.dart';
+import 'package:soundtilo/data/repository/artist_repository_impl.dart';
+import 'package:soundtilo/data/repository/album_repository_impl.dart';
 
 // Domain Repositories (abstract)
 import 'package:soundtilo/domain/repository/auth_repository.dart';
@@ -29,6 +33,8 @@ import 'package:soundtilo/domain/repository/playlist_repository.dart';
 import 'package:soundtilo/domain/repository/favorite_repository.dart';
 import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/repository/lyrics_repository.dart';
+import 'package:soundtilo/domain/repositories/artist_repository.dart';
+import 'package:soundtilo/domain/repositories/album_repository.dart';
 
 // Use Cases
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
@@ -81,6 +87,12 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<LyricsRemoteDataSource>(
     () => LyricsRemoteDataSource(sl<ApiClient>().dio),
   );
+  sl.registerLazySingleton<ArtistRemoteDataSource>(
+    () => ArtistRemoteDataSourceImpl(sl<ApiClient>().dio),
+  );
+  sl.registerLazySingleton<AlbumRemoteDataSource>(
+    () => AlbumRemoteDataSourceImpl(sl<ApiClient>().dio),
+  );
 
   // ===================== Repositories =====================
   sl.registerLazySingleton<AuthRepository>(
@@ -101,6 +113,12 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton<LyricsRepository>(
     () => LyricsRepositoryImpl(sl<LyricsRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<ArtistRepository>(
+    () => ArtistRepositoryImpl(sl<ArtistRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<AlbumRepository>(
+    () => AlbumRepositoryImpl(sl<AlbumRemoteDataSource>()),
   );
 
   // ===================== API Client (with JWT interceptor) =====================

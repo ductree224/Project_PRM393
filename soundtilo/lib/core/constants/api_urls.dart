@@ -45,4 +45,10 @@ class ApiUrls {
 
   // Users
   static const String userProfile = '/api/users/profile';
+
+  // Artists
+  static const String artists = '/api/artists';
+
+  // Albums
+  static const String albums = '/api/albums';
 }
