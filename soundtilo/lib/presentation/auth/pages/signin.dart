@@ -6,7 +6,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
-import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
@@ -88,10 +87,7 @@ class _SignInPageState extends State<SignInPage> {
         ),
         body: Stack(
           children: [
-            // 1. NỀN ĐỘNG (Đồng bộ)
             Positioned.fill(child: _SoundParticlesWidget()),
-            
-            // 2. LỚP PHỦ GRADIENT
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -101,7 +97,6 @@ class _SignInPageState extends State<SignInPage> {
                 ),
               ),
             ),
-
             SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
@@ -110,16 +105,11 @@ class _SignInPageState extends State<SignInPage> {
                   child: Column(
                     children: [
                       const SizedBox(height: 20),
-                      // 3. TIÊU ĐỀ
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 100),
                         child: Text(
                           'Chào mừng trở lại',
-                          style: GoogleFonts.inter(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
+                          style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -127,16 +117,10 @@ class _SignInPageState extends State<SignInPage> {
                         delay: const Duration(milliseconds: 200),
                         child: Text(
                           'Đăng nhập để tiếp tục trải nghiệm âm nhạc',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.grey.shade400,
-                          ),
+                          style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade400),
                         ),
                       ),
-                      
                       const SizedBox(height: 40),
-
-                      // 4. FORM CARD (Glassmorphism)
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 300),
                         child: ClipRRect(
@@ -152,16 +136,9 @@ class _SignInPageState extends State<SignInPage> {
                               ),
                               child: Column(
                                 children: [
-                                  CustomField(
-                                    labelText: 'Tên đăng nhập hoặc email',
-                                    controller: nameController,
-                                  ),
+                                  CustomField(labelText: 'Tên đăng nhập hoặc email', controller: nameController),
                                   const SizedBox(height: 20),
-                                  CustomField(
-                                    labelText: 'Mật khẩu',
-                                    controller: passwordController,
-                                    isObscureText: true,
-                                  ),
+                                  CustomField(labelText: 'Mật khẩu', controller: passwordController, isObscureText: true),
                                   const SizedBox(height: 10),
                                   Row(
                                     children: [
@@ -189,10 +166,7 @@ class _SignInPageState extends State<SignInPage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 30),
-
-                      // 5. NÚT ĐĂNG NHẬP
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 400),
                         child: BlocBuilder<AuthBloc, AuthState>(
@@ -200,17 +174,11 @@ class _SignInPageState extends State<SignInPage> {
                             if (state is AuthLoading) {
                               return const Center(child: CircularProgressIndicator(color: Color(0xFF6B4EEA)));
                             }
-                            return _BasicGradientAppButton(
-                              onPressed: _onSignIn,
-                              title: 'Đăng nhập',
-                            );
+                            return _BasicGradientAppButton(onPressed: _onSignIn, title: 'Đăng nhập');
                           },
                         ),
                       ),
-
                       const SizedBox(height: 30),
-
-                      // 6. DẤU PHÂN CÁCH
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 500),
                         child: Row(
@@ -224,10 +192,7 @@ class _SignInPageState extends State<SignInPage> {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 30),
-
-                      // 7. GOOGLE LOGIN
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 600),
                         child: SizedBox(
@@ -244,10 +209,7 @@ class _SignInPageState extends State<SignInPage> {
                           ),
                         ),
                       ),
-                      
                       const SizedBox(height: 40),
-                      
-                      // FOOTER
                       _DelayedWidget(
                         delay: const Duration(milliseconds: 700),
                         child: Row(
@@ -294,9 +256,6 @@ class _SignInPageState extends State<SignInPage> {
   }
 }
 
-// --------------------------------------------------------------------------
-// REUSE CUSTOM WIDGETS
-// --------------------------------------------------------------------------
 class _DelayedWidget extends StatefulWidget {
   final Widget child;
   final Duration delay;
@@ -313,9 +272,7 @@ class _DelayedWidgetState extends State<_DelayedWidget> {
     Future.delayed(widget.delay, () { if (mounted) setState(() => _show = true); });
   }
   @override
-  Widget build(BuildContext context) {
-    return _show ? widget.child : const SizedBox.shrink();
-  }
+  Widget build(BuildContext context) { return _show ? widget.child : const SizedBox.shrink(); }
 }
 
 class _SoundParticlesWidget extends StatefulWidget {
@@ -326,13 +283,12 @@ class _SoundParticlesWidget extends StatefulWidget {
 class _SoundParticlesWidgetState extends State<_SoundParticlesWidget> with TickerProviderStateMixin {
   late final AnimationController _controller;
   final List<_Particle> _particles = [];
-  final int _numberOfParticles = 70;
-  final math.Random _random = math.Random();
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
-    for (int i = 0; i < _numberOfParticles; i++) { _particles.add(_Particle(_random)); }
+    final random = math.Random();
+    for (int i = 0; i < 70; i++) { _particles.add(_Particle(random)); }
   }
   @override
   void dispose() { _controller.dispose(); super.dispose(); }
@@ -407,9 +363,10 @@ class _BasicGradientAppButtonState extends State<_BasicGradientAppButton> {
           boxShadow: [BoxShadow(color: const Color(0xFF6B4EEA).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
         ),
         child: Center(
-          child: Text(widget.title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 17)),
+          child: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 17)),
         ),
       ),
     );
   }
+  String get title => widget.title;
 }
