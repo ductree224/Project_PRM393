@@ -10,6 +10,7 @@ public class User
     public string? AvatarUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public string Role { get; set; } = "User";
 
     // Navigation properties
     public ICollection<Playlist> Playlists { get; set; } = new List<Playlist>();

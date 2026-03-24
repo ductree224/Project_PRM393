@@ -7,6 +7,7 @@ class UserModel extends UserEntity {
     required super.email,
     super.displayName,
     super.avatarUrl,
+    super.role,
     required super.createdAt,
   });
 
@@ -17,6 +18,7 @@ class UserModel extends UserEntity {
       email: json['email'] ?? '',
       displayName: json['displayName'],
       avatarUrl: json['avatarUrl'],
+      role: json['role']?.toString(), // Lấy role từ API
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),
@@ -30,6 +32,7 @@ class UserModel extends UserEntity {
       'email': email,
       'displayName': displayName,
       'avatarUrl': avatarUrl,
+      'role': role,
       'createdAt': createdAt.toIso8601String(),
     };
   }

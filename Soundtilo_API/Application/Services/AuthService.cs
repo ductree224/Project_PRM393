@@ -214,6 +214,7 @@ public class AuthService
             Email: user.Email,
             DisplayName: user.DisplayName,
             AvatarUrl: user.AvatarUrl,
+            Role: user.Role,
             AccessToken: accessToken,
             RefreshToken: refreshTokenValue,
             ExpiresAt: DateTime.UtcNow.AddHours(2)
