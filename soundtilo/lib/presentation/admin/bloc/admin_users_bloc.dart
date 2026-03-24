@@ -146,7 +146,8 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
                 : 'Đã khóa tài khoản.',
           ),
         );
-        await _loadUsers(emit, reset: true);
+        // Refresh silently to keep UI stable
+        await _loadUsers(emit, reset: false, silent: true);
       },
     );
   }
@@ -178,7 +179,7 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
             actionMessage: 'Đã cập nhật quyền ${event.newRole}.',
           ),
         );
-        await _loadUsers(emit, reset: true);
+        await _loadUsers(emit, reset: false, silent: true);
       },
     );
   }
@@ -204,7 +205,7 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
         emit(
           state.copyWith(isSubmitting: false, actionMessage: 'Đã xóa user.'),
         );
-        await _loadUsers(emit, reset: true);
+        await _loadUsers(emit, reset: false, silent: true);
       },
     );
   }
@@ -212,6 +213,7 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
   Future<void> _loadUsers(
     Emitter<AdminUsersState> emit, {
     required bool reset,
+    bool silent = false,
   }) async {
     if (reset) {
       emit(
@@ -223,6 +225,12 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
           actionMessage: null,
         ),
       );
+    } else if (!silent) {
+      emit(state.copyWith(
+        status: AdminUsersStatus.loading, 
+        errorMessage: null,
+        actionMessage: null, // Clear messages when starting load
+      ));
     }
 
     final result = await _getAdminUsersUseCase(
@@ -240,6 +248,7 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
             status: AdminUsersStatus.error,
             errorMessage: error,
             isLoadingMore: false,
+            actionMessage: null,
           ),
         );
       },
@@ -254,6 +263,7 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
             totalPages: data.totalPages,
             isLoadingMore: false,
             errorMessage: null,
+            actionMessage: null, // Ensure message is cleared after load
           ),
         );
       },
