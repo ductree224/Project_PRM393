@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:soundtilo/common/helper/is_dark_mode.dart';
-import 'package:soundtilo/common/widgets/track/track_card.dart';
 import 'package:soundtilo/common/widgets/track/track_tile.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
+import 'package:soundtilo/data/models/album_model.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/presentation/home/bloc/home_bloc.dart';
 import 'package:soundtilo/presentation/home/bloc/home_event.dart';
@@ -69,13 +69,13 @@ class HomePage extends StatelessWidget {
             }
 
             if (state is HomeLoaded) {
-              return _buildContent(context, state.trendingTracks);
+              return _buildContent(context, state.trendingTracks, state.adminAlbums);
             }
 
             if (state is HomeRefreshing) {
               return Stack(
                 children: [
-                  _buildContent(context, state.trendingTracks),
+                  _buildContent(context, state.trendingTracks, state.adminAlbums),
                   const Positioned(
                     top: 0,
                     left: 0,
@@ -93,27 +93,50 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, List<TrackEntity> tracks) {
-    // Group tracks into Albums
+  Widget _buildContent(BuildContext context, List<TrackEntity> tracks, List<AlbumModel> adminAlbums) {
+    // 1. Group trending tracks into primitive albums
     final Map<String, List<TrackEntity>> albumGroups = {};
     for (final track in tracks) {
-      final key = '${track.albumName ?? track.title}_${track.artistName}';
+      final key = '${track.albumName ?? track.title}_${track.artistName}'.toLowerCase();
       albumGroups.putIfAbsent(key, () => []).add(track);
     }
 
-    final trendingAlbums = albumGroups.values.map((albumTracks) {
-      final firstTrack = albumTracks.first;
-      return LocalAlbum(
-        title: firstTrack.albumName ?? firstTrack.title,
-        artistName: firstTrack.artistName,
-        coverImageUrl: firstTrack.artworkUrl ?? '',
-        tracks: albumTracks,
-      );
-    }).toList();
+    // 2. Identify and apply admin overrides
+    final List<LocalAlbum> finalAlbums = [];
+    final Set<String> matchedKeys = {};
 
-    final displayedAlbums = trendingAlbums.length > _horizontalPreviewLimit
-        ? trendingAlbums.take(_horizontalPreviewLimit).toList(growable: false)
-        : trendingAlbums;
+    for (final adminAlbum in adminAlbums) {
+      final key = '${adminAlbum.title}_${adminAlbum.artist?.name ?? ""}'.toLowerCase();
+      final tracksForAdmin = albumGroups[key] ?? [];
+      
+      finalAlbums.add(LocalAlbum(
+        title: adminAlbum.title,
+        artistName: adminAlbum.artist?.name ?? 'Unknown',
+        coverImageUrl: adminAlbum.coverImageUrl ?? '',
+        tracks: tracksForAdmin,
+      ));
+      
+      if (tracksForAdmin.isNotEmpty) {
+        matchedKeys.add(key);
+      }
+    }
+
+    // 3. Add remaining trending albums that weren't overridden
+    albumGroups.forEach((key, albumTracks) {
+      if (!matchedKeys.contains(key)) {
+        final firstTrack = albumTracks.first;
+        finalAlbums.add(LocalAlbum(
+          title: firstTrack.albumName ?? firstTrack.title,
+          artistName: firstTrack.artistName,
+          coverImageUrl: firstTrack.artworkUrl ?? '',
+          tracks: albumTracks,
+        ));
+      }
+    });
+
+    final displayedAlbums = finalAlbums.length > _horizontalPreviewLimit
+        ? finalAlbums.take(_horizontalPreviewLimit).toList()
+        : finalAlbums;
 
     final visibleTracks = tracks.length > _verticalListLimit
         ? tracks.take(_verticalListLimit).toList(growable: false)
@@ -177,8 +200,9 @@ class HomePage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: displayedAlbums.length,
                 itemBuilder: (context, index) {
+                  final album = displayedAlbums[index];
                   return AlbumCard(
-                    album: displayedAlbums[index],
+                    album: album,
                     onTap: () {
                       final libraryBloc = context.read<LibraryBloc>();
                       Navigator.push(
@@ -186,7 +210,7 @@ class HomePage extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => BlocProvider.value(
                             value: libraryBloc,
-                            child: AlbumDetailPage(album: displayedAlbums[index]),
+                            child: AlbumDetailPage(album: album),
                           ),
                         ),
                       );
