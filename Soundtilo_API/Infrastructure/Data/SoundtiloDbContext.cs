@@ -11,6 +11,7 @@ public class SoundtiloDbContext : DbContext
     public DbSet<CachedTrack> CachedTracks => Set<CachedTrack>();
     public DbSet<Playlist> Playlists => Set<Playlist>();
     public DbSet<PlaylistTrack> PlaylistTracks => Set<PlaylistTrack>();
+    public DbSet<AlbumTrack> AlbumTracks => Set<AlbumTrack>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
@@ -119,19 +120,21 @@ public class SoundtiloDbContext : DbContext
             entity.HasOne(e => e.User).WithMany(u => u.Playlists).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
-        // PlaylistTrack
-        modelBuilder.Entity<PlaylistTrack>(entity =>
+        // AlbumTrack
+        modelBuilder.Entity<AlbumTrack>(entity =>
         {
-            entity.ToTable("playlist_tracks");
+            entity.ToTable("album_tracks");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.PlaylistId).HasColumnName("playlist_id");
+            entity.Property(e => e.AlbumId).HasColumnName("album_id");
             entity.Property(e => e.TrackExternalId).HasColumnName("track_external_id").HasMaxLength(255).IsRequired();
             entity.Property(e => e.Position).HasColumnName("position");
             entity.Property(e => e.AddedAt).HasColumnName("added_at");
-            entity.HasOne(e => e.Playlist).WithMany(p => p.PlaylistTracks).HasForeignKey(e => e.PlaylistId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.PlaylistId, e.TrackExternalId }).IsUnique();
+            entity.HasOne(e => e.Album).WithMany(a => a.AlbumTracks).HasForeignKey(e => e.AlbumId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.AlbumId, e.TrackExternalId }).IsUnique();
         });
+
+        // PlaylistTrack
 
         // Favorite
         modelBuilder.Entity<Favorite>(entity =>

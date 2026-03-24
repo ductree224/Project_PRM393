@@ -14,9 +14,14 @@ public class AlbumRepository : IAlbumRepository
         _context = context;
     }
 
-    public async Task<Album?> GetByIdAsync(Guid id)
+    public async Task<Album?> GetByIdAsync(Guid id, bool includeTracks = false)
     {
-        return await _context.Albums.FindAsync(id);
+        var query = _context.Albums.AsQueryable();
+        if (includeTracks)
+        {
+            query = query.Include(a => a.AlbumTracks);
+        }
+        return await query.FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<Album?> GetByExternalIdAsync(string externalId)
@@ -64,5 +69,31 @@ public class AlbumRepository : IAlbumRepository
     public async Task<bool> ExistsAsync(Guid id)
     {
         return await _context.Albums.AnyAsync(a => a.Id == id);
+    }
+
+    public async Task AddTrackAsync(AlbumTrack albumTrack)
+    {
+        _context.AlbumTracks.Add(albumTrack);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveTrackAsync(Guid albumId, string trackExternalId)
+    {
+        var albumTrack = await _context.AlbumTracks
+            .FirstOrDefaultAsync(at => at.AlbumId == albumId && at.TrackExternalId == trackExternalId);
+        
+        if (albumTrack != null)
+        {
+            _context.AlbumTracks.Remove(albumTrack);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<IEnumerable<AlbumTrack>> GetTracksAsync(Guid albumId)
+    {
+        return await _context.AlbumTracks
+            .Where(at => at.AlbumId == albumId)
+            .OrderBy(at => at.Position)
+            .ToListAsync();
     }
 }

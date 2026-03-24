@@ -24,9 +24,9 @@ public class AlbumsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, [FromQuery] bool includeTracks = false)
     {
-        var album = await _albumService.GetAlbumByIdAsync(id);
+        var album = await _albumService.GetAlbumByIdAsync(id, includeTracks);
         if (album == null) return NotFound();
         return Ok(album);
     }
@@ -75,5 +75,28 @@ public class AlbumsController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("{id:guid}/tracks")]
+    [Authorize]
+    public async Task<IActionResult> AddTrack(Guid id, [FromBody] AddTrackToAlbumDto payload)
+    {
+        try
+        {
+            await _albumService.AddTrackToAlbumAsync(id, payload);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id:guid}/tracks/{trackExternalId}")]
+    [Authorize]
+    public async Task<IActionResult> RemoveTrack(Guid id, string trackExternalId)
+    {
+        await _albumService.RemoveTrackFromAlbumAsync(id, trackExternalId);
+        return NoContent();
     }
 }

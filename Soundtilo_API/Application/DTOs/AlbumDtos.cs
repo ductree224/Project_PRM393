@@ -1,3 +1,5 @@
+using Application.DTOs.Tracks;
+
 namespace Application.DTOs;
 
 public class AlbumDto
@@ -12,6 +14,22 @@ public class AlbumDto
     public List<string> Tags { get; set; } = new();
     public bool IsOverride { get; set; }
     public DateTime CreatedAt { get; set; }
+    public List<AlbumTrackDto> Tracks { get; set; } = new();
+}
+
+public class AlbumTrackDto
+{
+    public Guid Id { get; set; }
+    public string TrackExternalId { get; set; } = string.Empty;
+    public int Position { get; set; }
+    public DateTime AddedAt { get; set; }
+    public TrackDto? Track { get; set; }
+}
+
+public class AddTrackToAlbumDto
+{
+    public string TrackExternalId { get; set; } = string.Empty;
+    public int Position { get; set; }
 }
 
 public class CreateAlbumDto

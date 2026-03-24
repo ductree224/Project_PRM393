@@ -15,9 +15,13 @@ public interface IArtistService
 public interface IAlbumService
 {
     Task<IEnumerable<AlbumDto>> GetAllAlbumsAsync(string? tag = null, Guid? artistId = null);
-    Task<AlbumDto?> GetAlbumByIdAsync(Guid id);
+    Task<AlbumDto?> GetAlbumByIdAsync(Guid id, bool includeTracks = false);
     Task<AlbumDto?> GetAlbumByExternalIdAsync(string externalId);
     Task<AlbumDto> CreateAlbumAsync(CreateAlbumDto payload);
     Task UpdateAlbumAsync(Guid id, UpdateAlbumDto payload);
     Task DeleteAlbumAsync(Guid id);
+    
+    // Track management
+    Task AddTrackToAlbumAsync(Guid albumId, AddTrackToAlbumDto payload);
+    Task RemoveTrackFromAlbumAsync(Guid albumId, string trackExternalId);
 }

@@ -36,12 +36,36 @@ class AlbumRepositoryImpl implements AlbumRepository {
   }
 
   @override
-  Future<Either<String, AlbumModel>> getAlbumById(String id) async {
+  Future<Either<String, AlbumModel>> getAlbumById(String id, {bool includeTracks = false}) async {
     try {
-      final remoteData = await _remoteDataSource.getAlbumById(id);
+      final remoteData = await _remoteDataSource.getAlbumById(id, includeTracks: includeTracks);
       return Right(remoteData);
     } on DioException catch (e) {
       return Left(_resolveDioErrorMessage(e.response?.data, 'Failed to get album.'));
+    } catch (e) {
+      return Left('Error: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, void>> addTrack(String albumId, String trackExternalId, int position) async {
+    try {
+      await _remoteDataSource.addTrack(albumId, trackExternalId, position);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_resolveDioErrorMessage(e.response?.data, 'Failed to add track to album.'));
+    } catch (e) {
+      return Left('Error: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, void>> removeTrack(String albumId, String trackExternalId) async {
+    try {
+      await _remoteDataSource.removeTrack(albumId, trackExternalId);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_resolveDioErrorMessage(e.response?.data, 'Failed to remove track from album.'));
     } catch (e) {
       return Left('Error: $e');
     }

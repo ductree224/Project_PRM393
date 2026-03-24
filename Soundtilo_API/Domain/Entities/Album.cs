@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Domain.Entities;
 
 public class Album
@@ -21,6 +23,9 @@ public class Album
     public DateTime UpdatedAt { get; set; }
 
     // Navigation properties
-    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonIgnore]
     public Artist? Artist { get; set; }
+    
+    [JsonIgnore]
+    public ICollection<AlbumTrack> AlbumTracks { get; set; } = new List<AlbumTrack>();
 }

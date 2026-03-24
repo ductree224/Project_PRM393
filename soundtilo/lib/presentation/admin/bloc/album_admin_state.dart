@@ -35,3 +35,11 @@ class AlbumAdminOperationSuccess extends AlbumAdminState {
   @override
   List<Object?> get props => [message];
 }
+
+class AlbumAdminDetailLoaded extends AlbumAdminState {
+  final AlbumModel album;
+  const AlbumAdminDetailLoaded(this.album);
+
+  @override
+  List<Object?> get props => [album];
+}

@@ -6,6 +6,7 @@ import 'package:soundtilo/common/widgets/track/track_tile.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/data/models/album_model.dart';
+import 'package:soundtilo/data/models/track_model.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/presentation/home/bloc/home_bloc.dart';
 import 'package:soundtilo/presentation/home/bloc/home_event.dart';
@@ -94,49 +95,22 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context, List<TrackEntity> tracks, List<AlbumModel> adminAlbums) {
-    // 1. Group trending tracks into primitive albums
-    final Map<String, List<TrackEntity>> albumGroups = {};
-    for (final track in tracks) {
-      final key = '${track.albumName ?? track.title}_${track.artistName}'.toLowerCase();
-      albumGroups.putIfAbsent(key, () => []).add(track);
-    }
-
-    // 2. Identify and apply admin overrides
-    final List<LocalAlbum> finalAlbums = [];
-    final Set<String> matchedKeys = {};
-
-    for (final adminAlbum in adminAlbums) {
-      final key = '${adminAlbum.title}_${adminAlbum.artist?.name ?? ""}'.toLowerCase();
-      final tracksForAdmin = albumGroups[key] ?? [];
-      
-      finalAlbums.add(LocalAlbum(
+    // Show only admin-managed albums
+    final List<LocalAlbum> displayedAlbums = adminAlbums.map((adminAlbum) {
+      return LocalAlbum(
         title: adminAlbum.title,
         artistName: adminAlbum.artist?.name ?? 'Unknown',
         coverImageUrl: adminAlbum.coverImageUrl ?? '',
-        tracks: tracksForAdmin,
-      ));
-      
-      if (tracksForAdmin.isNotEmpty) {
-        matchedKeys.add(key);
-      }
-    }
-
-    // 3. Add remaining trending albums that weren't overridden
-    albumGroups.forEach((key, albumTracks) {
-      if (!matchedKeys.contains(key)) {
-        final firstTrack = albumTracks.first;
-        finalAlbums.add(LocalAlbum(
-          title: firstTrack.albumName ?? firstTrack.title,
-          artistName: firstTrack.artistName,
-          coverImageUrl: firstTrack.artworkUrl ?? '',
-          tracks: albumTracks,
-        ));
-      }
-    });
-
-    final displayedAlbums = finalAlbums.length > _horizontalPreviewLimit
-        ? finalAlbums.take(_horizontalPreviewLimit).toList()
-        : finalAlbums;
+        // These are just placeholders/previews; tracks will be fetched in detail page
+        tracks: adminAlbum.tracks.map((at) => at.track ?? TrackModel(
+          externalId: at.trackExternalId,
+          source: 'audius',
+          title: 'Loading...',
+          artistName: adminAlbum.artist?.name ?? 'Unknown',
+          durationSeconds: 0,
+        )).toList(),
+      );
+    }).toList();
 
     final visibleTracks = tracks.length > _verticalListLimit
         ? tracks.take(_verticalListLimit).toList(growable: false)

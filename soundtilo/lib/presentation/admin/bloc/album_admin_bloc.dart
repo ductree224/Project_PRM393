@@ -11,6 +11,9 @@ class AlbumAdminBloc extends Bloc<AlbumAdminEvent, AlbumAdminState> {
     on<CreateAlbum>(_onCreateAlbum);
     on<UpdateAlbum>(_onUpdateAlbum);
     on<DeleteAlbum>(_onDeleteAlbum);
+    on<LoadAlbumDetail>(_onLoadAlbumDetail);
+    on<AddTrackToAlbum>(_onAddTrack);
+    on<RemoveTrackFromAlbum>(_onRemoveTrack);
   }
 
   Future<void> _onLoadAlbums(LoadAlbums event, Emitter<AlbumAdminState> emit) async {
@@ -55,6 +58,38 @@ class AlbumAdminBloc extends Bloc<AlbumAdminEvent, AlbumAdminState> {
       (_) {
         emit(const AlbumAdminOperationSuccess('Album deleted successfully'));
         add(const LoadAlbums());
+      },
+    );
+  }
+
+  Future<void> _onLoadAlbumDetail(LoadAlbumDetail event, Emitter<AlbumAdminState> emit) async {
+    emit(AlbumAdminLoading());
+    final result = await repository.getAlbumById(event.id, includeTracks: true);
+    result.fold(
+      (error) => emit(AlbumAdminError(error)),
+      (album) => emit(AlbumAdminDetailLoaded(album)),
+    );
+  }
+
+  Future<void> _onAddTrack(AddTrackToAlbum event, Emitter<AlbumAdminState> emit) async {
+    // Note: We don't emit loading here because the UI might want to stay in its current state
+    final result = await repository.addTrack(event.albumId, event.trackExternalId, event.position);
+    result.fold(
+      (error) => emit(AlbumAdminError(error)),
+      (_) {
+        emit(const AlbumAdminOperationSuccess('Track added to album'));
+        add(LoadAlbumDetail(event.albumId));
+      },
+    );
+  }
+
+  Future<void> _onRemoveTrack(RemoveTrackFromAlbum event, Emitter<AlbumAdminState> emit) async {
+    final result = await repository.removeTrack(event.albumId, event.trackExternalId);
+    result.fold(
+      (error) => emit(AlbumAdminError(error)),
+      (_) {
+        emit(const AlbumAdminOperationSuccess('Track removed from album'));
+        add(LoadAlbumDetail(event.albumId));
       },
     );
   }

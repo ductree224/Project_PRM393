@@ -40,3 +40,30 @@ class DeleteAlbum extends AlbumAdminEvent {
   @override
   List<Object?> get props => [id];
 }
+
+class LoadAlbumDetail extends AlbumAdminEvent {
+  final String id;
+  const LoadAlbumDetail(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class AddTrackToAlbum extends AlbumAdminEvent {
+  final String albumId;
+  final String trackExternalId;
+  final int position;
+  const AddTrackToAlbum({required this.albumId, required this.trackExternalId, required this.position});
+
+  @override
+  List<Object?> get props => [albumId, trackExternalId, position];
+}
+
+class RemoveTrackFromAlbum extends AlbumAdminEvent {
+  final String albumId;
+  final String trackExternalId;
+  const RemoveTrackFromAlbum({required this.albumId, required this.trackExternalId});
+
+  @override
+  List<Object?> get props => [albumId, trackExternalId];
+}
