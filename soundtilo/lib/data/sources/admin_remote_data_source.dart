@@ -16,19 +16,23 @@ class AdminRemoteDataSource {
     final normalizedSearch = search?.trim();
     final normalizedRole = role?.trim();
 
+    final queryParameters = <String, dynamic>{
+      'page': page,
+      'pageSize': pageSize,
+      'search': (normalizedSearch != null && normalizedSearch.isNotEmpty)
+          ? normalizedSearch
+          : null,
+      'role': (normalizedRole != null && normalizedRole.isNotEmpty)
+          ? normalizedRole
+          : null,
+      'isBanned': isBanned,
+    };
+
+    queryParameters.removeWhere((_, value) => value == null);
+
     final response = await _dio.get(
       ApiUrls.adminUsers,
-      queryParameters: {
-        'page': page,
-        'pageSize': pageSize,
-        'search': ?((normalizedSearch != null && normalizedSearch.isNotEmpty)
-            ? normalizedSearch
-            : null),
-        'role': ?((normalizedRole != null && normalizedRole.isNotEmpty)
-            ? normalizedRole
-            : null),
-        'isBanned': ?isBanned,
-      },
+      queryParameters: queryParameters,
     );
     return Map<String, dynamic>.from(response.data as Map);
   }
