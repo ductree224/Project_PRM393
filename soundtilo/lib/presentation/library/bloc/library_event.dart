@@ -94,3 +94,4 @@ class LibraryFavoriteSync extends LibraryEvent {
   @override
   List<Object?> get props => [trackExternalId, isFavorite];
 }
+
