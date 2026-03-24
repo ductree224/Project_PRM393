@@ -18,6 +18,8 @@ public class SoundtiloDbContext : DbContext
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<Waitlist> Waitlists { get; set; }
+    public DbSet<WaitlistTrack> WaitlistTracks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -200,6 +202,46 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.HasOne(e => e.User).WithMany(u => u.Comments).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.TrackExternalId, e.CreatedAt });
+        });
+        // Cấu hình khóa chính kép cho WaitlistTrack
+        // Waitlist
+        modelBuilder.Entity<Waitlist>(entity =>
+        {
+            entity.ToTable("Waitlists");
+            entity.HasKey(e => e.Id);
+
+            // SỬA Ở ĐÂY: Viết hoa y hệt trên Supabase
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.Property(e => e.UserId).HasColumnName("UserId");
+            entity.Property(e => e.CreatedAt).HasColumnName("CreatedAt");
+            entity.Property(e => e.UpdatedAt).HasColumnName("UpdatedAt");
+
+            // Cấu hình quan hệ 1-1 giữa User và Waitlist
+            entity.HasOne(e => e.User)
+                  .WithOne()
+                  .HasForeignKey<Waitlist>(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId).IsUnique();
+        });
+
+        // WaitlistTrack
+        modelBuilder.Entity<WaitlistTrack>(entity =>
+        {
+            entity.ToTable("WaitlistTracks");
+            // Cấu hình khóa chính kép
+            entity.HasKey(e => new { e.WaitlistId, e.TrackExternalId });
+
+            // SỬA Ở ĐÂY: Viết hoa y hệt trên Supabase
+            entity.Property(e => e.WaitlistId).HasColumnName("WaitlistId");
+            entity.Property(e => e.TrackExternalId).HasColumnName("TrackExternalId").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Position).HasColumnName("Position");
+            entity.Property(e => e.AddedAt).HasColumnName("AddedAt");
+
+            entity.HasOne(e => e.Waitlist)
+                  .WithMany(w => w.Tracks)
+                  .HasForeignKey(e => e.WaitlistId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

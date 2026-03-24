@@ -15,6 +15,8 @@ import 'package:soundtilo/data/sources/history_remote_data_source.dart';
 import 'package:soundtilo/data/sources/lyrics_remote_data_source.dart';
 import 'package:soundtilo/data/sources/comment_remote_data_source.dart';
 import 'package:soundtilo/data/sources/admin_remote_data_source.dart';
+// BỔ SUNG: Data Source cho Waitlist
+import 'package:soundtilo/data/sources/waitlist_remote_data_source.dart';
 
 // Repository Implementations
 import 'package:soundtilo/data/repository/auth_repository_impl.dart';
@@ -25,6 +27,8 @@ import 'package:soundtilo/data/repository/history_repository_impl.dart';
 import 'package:soundtilo/data/repository/lyrics_repository_impl.dart';
 import 'package:soundtilo/data/repository/comment_repository_impl.dart';
 import 'package:soundtilo/data/repository/admin_repository_impl.dart';
+// BỔ SUNG: Repository Impl cho Waitlist
+import 'package:soundtilo/data/repository/waitlist_repository_impl.dart';
 
 // Domain Repositories (abstract)
 import 'package:soundtilo/domain/repository/auth_repository.dart';
@@ -35,6 +39,8 @@ import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/repository/lyrics_repository.dart';
 import 'package:soundtilo/domain/repository/comment_repository.dart';
 import 'package:soundtilo/domain/repository/admin_repository.dart';
+// BỔ SUNG: Domain Repository cho Waitlist
+import 'package:soundtilo/domain/repository/waitlist_repository.dart';
 
 // Use Cases
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
@@ -43,6 +49,8 @@ import 'package:soundtilo/domain/usecases/comment_usecases.dart';
 import 'package:soundtilo/domain/usecases/playlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
 import 'package:soundtilo/domain/usecases/admin_user_usecases.dart';
+// BỔ SUNG: UseCases cho Waitlist
+import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
 
 final sl = GetIt.instance;
 
@@ -55,7 +63,7 @@ Future<void> initServiceLocator() async {
   // Used ONLY by AuthRemoteDataSource to avoid circular dependency:
   // AuthRemoteDataSource → ApiClient → AuthRepository → AuthRemoteDataSource
   sl.registerLazySingleton<Dio>(
-    () => Dio(
+        () => Dio(
       BaseOptions(
         baseUrl: ApiUrls.baseUrl,
         connectTimeout: const Duration(seconds: 15),
@@ -72,56 +80,64 @@ Future<void> initServiceLocator() async {
   // ===================== Data Sources =====================
   // Auth uses plain Dio (register/login/refresh don't need JWT)
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSource(sl<Dio>(instanceName: 'plainDio')),
+        () => AuthRemoteDataSource(sl<Dio>(instanceName: 'plainDio')),
   );
   sl.registerLazySingleton<TrackRemoteDataSource>(
-    () => TrackRemoteDataSource(sl<ApiClient>().dio),
+        () => TrackRemoteDataSource(sl<ApiClient>().dio),
   );
   sl.registerLazySingleton<PlaylistRemoteDataSource>(
-    () => PlaylistRemoteDataSource(sl<ApiClient>().dio),
+        () => PlaylistRemoteDataSource(sl<ApiClient>().dio),
   );
   sl.registerLazySingleton<FavoriteRemoteDataSource>(
-    () => FavoriteRemoteDataSource(sl<ApiClient>().dio),
+        () => FavoriteRemoteDataSource(sl<ApiClient>().dio),
   );
   sl.registerLazySingleton<HistoryRemoteDataSource>(
-    () => HistoryRemoteDataSource(sl<ApiClient>().dio),
+        () => HistoryRemoteDataSource(sl<ApiClient>().dio),
   );
   sl.registerLazySingleton<LyricsRemoteDataSource>(
-    () => LyricsRemoteDataSource(sl<ApiClient>().dio),
+        () => LyricsRemoteDataSource(sl<ApiClient>().dio),
   );
   sl.registerLazySingleton<CommentRemoteDataSource>(
         () => CommentRemoteDataSource(sl<ApiClient>().dio),
   );
   sl.registerLazySingleton<AdminRemoteDataSource>(
-    () => AdminRemoteDataSource(sl<ApiClient>().dio),
+        () => AdminRemoteDataSource(sl<ApiClient>().dio),
+  );
+  // BỔ SUNG: Đăng ký WaitlistRemoteDataSource
+  sl.registerLazySingleton<WaitlistRemoteDataSource>(
+        () => WaitlistRemoteDataSourceImpl(sl<ApiClient>().dio),
   );
 
 
   // ===================== Repositories =====================
   sl.registerLazySingleton<AuthRepository>(
-    () =>
+        () =>
         AuthRepositoryImpl(sl<AuthRemoteDataSource>(), sl<SharedPreferences>()),
   );
   sl.registerLazySingleton<TrackRepository>(
-    () => TrackRepositoryImpl(sl<TrackRemoteDataSource>()),
+        () => TrackRepositoryImpl(sl<TrackRemoteDataSource>()),
   );
   sl.registerLazySingleton<PlaylistRepository>(
-    () => PlaylistRepositoryImpl(sl<PlaylistRemoteDataSource>()),
+        () => PlaylistRepositoryImpl(sl<PlaylistRemoteDataSource>()),
   );
   sl.registerLazySingleton<FavoriteRepository>(
-    () => FavoriteRepositoryImpl(sl<FavoriteRemoteDataSource>()),
+        () => FavoriteRepositoryImpl(sl<FavoriteRemoteDataSource>()),
   );
   sl.registerLazySingleton<HistoryRepository>(
-    () => HistoryRepositoryImpl(sl<HistoryRemoteDataSource>()),
+        () => HistoryRepositoryImpl(sl<HistoryRemoteDataSource>()),
   );
   sl.registerLazySingleton<LyricsRepository>(
-    () => LyricsRepositoryImpl(sl<LyricsRemoteDataSource>()),
+        () => LyricsRepositoryImpl(sl<LyricsRemoteDataSource>()),
   );
   sl.registerLazySingleton<CommentRepository>(
         () => CommentRepositoryImpl(sl<CommentRemoteDataSource>()),
   );
   sl.registerLazySingleton<AdminRepository>(
-    () => AdminRepositoryImpl(sl<AdminRemoteDataSource>()),
+        () => AdminRepositoryImpl(sl<AdminRemoteDataSource>()),
+  );
+  // BỔ SUNG: Đăng ký WaitlistRepository
+  sl.registerLazySingleton<WaitlistRepository>(
+        () => WaitlistRepositoryImpl(sl<WaitlistRemoteDataSource>()),
   );
 
   // ===================== API Client (with JWT interceptor) =====================
@@ -147,34 +163,35 @@ Future<void> initServiceLocator() async {
   // Playlists
   sl.registerLazySingleton(() => GetPlaylistsUseCase(sl<PlaylistRepository>()));
   sl.registerLazySingleton(
-    () => GetPlaylistDetailUseCase(sl<PlaylistRepository>()),
+        () => GetPlaylistDetailUseCase(sl<PlaylistRepository>()),
   );
   sl.registerLazySingleton(
-    () => CreatePlaylistUseCase(sl<PlaylistRepository>()),
+        () => CreatePlaylistUseCase(sl<PlaylistRepository>()),
   );
   sl.registerLazySingleton(
-    () => UpdatePlaylistUseCase(sl<PlaylistRepository>()),
+        () => UpdatePlaylistUseCase(sl<PlaylistRepository>()),
   );
   sl.registerLazySingleton(
-    () => DeletePlaylistUseCase(sl<PlaylistRepository>()),
+        () => DeletePlaylistUseCase(sl<PlaylistRepository>()),
   );
   sl.registerLazySingleton(
-    () => AddTrackToPlaylistUseCase(sl<PlaylistRepository>()),
+        () => AddTrackToPlaylistUseCase(sl<PlaylistRepository>()),
   );
   sl.registerLazySingleton(
-    () => RemoveTrackFromPlaylistUseCase(sl<PlaylistRepository>()),
+        () => RemoveTrackFromPlaylistUseCase(sl<PlaylistRepository>()),
   );
   sl.registerLazySingleton(
-    () => ReorderTracksInPlaylistUseCase(sl<PlaylistRepository>()),
+        () => ReorderTracksInPlaylistUseCase(sl<PlaylistRepository>()),
   );
 
   // Favorites
   sl.registerLazySingleton(
-    () => ToggleFavoriteUseCase(sl<FavoriteRepository>()),
+        () => ToggleFavoriteUseCase(sl<FavoriteRepository>()),
   );
   sl.registerLazySingleton(() => GetFavoritesUseCase(sl<FavoriteRepository>()));
   sl.registerLazySingleton(() => IsFavoriteUseCase(sl<FavoriteRepository>()));
-// Comments
+
+  // Comments
   sl.registerLazySingleton(
         () => GetCommentsUseCase(sl<CommentRepository>()),
   );
@@ -182,7 +199,7 @@ Future<void> initServiceLocator() async {
         () => AddCommentUseCase(sl<CommentRepository>()),
   );
   sl.registerLazySingleton(
-          () => DeleteCommentUseCase(sl<CommentRepository>()),
+        () => DeleteCommentUseCase(sl<CommentRepository>()),
   );
 
   // Admin Users
@@ -190,16 +207,23 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => BanAdminUserUseCase(sl<AdminRepository>()));
   sl.registerLazySingleton(() => UnbanAdminUserUseCase(sl<AdminRepository>()));
   sl.registerLazySingleton(
-    () => ChangeAdminUserRoleUseCase(sl<AdminRepository>()),
+        () => ChangeAdminUserRoleUseCase(sl<AdminRepository>()),
   );
   sl.registerLazySingleton(() => DeleteAdminUserUseCase(sl<AdminRepository>()));
   sl.registerLazySingleton(
-    () => GetAdminUserHistoryUseCase(sl<AdminRepository>()),
+        () => GetAdminUserHistoryUseCase(sl<AdminRepository>()),
   );
   sl.registerLazySingleton(
-    () => GetAdminUserFavoritesUseCase(sl<AdminRepository>()),
+        () => GetAdminUserFavoritesUseCase(sl<AdminRepository>()),
   );
   sl.registerLazySingleton(
-    () => GetAdminUserPlaylistsUseCase(sl<AdminRepository>()),
+        () => GetAdminUserPlaylistsUseCase(sl<AdminRepository>()),
   );
+
+  // BỔ SUNG: Đăng ký Waitlist UseCases
+  sl.registerLazySingleton(() => GetWaitlistUseCase(sl<WaitlistRepository>()));
+  sl.registerLazySingleton(() => AddTrackToWaitlistUseCase(sl<WaitlistRepository>()));
+  sl.registerLazySingleton(() => RemoveTrackFromWaitlistUseCase(sl<WaitlistRepository>()));
+  sl.registerLazySingleton(() => ReorderWaitlistUseCase(sl<WaitlistRepository>()));
+  sl.registerLazySingleton(() => ClearWaitlistUseCase(sl<WaitlistRepository>()));
 }
