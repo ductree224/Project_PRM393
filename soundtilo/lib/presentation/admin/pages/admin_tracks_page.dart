@@ -585,22 +585,32 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
   }
 
   void _showAlbumSelectionDialog(BuildContext context) {
+    final trackAdminBloc = context.read<TrackAdminBloc>();
     String? selectedAlbumId;
 
     showDialog(
       context: context,
-      builder: (dialogContext) => BlocProvider(
-        create: (context) => sl<album_bloc.AlbumAdminBloc>()..add(const album_event.LoadAlbums()),
-        child: StatefulBuilder(builder: (context, setDialogState) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            title: const Text('Select Album', style: TextStyle(color: Colors.white)),
-            content: SizedBox(
-              width: 400,
-              height: 400,
-              child: BlocBuilder<album_bloc.AlbumAdminBloc, album_state.AlbumAdminState>(
-                builder: (context, state) {
-                  if (state is album_state.AlbumAdminLoading) {
+      builder: (dialogContext) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: trackAdminBloc),
+          BlocProvider(create: (context) => sl<album_bloc.AlbumAdminBloc>()..add(const album_event.LoadAlbums())),
+        ],
+        child: BlocListener<TrackAdminBloc, TrackAdminState>(
+          listener: (context, state) {
+            if (state is TrackAdminOperationSuccess) {
+              Navigator.pop(dialogContext);
+            }
+          },
+          child: StatefulBuilder(builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1A1A1A),
+              title: const Text('Select Album', style: TextStyle(color: Colors.white)),
+              content: SizedBox(
+                width: 400,
+                height: 400,
+                child: BlocBuilder<album_bloc.AlbumAdminBloc, album_state.AlbumAdminState>(
+                  builder: (context, state) {
+                    if (state is album_state.AlbumAdminLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (state is album_state.AlbumAdminError) {
@@ -646,30 +656,41 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                 onPressed: () => Navigator.pop(dialogContext),
                 child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFD79B),
-                  foregroundColor: Colors.black,
-                  disabledBackgroundColor: Colors.grey.withValues(alpha: 0.2),
-                ),
-                onPressed: selectedAlbumId == null
-                    ? null
-                    : () {
-                        // Dispatch bulk add event to TrackAdminBloc
-                        this.context.read<TrackAdminBloc>().add(AddTracksToAlbum(
-                              albumId: selectedAlbumId!,
-                              trackIds: _selectedTrackIds.toList(),
-                            ));
-                        Navigator.pop(dialogContext);
-                      },
-                child: const Text('Add to Album'),
+              BlocBuilder<TrackAdminBloc, TrackAdminState>(
+                builder: (context, state) {
+                  final isLoading = state is TrackAdminLoading;
+                  return ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD79B),
+                      foregroundColor: Colors.black,
+                      disabledBackgroundColor: Colors.grey.withValues(alpha: 0.2),
+                    ),
+                    onPressed: (selectedAlbumId == null || isLoading)
+                        ? null
+                        : () {
+                            // Dispatch bulk add event
+                            this.context.read<TrackAdminBloc>().add(AddTracksToAlbum(
+                                  albumId: selectedAlbumId!,
+                                  trackIds: _selectedTrackIds.toList(),
+                                ));
+                          },
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                          )
+                        : const Text('Add to Album'),
+                  );
+                },
               ),
             ],
           );
         }),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildImage(String? url) {
     if (url == null || url.isEmpty) {
