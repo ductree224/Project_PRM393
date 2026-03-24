@@ -2,6 +2,7 @@ using Application.Abstractions.Admin;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Application.Services;
 using Domain.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.ExternalApis;
@@ -32,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IAdminAuditLogRepository , AdminAuditLogRepository>();
         services.AddScoped<IAdminAnalyticsRepository , AdminAnalyticsRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<IWaitlistRepository, WaitlistRepository>();
+        services.AddScoped<WaitlistService>();
         //  admin
         services.AddScoped<IAdminDashboardRepository , AdminDashboardRepository>();
 

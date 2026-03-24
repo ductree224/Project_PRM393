@@ -192,12 +192,12 @@ class _ModeItem extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isActive ? const Color(0xFF6B4EEA) : Colors.transparent,
+                color: isActive ? AppColors.primary : Colors.transparent,
                 width: 2,
               ),
               boxShadow: isActive ? [
                 BoxShadow(
-                  color: const Color(0xFF6B4EEA).withOpacity(0.4),
+                  color: AppColors.primary.withValues(alpha: 0.4),
                   blurRadius: 15,
                   spreadRadius: 2,
                 )
@@ -209,8 +209,8 @@ class _ModeItem extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: isActive 
-                      ? const Color(0xFF6B4EEA).withOpacity(0.2)
-                      : Colors.white.withOpacity(0.05),
+                      ? AppColors.primary.withValues(alpha: 0.2)
+                      : Colors.white.withValues(alpha: 0.05),
                     shape: BoxShape.circle,
                   ),
                   child: SvgPicture.asset(
@@ -348,11 +348,11 @@ class _BasicGradientAppButtonState extends State<_BasicGradientAppButton> {
         height: 55, width: double.infinity,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6B4EEA), Color(0xFFE56BFA), Color(0xFF2E63FF)],
-            stops: [0.1, 0.5, 0.9],
+            colors: [AppColors.thirdly, AppColors.primary, AppColors.secondary],
+            stops: [0.0, 0.5, 1.0],
           ),
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [BoxShadow(color: const Color(0xFF6B4EEA).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+          boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))],
         ),
         child: Center(
           child: Text(widget.title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 17)),

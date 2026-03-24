@@ -10,6 +10,20 @@ class AdminRepositoryImpl implements AdminRepository {
 
   AdminRepositoryImpl(this._remoteDataSource);
 
+  String _extractDioErrorMessage(DioException e, String fallback) {
+    final data = e.response?.data;
+    if (data is Map) {
+      final dynamic message = data['message'];
+      if (message is String && message.trim().isNotEmpty) {
+        return message;
+      }
+    }
+    if (data is String && data.trim().isNotEmpty) {
+      return data;
+    }
+    return fallback;
+  }
+
   @override
   Future<Either<String, AdminUserListEntity>> getUsers({
     int page = 1,
@@ -45,9 +59,7 @@ class AdminRepositoryImpl implements AdminRepository {
         ),
       );
     } on DioException catch (e) {
-      return Left(
-        e.response?.data?['message'] ?? 'Không thể tải danh sách user.',
-      );
+      return Left(_extractDioErrorMessage(e, 'Không thể tải danh sách user.'));
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -59,7 +71,7 @@ class AdminRepositoryImpl implements AdminRepository {
       await _remoteDataSource.banUser(userId, reason: reason);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể khóa user.');
+      return Left(_extractDioErrorMessage(e, 'Không thể khóa user.'));
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -71,7 +83,7 @@ class AdminRepositoryImpl implements AdminRepository {
       await _remoteDataSource.unbanUser(userId);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể mở khóa user.');
+      return Left(_extractDioErrorMessage(e, 'Không thể mở khóa user.'));
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -86,9 +98,7 @@ class AdminRepositoryImpl implements AdminRepository {
       await _remoteDataSource.changeUserRole(userId, role);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(
-        e.response?.data?['message'] ?? 'Không thể cập nhật role user.',
-      );
+      return Left(_extractDioErrorMessage(e, 'Không thể cập nhật role user.'));
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -100,7 +110,7 @@ class AdminRepositoryImpl implements AdminRepository {
       await _remoteDataSource.deleteUser(userId);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể xóa user.');
+      return Left(_extractDioErrorMessage(e, 'Không thể xóa user.'));
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -139,9 +149,7 @@ class AdminRepositoryImpl implements AdminRepository {
         ),
       );
     } on DioException catch (e) {
-      return Left(
-        e.response?.data?['message'] ?? 'Không thể tải lịch sử user.',
-      );
+      return Left(_extractDioErrorMessage(e, 'Không thể tải lịch sử user.'));
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -181,8 +189,7 @@ class AdminRepositoryImpl implements AdminRepository {
       );
     } on DioException catch (e) {
       return Left(
-        e.response?.data?['message'] ??
-            'Không thể tải danh sách yêu thích user.',
+        _extractDioErrorMessage(e, 'Không thể tải danh sách yêu thích user.'),
       );
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -222,9 +229,7 @@ class AdminRepositoryImpl implements AdminRepository {
         ),
       );
     } on DioException catch (e) {
-      return Left(
-        e.response?.data?['message'] ?? 'Không thể tải playlists user.',
-      );
+      return Left(_extractDioErrorMessage(e, 'Không thể tải playlists user.'));
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }

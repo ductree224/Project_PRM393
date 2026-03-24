@@ -15,6 +15,13 @@ import 'package:soundtilo/domain/repository/track_repository.dart';
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
 import 'package:soundtilo/domain/usecases/playlist_usecases.dart';
+// BỔ SUNG: Import TrackEntity cho biến nhớ tạm
+import 'package:soundtilo/domain/entities/track_entity.dart';
+// BỔ SUNG: Import các UseCase và Bloc của Waitlist
+import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
+import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_bloc.dart';
+import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_event.dart';
+
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
@@ -62,6 +69,9 @@ class _MiniPlayerVisibilityObserver extends NavigatorObserver {
 
 final _miniPlayerVisibilityObserver = _MiniPlayerVisibilityObserver();
 
+// KHAI BÁO BIẾN GHI NHỚ BÀI HÁT CŨ CHO WAITLIST Ở ĐÂY
+TrackEntity? _lastTrackForWaitlist;
+
 Future<void> main() async {
   FlutterError.onError = (FlutterErrorDetails details) {
     if (details.toString().contains(
@@ -84,7 +94,7 @@ Future<void> main() async {
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorageDirectory.web
-        : HydratedStorageDirectory((await getTemporaryDirectory()).path),
+        : HydratedStorageDirectory((await getApplicationDocumentsDirectory()).path),
   );
 
   // Initialize DI
@@ -133,6 +143,15 @@ class MyApp extends StatelessWidget {
             getFavoritesUseCase: sl<GetFavoritesUseCase>(),
           ),
         ),
+        // BỔ SUNG: Tiêm WaitlistBloc vào hệ thống
+        BlocProvider(
+          create: (_) => WaitlistBloc(
+            getWaitlistUseCase: sl<GetWaitlistUseCase>(),
+            addTrackToWaitlistUseCase: sl<AddTrackToWaitlistUseCase>(),
+            removeTrackFromWaitlistUseCase: sl<RemoveTrackFromWaitlistUseCase>(),
+            reorderWaitlistUseCase: sl<ReorderWaitlistUseCase>(),
+          ),
+        ),
       ],
       child: MultiBlocListener(
         listeners: [
@@ -145,7 +164,7 @@ class MyApp extends StatelessWidget {
           ),
           BlocListener<PlayerBloc, PlayerState>(
             listenWhen: (prev, curr) =>
-                prev.isFavorite != curr.isFavorite &&
+            prev.isFavorite != curr.isFavorite &&
                 curr.currentTrack != null,
             listener: (context, state) {
               context.read<LibraryBloc>().add(
@@ -154,6 +173,23 @@ class MyApp extends StatelessWidget {
                   isFavorite: state.isFavorite,
                 ),
               );
+            },
+          ),
+          // BỔ SUNG LISTENER MỚI CỦA WAITLIST:
+          BlocListener<PlayerBloc, PlayerState>(
+            listener: (context, state) {
+              // 1. Kiểm tra nếu có bài cũ và bài mới khác bài cũ -> Bài cũ đã nghe xong!
+              if (_lastTrackForWaitlist != null &&
+                  state.currentTrack != null &&
+                  _lastTrackForWaitlist!.externalId != state.currentTrack!.externalId) {
+                // Báo cho Waitlist làm mờ bài CŨ đi
+                context.read<WaitlistBloc>().add(WaitlistMarkTrackAsPlayed(_lastTrackForWaitlist!.externalId));
+              }
+
+              // 2. Cập nhật lại bộ nhớ bài hát hiện tại
+              if (state.currentTrack != null) {
+                _lastTrackForWaitlist = state.currentTrack;
+              }
             },
           ),
         ],
@@ -169,8 +205,8 @@ class MyApp extends StatelessWidget {
               final content = child ?? const SizedBox.shrink();
               final bottomInset =
                   MediaQuery.viewPaddingOf(context).bottom +
-                  kBottomNavigationBarHeight +
-                  8;
+                      kBottomNavigationBarHeight +
+                      8;
 
               return Stack(
                 children: [

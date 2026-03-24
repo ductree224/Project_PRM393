@@ -8,6 +8,7 @@ import 'package:soundtilo/presentation/library/bloc/library_event.dart';
 import 'package:soundtilo/presentation/library/bloc/library_state.dart';
 import 'package:soundtilo/presentation/library/pages/favorites.dart';
 import 'package:soundtilo/presentation/library/pages/playlist_detail.dart';
+import 'package:soundtilo/presentation/library/pages/waitlist_page.dart';
 
 class LibraryPage extends StatelessWidget {
   const LibraryPage({super.key});
@@ -97,6 +98,32 @@ class LibraryPage extends StatelessWidget {
           ),
         ),
 
+        SliverToBoxAdapter(
+          child: ListTile(
+            leading: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.queue_play_next, color: AppColors.primary),
+            ),
+            title: const Text(
+              'Danh sách chờ phát',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: const Text('Đang đợi phát tiếp theo'), // Nếu BLoC có số lượng bài hát thì truyền vào đây
+            onTap: () {
+              // Chuyển hướng sang màn hình Danh sách chờ
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const WaitlistPage(), // Màn hình ta sẽ tạo ở Bước 2
+                ),
+              );
+            },
+          ),
+        ),
         // Favorites section
         SliverToBoxAdapter(
           child: ListTile(

@@ -13,6 +13,11 @@ import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_event.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/comment_sheet.dart';
+// BỔ SUNG: Import các file của Waitlist
+import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_bloc.dart';
+import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_event.dart';
+import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_state.dart';
+import 'package:soundtilo/presentation/player/widgets/mini_equalizer.dart';
 
 class PlayerPage extends StatefulWidget {
   static const String routeName = '/player';
@@ -49,27 +54,31 @@ class PlayerPage extends StatefulWidget {
 
 class _PlayerPageState extends State<PlayerPage> {
   double? _dragPositionMs;
+  late TrackEntity _displayTrack; // BỔ SUNG: Biến lưu bài hát đang được xem trên màn hình
 
   @override
   void initState() {
     super.initState();
+    _displayTrack = widget.track; // Ban đầu hiển thị đúng bài vừa bấm vào
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final bloc = context.read<PlayerBloc>();
-      final currentTrack = bloc.state.currentTrack;
-      if (!widget.autoPlayOnOpen &&
-          currentTrack != null &&
-          currentTrack.externalId == widget.track.externalId) {
-        return;
+
+      // Kiểm tra xem hiện tại CÓ ĐANG PHÁT BÀI NÀO KHÁC KHÔNG
+      final isPlayingSomethingElse = bloc.state.currentTrack != null;
+
+      // Nếu autoPlayOnOpen = true VÀ KHÔNG CÓ NHẠC ĐANG PHÁT -> tự động phát
+      if (widget.autoPlayOnOpen && !isPlayingSomethingElse) {
+        final idx = widget.queue.indexOf(widget.track);
+        bloc.add(
+          PlayerPlay(
+            track: widget.track,
+            queue: widget.queue,
+            startIndex: idx >= 0 ? idx : 0,
+          ),
+        );
       }
-      final idx = widget.queue.indexOf(widget.track);
-      bloc.add(
-        PlayerPlay(
-          track: widget.track,
-          queue: widget.queue,
-          startIndex: idx >= 0 ? idx : 0,
-        ),
-      );
     });
   }
 
@@ -77,78 +86,96 @@ class _PlayerPageState extends State<PlayerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final maxArtworkSize = MediaQuery.sizeOf(context).width * 0.75;
-            final artworkSize = maxArtworkSize
-                .clamp(180.0, constraints.maxHeight * 0.34)
-                .toDouble();
-
-            return Column(
-              children: [
-                // Top Bar
-                _buildTopBar(context),
-
-                const Spacer(),
-
-                BlocSelector<PlayerBloc, PlayerState, (TrackEntity, bool)>(
-                  selector: (state) =>
-                      (state.currentTrack ?? widget.track, state.isFavorite),
-                  builder: (context, data) {
-                    final currentTrack = data.$1;
-                    final isFavorite = data.$2;
-
-                    return Column(
-                      children: [
-                        // Artwork
-                        _buildArtwork(context, currentTrack, artworkSize),
-
-                        const SizedBox(height: 24),
-
-                        // Track Info
-                        _buildTrackInfo(context, currentTrack, isFavorite),
-
-                        const SizedBox(height: 16),
-
-                        // Extra actions (lyrics, queue)
-                        _buildExtraActions(context, currentTrack),
-                      ],
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                BlocSelector<PlayerBloc, PlayerState, (Duration, Duration)>(
-                  selector: (state) => (state.position, state.duration),
-                  builder: (context, progress) {
-                    return _buildProgressBar(context, progress.$1, progress.$2);
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                BlocSelector<
-                  PlayerBloc,
-                  PlayerState,
-                  (PlayerStatus, bool, bool)
-                >(
-                  selector: (state) =>
-                      (state.status, state.hasPrevious, state.hasNext),
-                  builder: (context, controlState) {
-                    return _buildControls(
-                      context,
-                      status: controlState.$1,
-                      hasPrevious: controlState.$2,
-                      hasNext: controlState.$3,
-                    );
-                  },
-                ),
-
-                const Spacer(),
-              ],
-            );
+        // BỔ SUNG: Lắng nghe sự thay đổi nhạc để cập nhật màn hình
+        child: BlocListener<PlayerBloc, PlayerState>(
+          listenWhen: (prev, curr) => prev.currentTrack?.externalId != curr.currentTrack?.externalId && curr.currentTrack != null,
+          listener: (context, state) {
+            setState(() {
+              _displayTrack = state.currentTrack!; // Nhạc chuyển -> Đổi luôn giao diện hiển thị
+            });
           },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final maxArtworkSize = MediaQuery.sizeOf(context).width * 0.75;
+              final artworkSize = maxArtworkSize
+                  .clamp(180.0, constraints.maxHeight * 0.34)
+                  .toDouble();
+
+              return Column(
+                children: [
+                  // Top Bar
+                  _buildTopBar(context),
+
+                  const Spacer(),
+
+                  // CẬP NHẬT: Dùng _displayTrack thay cho state.currentTrack
+                  BlocSelector<PlayerBloc, PlayerState, bool>(
+                    selector: (state) => state.isFavorite,
+                    builder: (context, isFavorite) {
+                      return Column(
+                        children: [
+                          // Artwork
+                          _buildArtwork(context, _displayTrack, artworkSize),
+
+                          const SizedBox(height: 24),
+
+                          // Track Info
+                          _buildTrackInfo(context, _displayTrack, isFavorite),
+
+                          const SizedBox(height: 16),
+
+                          // Extra actions (lyrics, queue)
+                          _buildExtraActions(context, _displayTrack),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  BlocBuilder<PlayerBloc, PlayerState>(
+                    builder: (context, state) {
+                      // Kiểm tra xem bài đang hiển thị trên màn hình có khớp với bài đang phát ngầm không
+                      final isViewingPlayingTrack = state.currentTrack?.externalId == _displayTrack.externalId;
+
+                      // Nếu đang xem bài khác -> Ép thời gian về 00:00.
+                      // Nếu đúng bài đang hát -> Lấy thời gian thực tế đang chạy
+                      final displayPosition = isViewingPlayingTrack ? state.position : Duration.zero;
+                      final displayDuration = isViewingPlayingTrack ? state.duration : Duration.zero;
+
+                      return _buildProgressBar(context, displayPosition, displayDuration);
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  BlocSelector<
+                      PlayerBloc,
+                      PlayerState,
+                      (PlayerStatus, bool, bool, TrackEntity?)
+                  >(
+                    selector: (state) => (
+                    state.status,
+                    state.hasPrevious,
+                    state.hasNext,
+                    state.currentTrack
+                    ),
+                    builder: (context, controlState) {
+                      return _buildControls(
+                        context,
+                        status: controlState.$1,
+                        hasPrevious: controlState.$2,
+                        hasNext: controlState.$3,
+                        currentTrack: controlState.$4, // Có thể null
+                      );
+                    },
+                  ),
+
+                  const Spacer(),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -178,10 +205,10 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   Widget _buildArtwork(
-    BuildContext context,
-    TrackEntity currentTrack,
-    double size,
-  ) {
+      BuildContext context,
+      TrackEntity currentTrack,
+      double size,
+      ) {
     return Container(
       width: size,
       height: size,
@@ -199,44 +226,44 @@ class _PlayerPageState extends State<PlayerPage> {
         borderRadius: BorderRadius.circular(20),
         child: currentTrack.artworkUrl != null
             ? CachedNetworkImage(
-                imageUrl: currentTrack.artworkUrl!,
-                fit: BoxFit.cover,
-                memCacheWidth: 720,
-                memCacheHeight: 720,
-                placeholder: (context, url) => Container(
-                  color: AppColors.grey.withValues(alpha: 0.3),
-                  child: const Icon(
-                    Icons.music_note,
-                    size: 80,
-                    color: AppColors.grey,
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: AppColors.grey.withValues(alpha: 0.3),
-                  child: const Icon(
-                    Icons.music_note,
-                    size: 80,
-                    color: AppColors.grey,
-                  ),
-                ),
-              )
+          imageUrl: currentTrack.artworkUrl!,
+          fit: BoxFit.cover,
+          memCacheWidth: 720,
+          memCacheHeight: 720,
+          placeholder: (context, url) => Container(
+            color: AppColors.grey.withValues(alpha: 0.3),
+            child: const Icon(
+              Icons.music_note,
+              size: 80,
+              color: AppColors.grey,
+            ),
+          ),
+          errorWidget: (context, url, error) => Container(
+            color: AppColors.grey.withValues(alpha: 0.3),
+            child: const Icon(
+              Icons.music_note,
+              size: 80,
+              color: AppColors.grey,
+            ),
+          ),
+        )
             : Container(
-                color: AppColors.grey.withValues(alpha: 0.3),
-                child: const Icon(
-                  Icons.music_note,
-                  size: 80,
-                  color: AppColors.grey,
-                ),
-              ),
+          color: AppColors.grey.withValues(alpha: 0.3),
+          child: const Icon(
+            Icons.music_note,
+            size: 80,
+            color: AppColors.grey,
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildTrackInfo(
-    BuildContext context,
-    TrackEntity currentTrack,
-    bool isFavorite,
-  ) {
+      BuildContext context,
+      TrackEntity currentTrack,
+      bool isFavorite,
+      ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Row(
@@ -259,7 +286,7 @@ class _PlayerPageState extends State<PlayerPage> {
                   currentTrack.artistName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 15, color: AppColors.grey),
+                  style: const TextStyle(fontSize: 15, color: AppColors.grey),
                 ),
               ],
             ),
@@ -279,10 +306,10 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   Widget _buildProgressBar(
-    BuildContext context,
-    Duration position,
-    Duration duration,
-  ) {
+      BuildContext context,
+      Duration position,
+      Duration duration,
+      ) {
     final posMs = position.inMilliseconds.toDouble();
     final durMs = duration.inMilliseconds.toDouble();
     final value = durMs > 0 ? posMs.clamp(0.0, durMs) : 0.0;
@@ -327,11 +354,11 @@ class _PlayerPageState extends State<PlayerPage> {
               children: [
                 Text(
                   _formatDuration(position),
-                  style: TextStyle(fontSize: 12, color: AppColors.grey),
+                  style: const TextStyle(fontSize: 12, color: AppColors.grey),
                 ),
                 Text(
                   _formatDuration(duration),
-                  style: TextStyle(fontSize: 12, color: AppColors.grey),
+                  style: const TextStyle(fontSize: 12, color: AppColors.grey),
                 ),
               ],
             ),
@@ -342,14 +369,91 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   Widget _buildControls(
-    BuildContext context, {
-    required PlayerStatus status,
-    required bool hasPrevious,
-    required bool hasNext,
-  }) {
+      BuildContext context, {
+        required PlayerStatus status,
+        required bool hasPrevious,
+        required bool hasNext,
+        required TrackEntity? currentTrack,
+      }) {
+    // KIỂM TRA: Bài hát đang hiển thị có trùng với bài đang phát ngầm không
+    final isViewingPlayingTrack = currentTrack?.externalId == _displayTrack.externalId;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // NÚT THÊM/XÓA DANH SÁCH CHỜ NẰM Ở BÊN TRÁI CÙNG (Dựa trên _displayTrack)
+        BlocBuilder<WaitlistBloc, WaitlistState>(
+          builder: (context, waitlistState) {
+            int virtualPosition = -999;
+
+            if (waitlistState is WaitlistLoaded) {
+              final index = waitlistState.tracks.indexWhere(
+                    (t) => t.externalId == _displayTrack.externalId,
+              );
+              if (index != -1) {
+                virtualPosition = index - waitlistState.fadedCount;
+              }
+            }
+
+            final isInWaitlist = virtualPosition >= 0;
+
+            return IconButton(
+              icon: isInWaitlist
+                  ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    virtualPosition == 0
+                        ? const MiniEqualizer()
+                        : Text(
+                      '$virtualPosition',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.check, size: 16, color: AppColors.primary),
+                  ],
+                ),
+              )
+                  : Icon(
+                Icons.queue_play_next,
+                size: 28,
+                color: context.isDarkMode ? Colors.white70 : Colors.black54,
+              ),
+              onPressed: () {
+                // KIỂM TRA: Bài đang hiển thị có phải là bài đang hát không?
+                final isCurrentlyPlaying = currentTrack?.externalId == _displayTrack.externalId;
+
+                if (isCurrentlyPlaying) {
+                  // Đang phát -> CHẶN LẠI VÀ THÔNG BÁO
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Bài hát đang phát không thể thêm vào danh sách chờ.'))
+                  );
+                } else {
+                  // Các bài khác -> THÊM / HỦY bình thường
+                  if (isInWaitlist) {
+                    context.read<WaitlistBloc>().add(WaitlistRemoveTrack(_displayTrack.externalId));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã hủy khỏi danh sách chờ.')));
+                  } else {
+                    context.read<WaitlistBloc>().add(WaitlistAddTrack(_displayTrack.externalId));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã thêm vào danh sách chờ.')));
+                  }
+                }
+              },
+            );
+          },
+        ),
+
+        const SizedBox(width: 12),
+
         // Previous
         IconButton(
           icon: Icon(
@@ -364,7 +468,7 @@ class _PlayerPageState extends State<PlayerPage> {
 
         const SizedBox(width: 16),
 
-        // Play / Pause
+        // Play / Pause THÔNG MINH
         Container(
           width: 64,
           height: 64,
@@ -379,30 +483,43 @@ class _PlayerPageState extends State<PlayerPage> {
               ),
             ],
           ),
-          child: status == PlayerStatus.loading
+          child: (status == PlayerStatus.loading && isViewingPlayingTrack)
               ? const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 3,
-                  ),
-                )
+            padding: EdgeInsets.all(16),
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 3,
+            ),
+          )
               : IconButton(
-                  icon: Icon(
-                    status == PlayerStatus.playing
-                        ? Icons.pause
-                        : Icons.play_arrow,
-                    size: 32,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    if (status == PlayerStatus.playing) {
-                      context.read<PlayerBloc>().add(PlayerPause());
-                    } else {
-                      context.read<PlayerBloc>().add(PlayerResume());
-                    }
-                  },
-                ),
+            icon: Icon(
+              (status == PlayerStatus.playing && isViewingPlayingTrack)
+                  ? Icons.pause
+                  : Icons.play_arrow,
+              size: 32,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              if (isViewingPlayingTrack) {
+                // Đang xem bài phát ngầm -> Tạm dừng / Tiếp tục
+                if (status == PlayerStatus.playing) {
+                  context.read<PlayerBloc>().add(PlayerPause());
+                } else {
+                  context.read<PlayerBloc>().add(PlayerResume());
+                }
+              } else {
+                // Đang xem bài mới tinh -> Chèn lên số 0 và Phát luôn
+                context.read<WaitlistBloc>().add(WaitlistInsertAndPlay(_displayTrack));
+
+                final wState = context.read<WaitlistBloc>().state;
+                List<TrackEntity> newQueue = [_displayTrack];
+                if (wState is WaitlistLoaded) {
+                  newQueue = wState.tracks.sublist(wState.fadedCount);
+                }
+                context.read<PlayerBloc>().add(PlayerPlay(track: _displayTrack, queue: newQueue));
+              }
+            },
+          ),
         ),
 
         const SizedBox(width: 16),
@@ -418,6 +535,9 @@ class _PlayerPageState extends State<PlayerPage> {
               ? () => context.read<PlayerBloc>().add(PlayerNext())
               : null,
         ),
+
+        const SizedBox(width: 12),
+        const SizedBox(width: 48),
       ],
     );
   }
@@ -487,8 +607,8 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   Future<List<PlaylistEntity>?> _ensurePlaylists(
-    LibraryBloc libraryBloc,
-  ) async {
+      LibraryBloc libraryBloc,
+      ) async {
     final currentPlaylists = _playlistsFromState(libraryBloc.state);
     if (currentPlaylists != null) {
       return currentPlaylists;
@@ -499,9 +619,9 @@ class _PlayerPageState extends State<PlayerPage> {
 
     final resolvedState = await libraryBloc.stream
         .firstWhere((state) {
-          latestState = state;
-          return _playlistsFromState(state) != null || state is LibraryError;
-        })
+      latestState = state;
+      return _playlistsFromState(state) != null || state is LibraryError;
+    })
         .timeout(const Duration(seconds: 5), onTimeout: () => latestState);
 
     return _playlistsFromState(resolvedState);
@@ -518,7 +638,7 @@ class _PlayerPageState extends State<PlayerPage> {
     if (playlists == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Khong the tai thu vien. Vui long thu lai.'),
+          content: Text('Không thể tải thư viện. Vui lòng thử lại.'),
         ),
       );
       return;
@@ -526,7 +646,7 @@ class _PlayerPageState extends State<PlayerPage> {
 
     if (playlists.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ban chua co playlist nao.')),
+        const SnackBar(content: Text('Bạn chưa có playlist nào.')),
       );
       return;
     }
@@ -543,7 +663,7 @@ class _PlayerPageState extends State<PlayerPage> {
               return ListTile(
                 leading: const Icon(Icons.queue_music),
                 title: Text(playlist.name),
-                subtitle: Text('${playlist.trackCount} bai hat'),
+                subtitle: Text('${playlist.trackCount} bài hát'),
                 onTap: () {
                   libraryBloc.add(
                     LibraryAddTrackToPlaylist(
