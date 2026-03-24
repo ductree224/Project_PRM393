@@ -13,4 +13,9 @@ abstract class TrackAdminRepository {
     required List<String> externalIds,
     required String status,
   });
+
+  Future<Either<String, void>> addTracksToAlbum({
+    required String albumId,
+    required List<String> trackIds,
+  });
 }

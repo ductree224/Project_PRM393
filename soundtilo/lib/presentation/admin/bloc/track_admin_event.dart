@@ -36,3 +36,15 @@ class UpdateTrackStatus extends TrackAdminEvent {
   @override
   List<Object?> get props => [externalIds, status];
 }
+class AddTracksToAlbum extends TrackAdminEvent {
+  final String albumId;
+  final List<String> trackIds;
+
+  const AddTracksToAlbum({
+    required this.albumId,
+    required this.trackIds,
+  });
+
+  @override
+  List<Object?> get props => [albumId, trackIds];
+}

@@ -38,6 +38,8 @@ import 'package:soundtilo/domain/repositories/album_repository.dart';
 import 'package:soundtilo/domain/repositories/track_admin_repository.dart';
 import 'package:soundtilo/data/repository/track_admin_repository_impl.dart';
 import 'package:soundtilo/presentation/admin/bloc/track_admin_bloc.dart';
+import 'package:soundtilo/presentation/admin/bloc/album_admin_bloc.dart';
+import 'package:soundtilo/presentation/admin/bloc/artist_admin_bloc.dart';
 
 // Use Cases
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
@@ -127,6 +129,8 @@ Future<void> initServiceLocator() async {
     () => TrackAdminRepositoryImpl(sl<ApiClient>().dio),
   );
   sl.registerFactory(() => TrackAdminBloc(repository: sl<TrackAdminRepository>()));
+  sl.registerFactory(() => AlbumAdminBloc(repository: sl<AlbumRepository>()));
+  sl.registerFactory(() => ArtistAdminBloc(repository: sl<ArtistRepository>()));
 
   // ===================== API Client (with JWT interceptor) =====================
   // Registered after AuthRepository to avoid circular dependency

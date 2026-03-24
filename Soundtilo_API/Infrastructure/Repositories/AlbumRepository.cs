@@ -77,6 +77,12 @@ public class AlbumRepository : IAlbumRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task AddTracksBulkAsync(IEnumerable<AlbumTrack> albumTracks)
+    {
+        _context.AlbumTracks.AddRange(albumTracks);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task RemoveTrackAsync(Guid albumId, string trackExternalId)
     {
         var albumTrack = await _context.AlbumTracks

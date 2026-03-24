@@ -34,4 +34,17 @@ public class AdminTracksController : ControllerBase
         await _trackService.UpdateStatusesAsync(payload);
         return NoContent();
     }
+
+    [HttpPost("add-to-album")]
+    public async Task<IActionResult> BulkAddTracksToAlbum([FromBody] BulkAddTracksToAlbumDto payload)
+    {
+        if (payload.TrackExternalIds == null || !payload.TrackExternalIds.Any())
+            return BadRequest(new { message = "No tracks selected." });
+
+        if (payload.AlbumId == Guid.Empty)
+            return BadRequest(new { message = "No album selected." });
+
+        await _trackService.BulkAddTracksToAlbumAsync(payload);
+        return Ok(new { message = "Tracks added to album successfully." });
+    }
 }

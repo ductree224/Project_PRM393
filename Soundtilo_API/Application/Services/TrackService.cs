@@ -13,17 +13,20 @@ public class TrackService : ITrackService
     private readonly IDeezerApiClient _deezerApi;
     private readonly IJamendoApiClient _jamendoApi;
     private readonly ITrackCacheRepository _trackCache;
+    private readonly IAlbumService _albumService;
 
     public TrackService(
         IAudiusApiClient audiusApi,
         IDeezerApiClient deezerApi,
         IJamendoApiClient jamendoApi,
-        ITrackCacheRepository trackCache)
+        ITrackCacheRepository trackCache,
+        IAlbumService albumService)
     {
         _audiusApi = audiusApi;
         _deezerApi = deezerApi;
         _jamendoApi = jamendoApi;
         _trackCache = trackCache;
+        _albumService = albumService;
     }
 
     public async Task<TrackSearchResponse> SearchAsync(
@@ -337,5 +340,10 @@ public class TrackService : ITrackService
     public async Task UpdateStatusesAsync(UpdateTrackStatusDto payload)
     {
         await _trackCache.UpdateStatusesAsync(payload.ExternalIds, payload.Status);
+    }
+
+    public async Task BulkAddTracksToAlbumAsync(BulkAddTracksToAlbumDto payload)
+    {
+        await _albumService.BulkAddTracksToAlbumAsync(payload);
     }
 }

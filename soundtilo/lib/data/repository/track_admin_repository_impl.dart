@@ -79,4 +79,30 @@ class TrackAdminRepositoryImpl implements TrackAdminRepository {
       return Left('Error: $e');
     }
   }
+
+  @override
+  Future<Either<String, void>> addTracksToAlbum({
+    required String albumId,
+    required List<String> trackIds,
+  }) async {
+    try {
+      final response = await dio.post(
+        ApiUrls.addTracksToAlbumToAdmin,
+        data: {
+          'albumId': albumId,
+          'trackExternalIds': trackIds,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return const Right(null);
+      } else {
+        return const Left('Failed to add tracks to album');
+      }
+    } on DioException catch (e) {
+      return Left(e.response?.data['message'] ?? 'Error adding tracks to album');
+    } catch (e) {
+      return Left('Error: $e');
+    }
+  }
 }

@@ -23,5 +23,6 @@ public interface IAlbumService
     
     // Track management
     Task AddTrackToAlbumAsync(Guid albumId, AddTrackToAlbumDto payload);
+    Task BulkAddTracksToAlbumAsync(BulkAddTracksToAlbumDto payload);
     Task RemoveTrackFromAlbumAsync(Guid albumId, string trackExternalId);
 }

@@ -144,6 +144,42 @@ public class AlbumService : IAlbumService
         await _albumRepository.AddTrackAsync(albumTrack);
     }
 
+    public async Task BulkAddTracksToAlbumAsync(BulkAddTracksToAlbumDto payload)
+    {
+        var album = await _albumRepository.GetByIdAsync(payload.AlbumId, true);
+        if (album == null)
+        {
+            throw new KeyNotFoundException($"Album with ID {payload.AlbumId} not found.");
+        }
+
+        var currentMaxPosition = album.AlbumTracks?.Any() == true 
+            ? album.AlbumTracks.Max(at => at.Position) 
+            : 0;
+
+        var newAlbumTracks = new List<AlbumTrack>();
+        foreach (var trackExternalId in payload.TrackExternalIds)
+        {
+            // Avoid duplicates
+            if (album.AlbumTracks?.Any(at => at.TrackExternalId == trackExternalId) == true)
+                continue;
+
+            currentMaxPosition++;
+            newAlbumTracks.Add(new AlbumTrack
+            {
+                Id = Guid.NewGuid(),
+                AlbumId = payload.AlbumId,
+                TrackExternalId = trackExternalId,
+                Position = currentMaxPosition,
+                AddedAt = DateTime.UtcNow
+            });
+        }
+
+        if (newAlbumTracks.Any())
+        {
+            await _albumRepository.AddTracksBulkAsync(newAlbumTracks);
+        }
+    }
+
     public async Task RemoveTrackFromAlbumAsync(Guid albumId, string trackExternalId)
     {
         await _albumRepository.RemoveTrackAsync(albumId, trackExternalId);

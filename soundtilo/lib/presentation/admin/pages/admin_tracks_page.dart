@@ -4,6 +4,9 @@ import 'package:soundtilo/core/di/service_locator.dart';
 import '../bloc/track_admin_bloc.dart';
 import '../bloc/track_admin_event.dart';
 import '../bloc/track_admin_state.dart';
+import '../bloc/album_admin_bloc.dart' as album_bloc;
+import '../bloc/album_admin_event.dart' as album_event;
+import '../bloc/album_admin_state.dart' as album_state;
 import '../../../../data/models/track_admin_model.dart';
 import 'package:intl/intl.dart';
 
@@ -138,7 +141,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
         child: DataTable(
           showCheckboxColumn: true,
           headingRowColor: WidgetStateProperty.all(
-              const Color(0xFF2A2A2A).withOpacity(0.5)),
+              const Color(0xFF2A2A2A).withValues(alpha: 0.5)),
           columns: const [
             DataColumn(
                 label: Text('TRACK INFO',
@@ -200,7 +203,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
               Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                      color: const Color(0xFFFFD79B).withOpacity(0.2),
+                      color: const Color(0xFFFFD79B).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8)),
                   child: const Icon(Icons.info,
                       color: Color(0xFFFFD79B), size: 16)),
@@ -236,7 +239,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Row(
@@ -257,6 +260,18 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                   const PopupMenuItem(value: 'Inactive', child: Text('Set Inactive', style: TextStyle(color: Colors.white))),
                   const PopupMenuItem(value: 'Hidden', child: Text('Set Hidden', style: TextStyle(color: Colors.white))),
                 ],
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD79B),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () => _showAlbumSelectionDialog(context),
+                icon: const Icon(Icons.library_add, size: 18),
+                label: const Text('Add to Album'),
               ),
             ],
           )
@@ -529,7 +544,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
         DataCell(Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
+              color: statusColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12)),
           child: Text(track.status.toUpperCase(),
               style: TextStyle(
@@ -566,6 +581,68 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
           ],
         )),
       ],
+    );
+  }
+
+  void _showAlbumSelectionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider(
+        create: (context) => sl<album_bloc.AlbumAdminBloc>()..add(const album_event.LoadAlbums()),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF1A1A1A),
+          title: const Text('Select Album', style: TextStyle(color: Colors.white)),
+          content: SizedBox(
+            width: 400,
+            height: 400,
+            child: BlocBuilder<album_bloc.AlbumAdminBloc, album_state.AlbumAdminState>(
+              builder: (context, state) {
+                if (state is album_state.AlbumAdminLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is album_state.AlbumAdminError) {
+                  return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+                }
+                if (state is album_state.AlbumAdminLoaded) {
+                  final albums = state.albums;
+                  if (albums.isEmpty) {
+                    return const Center(child: Text('No albums found', style: TextStyle(color: Colors.grey)));
+                  }
+                  return ListView.separated(
+                    itemCount: albums.length,
+                    separatorBuilder: (context, index) => const Divider(color: Colors.white10),
+                    itemBuilder: (context, index) {
+                      final album = albums[index];
+                      return ListTile(
+                        leading: album.coverImageUrl != null
+                            ? Image.network(album.coverImageUrl!, width: 40, height: 40, fit: BoxFit.cover)
+                            : const Icon(Icons.album, color: Colors.grey),
+                        title: Text(album.title, style: const TextStyle(color: Colors.white)),
+                        subtitle: Text(album.artist?.name ?? 'Unknown Artist', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        onTap: () {
+                          // Dispatch bulk add event to TrackAdminBloc
+                          this.context.read<TrackAdminBloc>().add(AddTracksToAlbum(
+                                albumId: album.id,
+                                trackIds: _selectedTrackIds.toList(),
+                              ));
+                          Navigator.pop(dialogContext);
+                        },
+                      );
+                    },
+                  );
+                }
+                return const Center(child: Text('Unexpected state'));
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

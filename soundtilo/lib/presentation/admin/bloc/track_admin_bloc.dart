@@ -9,6 +9,7 @@ class TrackAdminBloc extends Bloc<TrackAdminEvent, TrackAdminState> {
   TrackAdminBloc({required this.repository}) : super(TrackAdminInitial()) {
     on<LoadTracks>(_onLoadTracks);
     on<UpdateTrackStatus>(_onUpdateTrackStatus);
+    on<AddTracksToAlbum>(_onAddTracksToAlbum);
   }
 
   Future<void> _onLoadTracks(LoadTracks event, Emitter<TrackAdminState> emit) async {
@@ -50,6 +51,30 @@ class TrackAdminBloc extends Bloc<TrackAdminEvent, TrackAdminState> {
       (error) => emit(TrackAdminError(error)),
       (_) {
         emit(TrackAdminOperationSuccess('Track status updated to ${event.status}'));
+        add(LoadTracks(status: statusFilter, query: queryFilter));
+      },
+    );
+  }
+
+  Future<void> _onAddTracksToAlbum(AddTracksToAlbum event, Emitter<TrackAdminState> emit) async {
+    final currentState = state;
+    String? statusFilter;
+    String? queryFilter;
+    if (currentState is TrackAdminLoaded) {
+      statusFilter = currentState.currentStatus;
+      queryFilter = currentState.currentQuery;
+    }
+
+    emit(TrackAdminLoading());
+    final result = await repository.addTracksToAlbum(
+      albumId: event.albumId,
+      trackIds: event.trackIds,
+    );
+
+    result.fold(
+      (error) => emit(TrackAdminError(error)),
+      (_) {
+        emit(const TrackAdminOperationSuccess('Tracks added to album successfully'));
         add(LoadTracks(status: statusFilter, query: queryFilter));
       },
     );

@@ -14,6 +14,7 @@ public interface IAlbumRepository
     
     // Track management
     Task AddTrackAsync(AlbumTrack albumTrack);
+    Task AddTracksBulkAsync(IEnumerable<AlbumTrack> albumTracks);
     Task RemoveTrackAsync(Guid albumId, string trackExternalId);
     Task<IEnumerable<AlbumTrack>> GetTracksAsync(Guid albumId);
 }

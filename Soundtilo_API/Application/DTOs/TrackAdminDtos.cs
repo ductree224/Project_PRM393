@@ -19,3 +19,9 @@ public class UpdateTrackStatusDto
     public List<string> ExternalIds { get; set; } = new();
     public TrackStatus Status { get; set; }
 }
+
+public class BulkAddTracksToAlbumDto
+{
+    public Guid AlbumId { get; set; }
+    public List<string> TrackExternalIds { get; set; } = new();
+}
