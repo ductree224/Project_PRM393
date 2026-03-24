@@ -6,6 +6,7 @@ import 'package:soundtilo/presentation/admin/widgets/admin_topbar.dart';
 import 'admin_dashboard_page.dart';
 import 'admin_users_page.dart';
 import 'admin_tracks_page.dart';
+import 'admin_artists_albums_page.dart';
 
 class AdminMainShell extends StatefulWidget {
   const AdminMainShell({super.key});
@@ -20,7 +21,7 @@ class _AdminMainShellState extends State<AdminMainShell> {
   final List<Widget> _pages = [
     const AdminDashboardPage(),
     const AdminTracksPage(), // Index 1: Track Mgt
-    const Center(child: Text('Artist & Album Page', style: TextStyle(color: Colors.white))), // Index 2
+    const AdminArtistsAlbumsPage(), // Index 2
     const Center(child: Text('Genre/Category Page', style: TextStyle(color: Colors.white))), // Index 3
     const AdminUsersPage(), // Index 4: User Mgt
     const Center(child: Text('Analytics Page', style: TextStyle(color: Colors.white))), // Index 5
