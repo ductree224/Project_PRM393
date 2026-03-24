@@ -6,6 +6,7 @@ public interface IPlaylistRepository
 {
     Task<Playlist?> GetByIdAsync(Guid id);
     Task<IEnumerable<Playlist>> GetByUserIdAsync(Guid userId);
+    Task<(IEnumerable<Playlist> Playlists, int Total)> GetPagedByUserIdAsync(Guid userId, int page = 1, int pageSize = 20);
     Task<Playlist> CreateAsync(Playlist playlist);
     Task UpdateAsync(Playlist playlist);
     Task DeleteAsync(Guid id);

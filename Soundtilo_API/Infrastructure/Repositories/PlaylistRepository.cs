@@ -30,6 +30,25 @@ public class PlaylistRepository : IPlaylistRepository
             .ToListAsync();
     }
 
+    public async Task<(IEnumerable<Playlist> Playlists, int Total)> GetPagedByUserIdAsync(Guid userId, int page = 1, int pageSize = 20)
+    {
+        var safePage = Math.Max(page, 1);
+        var safePageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = _context.Playlists
+            .Include(p => p.PlaylistTracks)
+            .Where(p => p.UserId == userId);
+
+        var total = await query.CountAsync();
+        var playlists = await query
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((safePage - 1) * safePageSize)
+            .Take(safePageSize)
+            .ToListAsync();
+
+        return (playlists, total);
+    }
+
     public async Task<Playlist> CreateAsync(Playlist playlist)
     {
         _context.Playlists.Add(playlist);
