@@ -45,15 +45,7 @@ class AdminTopBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 24),
-          // Icons
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Color(0xFFE5E2E1)),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Color(0xFFE5E2E1)),
-            onPressed: () {},
-          ),
+          // Icons (Removed as requested)
           const SizedBox(width: 12),
           Container(width: 1, height: 32, color: Colors.white.withOpacity(0.1)),
           const SizedBox(width: 12),

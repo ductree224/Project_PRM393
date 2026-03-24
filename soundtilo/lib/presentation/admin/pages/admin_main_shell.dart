@@ -22,9 +22,8 @@ class _AdminMainShellState extends State<AdminMainShell> {
     const AdminDashboardPage(),
     const AdminTracksPage(), // Index 1: Track Mgt
     const AdminArtistsAlbumsPage(), // Index 2
-    const Center(child: Text('Genre/Category Page', style: TextStyle(color: Colors.white))), // Index 3
-    const AdminUsersPage(), // Index 4: User Mgt
-    const Center(child: Text('Analytics Page', style: TextStyle(color: Colors.white))), // Index 5
+    const AdminUsersPage(), // Index 3: User Mgt
+    const Center(child: Text('Analytics Page', style: TextStyle(color: Colors.white))), // Index 4
   ];
 
   @override
