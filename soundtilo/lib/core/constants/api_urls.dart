@@ -6,7 +6,7 @@ class ApiUrls {
   //   Physical device  -> API_BASE_URL=http://<LAN_IP>:5196
   //   Desktop/Web      -> API_BASE_URL=http://localhost:5196
   static String get baseUrl =>
-      dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:5196';
+      dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:7065';
 
   // Auth
   static const String register = '/api/auth/register';
