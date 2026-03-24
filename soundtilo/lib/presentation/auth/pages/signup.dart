@@ -5,10 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
+import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/auth/pages/signin.dart';
+import 'package:soundtilo/presentation/main_shell.dart';
 import '../../../common/widgets/textFormField/custom_field.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -46,10 +48,9 @@ class _SignUpPageState extends State<SignUpPage> {
             (route) => false,
           );
         } else if (state is AuthAuthenticated) {
-            // Trường hợp đăng ký bằng Google thành công và tự động đăng nhập
             Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const SignInPage()),
+                MaterialPageRoute(builder: (_) => const MainShell()),
                 (route) => false,
             );
         } else if (state is AuthError) {
@@ -123,9 +124,27 @@ class _SignUpPageState extends State<SignUpPage> {
                                   const SizedBox(height: 15),
                                   CustomField(labelText: 'Email', controller: emailController),
                                   const SizedBox(height: 15),
-                                  CustomField(labelText: 'Mật khẩu', controller: passwordController, isObscureText: true),
+                                  CustomField(
+                                    labelText: 'Mật khẩu',
+                                    controller: passwordController,
+                                    isObscureText: true,
+                                    validator: (value) {
+                                      if (value == null || value.trim().isEmpty) return 'Vui lòng nhập Mật khẩu';
+                                      if (value.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
+                                      return null;
+                                    },
+                                  ),
                                   const SizedBox(height: 15),
-                                  CustomField(labelText: 'Xác nhận mật khẩu', controller: confirmPasswordController, isObscureText: true),
+                                  CustomField(
+                                    labelText: 'Xác nhận mật khẩu',
+                                    controller: confirmPasswordController,
+                                    isObscureText: true,
+                                    validator: (value) {
+                                      if (value == null || value.trim().isEmpty) return 'Vui lòng nhập Xác nhận mật khẩu';
+                                      if (value != passwordController.text) return 'Mật khẩu xác nhận không khớp';
+                                      return null;
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -138,7 +157,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, state) {
                             if (state is AuthLoading) {
-                              return const Center(child: CircularProgressIndicator(color: Color(0xFF6B4EEA)));
+                              return const Center(child: CircularProgressIndicator(color: AppColors.primary));
                             }
                             return _BasicGradientAppButton(onPressed: _onSignUp, title: 'Đăng ký');
                           },
@@ -184,7 +203,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             Text('Bạn đã có tài khoản?', style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14)),
                             TextButton(
                               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignInPage())),
-                              child: Text('Đăng nhập', style: GoogleFonts.inter(color: const Color(0xFF2E63FF), fontWeight: FontWeight.bold, fontSize: 14)),
+                              child: Text('Đăng nhập', style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14)),
                             ),
                           ],
                         ),
@@ -203,10 +222,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _onSignUp() {
     if (formKey.currentState?.validate() ?? false) {
-      if (passwordController.text != confirmPasswordController.text) {
-        _showErrorSnackBar(context, 'Mật khẩu xác nhận không khớp');
-        return;
-      }
       context.read<AuthBloc>().add(AuthSignUpRequested(
         username: nameController.text.trim(),
         email: emailController.text.trim(),
@@ -338,11 +353,11 @@ class _BasicGradientAppButtonState extends State<_BasicGradientAppButton> {
         height: 55, width: double.infinity,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6B4EEA), Color(0xFFE56BFA), Color(0xFF2E63FF)],
-            stops: [0.1, 0.5, 0.9],
+            colors: [AppColors.thirdly, AppColors.primary, AppColors.secondary],
+            stops: [0.0, 0.5, 1.0],
           ),
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [BoxShadow(color: const Color(0xFF6B4EEA).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+          boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))],
         ),
         child: Center(
           child: Text(widget.title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 17)),

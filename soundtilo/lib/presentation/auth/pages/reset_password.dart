@@ -97,13 +97,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   isObscureText: true,
                 ),
                 const SizedBox(height: 10),
-                TextFormField(
+                CustomField(
+                  labelText: 'Xác nhận mật khẩu mới',
                   controller: _confirmPasswordController,
-                  decoration: InputDecoration(
-                    labelText: 'Xác nhận mật khẩu mới',
-                  ).applyDefaults(Theme.of(context).inputDecorationTheme),
-                  obscureText: true,
-                  obscuringCharacter: '♥',
+                  isObscureText: true,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Vui lòng nhập Xác nhận mật khẩu mới';

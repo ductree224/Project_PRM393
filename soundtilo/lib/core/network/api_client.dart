@@ -49,38 +49,47 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401 && !_isRefreshing) {
-      _isRefreshing = true;
-      try {
-        // Lấy refresh token từ local storage
-        final refreshTokenValue = await _authRepository.getRefreshToken();
-        if (refreshTokenValue != null) {
-          // Gọi API refresh
-          final result = await _authRepository.refreshToken(refreshTokenValue);
-          await result.fold(
-            (_) async {
-              // Refresh thất bại → logout
-              await _authRepository.logout();
-            },
-            (_) async {
-              // Refresh thành công → retry request gốc với token mới
-              final newToken = await _authRepository.getAccessToken();
-              if (newToken != null) {
-                err.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-                final response = await _dio.fetch(err.requestOptions);
-                _isRefreshing = false;
-                return handler.resolve(response);
-              }
-            },
-          );
-        } else {
-          await _authRepository.logout();
-        }
-      } catch (_) {
-        await _authRepository.logout();
-      }
-      _isRefreshing = false;
+    if (err.response?.statusCode != 401 || _isRefreshing) {
+      return handler.next(err);
     }
-    return handler.next(err);
+
+    _isRefreshing = true;
+    try {
+      final refreshTokenValue = await _authRepository.getRefreshToken();
+      if (refreshTokenValue == null) {
+        await _authRepository.logout();
+        _isRefreshing = false;
+        return handler.next(err);
+      }
+
+      final result = await _authRepository.refreshToken(refreshTokenValue);
+      bool resolved = false;
+      await result.fold(
+        (_) async {
+          // Refresh thất bại → logout
+          await _authRepository.logout();
+        },
+        (_) async {
+          // Refresh thành công → retry request gốc với token mới
+          final newToken = await _authRepository.getAccessToken();
+          if (newToken != null) {
+            err.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+            try {
+              final retryResponse = await _dio.fetch(err.requestOptions);
+              resolved = true;
+              handler.resolve(retryResponse);
+            } catch (_) {
+              // retry thất bại → rơi xuống handler.next bên dưới
+            }
+          }
+        },
+      );
+      _isRefreshing = false;
+      if (!resolved) handler.next(err);
+    } catch (_) {
+      await _authRepository.logout();
+      _isRefreshing = false;
+      handler.next(err);
+    }
   }
 }

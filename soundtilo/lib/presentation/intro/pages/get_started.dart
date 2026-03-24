@@ -232,11 +232,11 @@ class _BasicGradientAppButtonState extends State<_BasicGradientAppButton> {
         height: 55, width: double.infinity,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6B4EEA), Color(0xFFE56BFA), Color(0xFF2E63FF)],
-            stops: [0.1, 0.5, 0.9],
+            colors: [AppColors.thirdly, AppColors.primary, AppColors.secondary],
+            stops: [0.0, 0.5, 1.0],
           ),
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [BoxShadow(color: const Color(0xFF6B4EEA).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+          boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))],
         ),
         child: Center(
           child: Text(widget.title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 17)),

@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
+import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
@@ -146,7 +147,7 @@ class _SignInPageState extends State<SignInPage> {
                                         height: 24, width: 24,
                                         child: Checkbox(
                                           value: rememberMe,
-                                          activeColor: const Color(0xFF6B4EEA),
+                                          activeColor: AppColors.primary,
                                           side: BorderSide(color: Colors.white.withOpacity(0.3)),
                                           onChanged: (value) => setState(() => rememberMe = value ?? false),
                                         ),
@@ -156,7 +157,7 @@ class _SignInPageState extends State<SignInPage> {
                                       const Spacer(),
                                       TextButton(
                                         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordPage())),
-                                        child: Text('Quên mật khẩu?', style: GoogleFonts.inter(color: const Color(0xFFE56BFA), fontWeight: FontWeight.w600, fontSize: 13)),
+                                        child: Text('Quên mật khẩu?', style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13)),
                                       ),
                                     ],
                                   ),
@@ -172,7 +173,7 @@ class _SignInPageState extends State<SignInPage> {
                         child: BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, state) {
                             if (state is AuthLoading) {
-                              return const Center(child: CircularProgressIndicator(color: Color(0xFF6B4EEA)));
+                              return const Center(child: CircularProgressIndicator(color: AppColors.primary));
                             }
                             return _BasicGradientAppButton(onPressed: _onSignIn, title: 'Đăng nhập');
                           },
@@ -218,7 +219,7 @@ class _SignInPageState extends State<SignInPage> {
                             Text('Bạn chưa có tài khoản?', style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14)),
                             TextButton(
                               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignUpPage())),
-                              child: Text('Đăng ký ngay', style: GoogleFonts.inter(color: const Color(0xFF2E63FF), fontWeight: FontWeight.bold, fontSize: 14)),
+                              child: Text('Đăng ký ngay', style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14)),
                             ),
                           ],
                         ),
@@ -356,11 +357,11 @@ class _BasicGradientAppButtonState extends State<_BasicGradientAppButton> {
         height: 55, width: double.infinity,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6B4EEA), Color(0xFFE56BFA), Color(0xFF2E63FF)],
-            stops: [0.1, 0.5, 0.9],
+            colors: [AppColors.thirdly, AppColors.primary, AppColors.secondary],
+            stops: [0.0, 0.5, 1.0],
           ),
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [BoxShadow(color: const Color(0xFF6B4EEA).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+          boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))],
         ),
         child: Center(
           child: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 17)),

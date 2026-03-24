@@ -72,7 +72,6 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     final stopwatch = Stopwatch()..start();
     int streamLookupMs = 0;
     int setSourceMs = 0;
-    int startPlayMs = 0;
     int favoriteCheckMs = 0;
 
     emit(
@@ -131,19 +130,9 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         values: <String, Object?>{'trackId': event.track.externalId},
       );
 
-      final startPlayStopwatch = Stopwatch()..start();
-      await _audioPlayer.play();
-      startPlayStopwatch.stop();
-      startPlayMs = startPlayStopwatch.elapsedMilliseconds;
-      PerfTrace.slow(
-        'player.play.startPlayback',
-        startPlayStopwatch,
-        thresholdMs: 160,
-        values: <String, Object?>{'trackId': event.track.externalId},
-      );
 
-      // Emit playing immediately after audio starts to keep UI responsive.
       emit(state.copyWith(status: PlayerStatus.playing, isFavorite: false));
+      unawaited(_audioPlayer.play());
 
       // Check favorite status
       final favoriteCheckStopwatch = Stopwatch()..start();
@@ -190,7 +179,6 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
           'trackId': event.track.externalId,
           'streamLookupMs': streamLookupMs,
           'setSourceMs': setSourceMs,
-          'startPlayMs': startPlayMs,
           'favoriteCheckMs': favoriteCheckMs,
         },
       );
