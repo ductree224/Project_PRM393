@@ -16,6 +16,8 @@ public class SoundtiloDbContext : DbContext
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<Artist> Artists => Set<Artist>();
+    public DbSet<Album> Albums => Set<Album>();
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Waitlist> Waitlists { get; set; }
@@ -171,6 +173,49 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.UsedAt).HasColumnName("used_at");
             entity.HasOne(e => e.User).WithMany(u => u.PasswordResetTokens).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => e.Token).IsUnique();
+        });
+
+        // Artist
+        modelBuilder.Entity<Artist>(entity =>
+        {
+            entity.ToTable("artists");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ExternalId).HasColumnName("external_id").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Bio).HasColumnName("bio");
+            entity.Property(e => e.ImageUrl).HasColumnName("image_url");
+            entity.Property(e => e.Tags).HasColumnName("tags").HasColumnType("text[]");
+            entity.Property(e => e.IsOverride).HasColumnName("is_override").HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.HasIndex(e => e.ExternalId);
+        });
+
+        // Album
+        modelBuilder.Entity<Album>(entity =>
+        {
+            entity.ToTable("albums");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ExternalId).HasColumnName("external_id").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.ArtistId).HasColumnName("artist_id");
+            entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.ReleaseDate).HasColumnName("release_date");
+            entity.Property(e => e.CoverImageUrl).HasColumnName("cover_image_url");
+            entity.Property(e => e.Tags).HasColumnName("tags").HasColumnType("text[]");
+            entity.Property(e => e.IsOverride).HasColumnName("is_override").HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+
+            entity.HasOne(e => e.Artist)
+                  .WithMany(a => a.Albums)
+                  .HasForeignKey(e => e.ArtistId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.ExternalId);
+            entity.HasIndex(e => e.ArtistId);
         });
 
         // AdminAuditLog

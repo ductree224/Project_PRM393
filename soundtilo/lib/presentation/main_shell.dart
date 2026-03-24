@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/debug/perf_trace.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
+import 'package:soundtilo/domain/repositories/album_repository.dart';
 import 'package:soundtilo/domain/usecases/track_usecases.dart';
 import 'package:soundtilo/presentation/home/bloc/home_bloc.dart';
 import 'package:soundtilo/presentation/home/bloc/home_event.dart';
@@ -42,11 +43,10 @@ class _MainShellState extends State<MainShell> {
 
     _homeBloc = HomeBloc(
       getTrendingUseCase: sl<GetTrendingUseCase>(),
+      albumRepository: sl<AlbumRepository>(),
     );
 
-    _searchBloc = SearchBloc(
-      searchTracksUseCase: sl<SearchTracksUseCase>(),
-    );
+    _searchBloc = SearchBloc(searchTracksUseCase: sl<SearchTracksUseCase>());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _ensureTabDataLoaded(_currentIndex.value);
@@ -91,10 +91,8 @@ class _MainShellState extends State<MainShell> {
       child: Scaffold(
         body: ValueListenableBuilder<int>(
           valueListenable: _currentIndex,
-          builder: (context, index, _) => IndexedStack(
-            index: index,
-            children: _pages,
-          ),
+          builder: (context, index, _) =>
+              IndexedStack(index: index, children: _pages),
         ),
         bottomNavigationBar: ValueListenableBuilder<int>(
           valueListenable: _currentIndex,
@@ -114,10 +112,7 @@ class _MainShellState extends State<MainShell> {
                   'shell.tabSwitch',
                   tabSwitchStopwatch,
                   thresholdMs: 48,
-                  values: <String, Object?>{
-                    'from': index,
-                    'to': nextIndex,
-                  },
+                  values: <String, Object?>{'from': index, 'to': nextIndex},
                 );
               });
             },

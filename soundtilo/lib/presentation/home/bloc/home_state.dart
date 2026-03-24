@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:soundtilo/data/models/album_model.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 
 abstract class HomeState extends Equatable {
@@ -14,7 +15,9 @@ class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
   final List<TrackEntity> trendingTracks;
-  final List<TrackEntity> tagTracks; // Thêm danh sách nhạc theo tag
+  final List<TrackEntity> tagTracks;
+  final List<AlbumModel> adminAlbums;
+
   final String selectedTag; // Thêm tag đang chọn
   final int currentOffset;
   final bool hasMore;
@@ -23,6 +26,7 @@ class HomeLoaded extends HomeState {
 
   const HomeLoaded({
     required this.trendingTracks,
+    this.adminAlbums = const [],
     this.tagTracks = const [],
     this.selectedTag = 'pop',
     this.currentOffset = 0,
@@ -33,6 +37,7 @@ class HomeLoaded extends HomeState {
 
   HomeLoaded copyWith({
     List<TrackEntity>? trendingTracks,
+    List<AlbumModel>? adminAlbums,
     List<TrackEntity>? tagTracks,
     String? selectedTag,
     int? currentOffset,
@@ -42,6 +47,7 @@ class HomeLoaded extends HomeState {
   }) {
     return HomeLoaded(
       trendingTracks: trendingTracks ?? this.trendingTracks,
+      adminAlbums: adminAlbums ?? this.adminAlbums,
       tagTracks: tagTracks ?? this.tagTracks,
       selectedTag: selectedTag ?? this.selectedTag,
       currentOffset: currentOffset ?? this.currentOffset,
@@ -53,29 +59,37 @@ class HomeLoaded extends HomeState {
 
   @override
   List<Object?> get props => [
-        trendingTracks,
-        tagTracks,
-        selectedTag,
-        currentOffset,
-        hasMore,
-        isLoadingMore,
-        isTagLoading,
-      ];
+    trendingTracks,
+    adminAlbums,
+    tagTracks,
+    selectedTag,
+    currentOffset,
+    hasMore,
+    isLoadingMore,
+    isTagLoading,
+  ];
 }
 
 class HomeRefreshing extends HomeState {
   final List<TrackEntity> trendingTracks;
   final int currentOffset;
   final bool hasMore;
+  final List<AlbumModel> adminAlbums;
 
   const HomeRefreshing({
     required this.trendingTracks,
     this.currentOffset = 0,
     this.hasMore = true,
+    this.adminAlbums = const [],
   });
 
   @override
-  List<Object?> get props => [trendingTracks, currentOffset, hasMore];
+  List<Object?> get props => [
+    trendingTracks,
+    currentOffset,
+    hasMore,
+    adminAlbums,
+  ];
 }
 
 class HomeError extends HomeState {

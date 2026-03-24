@@ -6,6 +6,7 @@ class AuthResponseModel {
   final String email;
   final String? displayName;
   final String? avatarUrl;
+  final String? role;
   final String accessToken;
   final String refreshToken;
   final DateTime expiresAt;
@@ -16,6 +17,7 @@ class AuthResponseModel {
     required this.email,
     this.displayName,
     this.avatarUrl,
+    this.role,
     required this.accessToken,
     required this.refreshToken,
     required this.expiresAt,
@@ -28,6 +30,7 @@ class AuthResponseModel {
       email: json['email'] ?? '',
       displayName: json['displayName'],
       avatarUrl: json['avatarUrl'],
+      role: json['role']?.toString(),
       accessToken: json['accessToken'] ?? '',
       refreshToken: json['refreshToken'] ?? '',
       expiresAt: json['expiresAt'] != null

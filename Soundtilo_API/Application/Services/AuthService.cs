@@ -197,7 +197,8 @@ public class AuthService
 
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user)
     {
-        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Username, user.Email, user.Role);
+        var accessTokenExpiresAt = DateTime.UtcNow.AddHours(2);
+        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Username, user.Email, user.Role, accessTokenExpiresAt);
         var refreshTokenValue = _jwtService.GenerateRefreshToken();
 
         var refreshToken = new RefreshToken
@@ -220,7 +221,7 @@ public class AuthService
             Role: user.Role,
             AccessToken: accessToken,
             RefreshToken: refreshTokenValue,
-            ExpiresAt: DateTime.UtcNow.AddHours(2)
+            ExpiresAt: accessTokenExpiresAt
         );
     }
 }

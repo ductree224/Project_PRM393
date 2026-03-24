@@ -11,6 +11,8 @@ import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/auth/pages/signin.dart';
 import 'package:soundtilo/presentation/main_shell.dart';
+import 'package:soundtilo/presentation/admin/pages/admin_main_shell.dart';
+
 import '../../../common/widgets/textFormField/custom_field.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -40,19 +42,20 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthSignUpSuccess) {
-          _showSuccessSnackBar(context, 'Đăng ký thành công! Vui lòng đăng nhập.');
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const SignInPage()),
-            (route) => false,
-          );
-        } else if (state is AuthAuthenticated) {
+        if (state is AuthAuthenticated) {
+          if (state.user.role == 'admin') {
             Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const MainShell()),
-                (route) => false,
+              context,
+              MaterialPageRoute(builder: (_) => const AdminMainShell()),
+              (route) => false,
             );
+          } else {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const MainShell()),
+              (route) => false,
+            );
+          }
         } else if (state is AuthError) {
           _showErrorSnackBar(context, state.message);
         }
@@ -65,7 +68,11 @@ class _SignUpPageState extends State<SignUpPage> {
           elevation: 0,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
           title: SvgPicture.asset(AppVectors.logo, height: 40),
           centerTitle: true,
@@ -78,13 +85,19 @@ class _SignUpPageState extends State<SignUpPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.black.withOpacity(0.1), Colors.black.withOpacity(0.9)],
+                  colors: [
+                    Colors.black.withOpacity(0.1),
+                    Colors.black.withOpacity(0.9),
+                  ],
                 ),
               ),
             ),
             SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 20,
+                ),
                 child: Form(
                   key: formKey,
                   child: Column(
@@ -93,7 +106,11 @@ class _SignUpPageState extends State<SignUpPage> {
                         delay: const Duration(milliseconds: 100),
                         child: Text(
                           'Tạo tài khoản mới',
-                          style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white),
+                          style: GoogleFonts.inter(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -101,7 +118,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         delay: const Duration(milliseconds: 200),
                         child: Text(
                           'Bắt đầu hành trình âm nhạc của bạn',
-                          style: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade400),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: Colors.grey.shade400,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 30),
@@ -116,21 +136,31 @@ class _SignUpPageState extends State<SignUpPage> {
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.05),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.1),
+                                ),
                               ),
                               child: Column(
                                 children: [
-                                  CustomField(labelText: 'Tên đăng nhập', controller: nameController),
+                                  CustomField(
+                                    labelText: 'Tên đăng nhập',
+                                    controller: nameController,
+                                  ),
                                   const SizedBox(height: 15),
-                                  CustomField(labelText: 'Email', controller: emailController),
+                                  CustomField(
+                                    labelText: 'Email',
+                                    controller: emailController,
+                                  ),
                                   const SizedBox(height: 15),
                                   CustomField(
                                     labelText: 'Mật khẩu',
                                     controller: passwordController,
                                     isObscureText: true,
                                     validator: (value) {
-                                      if (value == null || value.trim().isEmpty) return 'Vui lòng nhập Mật khẩu';
-                                      if (value.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
+                                      if (value == null || value.trim().isEmpty)
+                                        return 'Vui lòng nhập Mật khẩu';
+                                      if (value.length < 6)
+                                        return 'Mật khẩu phải có ít nhất 6 ký tự';
                                       return null;
                                     },
                                   ),
@@ -140,8 +170,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                     controller: confirmPasswordController,
                                     isObscureText: true,
                                     validator: (value) {
-                                      if (value == null || value.trim().isEmpty) return 'Vui lòng nhập Xác nhận mật khẩu';
-                                      if (value != passwordController.text) return 'Mật khẩu xác nhận không khớp';
+                                      if (value == null || value.trim().isEmpty)
+                                        return 'Vui lòng nhập Xác nhận mật khẩu';
+                                      if (value != passwordController.text)
+                                        return 'Mật khẩu xác nhận không khớp';
                                       return null;
                                     },
                                   ),
@@ -157,9 +189,16 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, state) {
                             if (state is AuthLoading) {
-                              return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                ),
+                              );
                             }
-                            return _BasicGradientAppButton(onPressed: _onSignUp, title: 'Đăng ký');
+                            return _BasicGradientAppButton(
+                              onPressed: _onSignUp,
+                              title: 'Đăng ký',
+                            );
                           },
                         ),
                       ),
@@ -168,12 +207,28 @@ class _SignUpPageState extends State<SignUpPage> {
                         delay: const Duration(milliseconds: 500),
                         child: Row(
                           children: [
-                            Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 15),
-                              child: Text('hoặc', style: GoogleFonts.inter(color: Colors.grey.shade600, fontSize: 13)),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white.withOpacity(0.1),
+                              ),
                             ),
-                            Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                              ),
+                              child: Text(
+                                'hoặc',
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white.withOpacity(0.1),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -184,12 +239,28 @@ class _SignUpPageState extends State<SignUpPage> {
                           width: double.infinity,
                           height: 55,
                           child: OutlinedButton.icon(
-                            onPressed: () => context.read<AuthBloc>().add(AuthGoogleSignInRequested()),
-                            icon: SvgPicture.asset(AppVectors.google, width: 22),
-                            label: Text('Đăng ký với Google', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+                            onPressed: () => context.read<AuthBloc>().add(
+                              AuthGoogleSignInRequested(),
+                            ),
+                            icon: SvgPicture.asset(
+                              AppVectors.google,
+                              width: 22,
+                            ),
+                            label: Text(
+                              'Đăng ký với Google',
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              side: BorderSide(
+                                color: Colors.white.withOpacity(0.2),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                           ),
                         ),
@@ -200,10 +271,28 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Bạn đã có tài khoản?', style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14)),
+                            Text(
+                              'Bạn đã có tài khoản?',
+                              style: GoogleFonts.inter(
+                                color: Colors.grey.shade400,
+                                fontSize: 14,
+                              ),
+                            ),
                             TextButton(
-                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignInPage())),
-                              child: Text('Đăng nhập', style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14)),
+                              onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const SignInPage(),
+                                ),
+                              ),
+                              child: Text(
+                                'Đăng nhập',
+                                style: GoogleFonts.inter(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -222,11 +311,13 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _onSignUp() {
     if (formKey.currentState?.validate() ?? false) {
-      context.read<AuthBloc>().add(AuthSignUpRequested(
-        username: nameController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text,
-      ));
+      context.read<AuthBloc>().add(
+        AuthSignUpRequested(
+          username: nameController.text.trim(),
+          email: emailController.text.trim(),
+          password: passwordController.text,
+        ),
+      );
     }
   }
 
@@ -235,17 +326,6 @@ class _SignUpPageState extends State<SignUpPage> {
       SnackBar(
         content: Text(message, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-
-  void _showSuccessSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.green.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -266,10 +346,15 @@ class _DelayedWidgetState extends State<_DelayedWidget> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(widget.delay, () { if (mounted) setState(() => _show = true); });
+    Future.delayed(widget.delay, () {
+      if (mounted) setState(() => _show = true);
+    });
   }
+
   @override
-  Widget build(BuildContext context) { return _show ? widget.child : const SizedBox.shrink(); }
+  Widget build(BuildContext context) {
+    return _show ? widget.child : const SizedBox.shrink();
+  }
 }
 
 class _SoundParticlesWidget extends StatefulWidget {
@@ -277,23 +362,35 @@ class _SoundParticlesWidget extends StatefulWidget {
   _SoundParticlesWidgetState createState() => _SoundParticlesWidgetState();
 }
 
-class _SoundParticlesWidgetState extends State<_SoundParticlesWidget> with TickerProviderStateMixin {
+class _SoundParticlesWidgetState extends State<_SoundParticlesWidget>
+    with TickerProviderStateMixin {
   late final AnimationController _controller;
   final List<_Particle> _particles = [];
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat();
     final random = math.Random();
-    for (int i = 0; i < 70; i++) { _particles.add(_Particle(random)); }
+    for (int i = 0; i < 70; i++) {
+      _particles.add(_Particle(random));
+    }
   }
+
   @override
-  void dispose() { _controller.dispose(); super.dispose(); }
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) => CustomPaint(painter: _ParticlePainter(_particles, _controller.value)),
+      builder: (context, child) =>
+          CustomPaint(painter: _ParticlePainter(_particles, _controller.value)),
     );
   }
 }
@@ -301,14 +398,16 @@ class _SoundParticlesWidgetState extends State<_SoundParticlesWidget> with Ticke
 class _Particle {
   late double x, y, size, velocityY, velocityX, opacity;
   _Particle(math.Random random) {
-    x = random.nextDouble(); y = random.nextDouble();
+    x = random.nextDouble();
+    y = random.nextDouble();
     size = random.nextDouble() * 3.5 + 1.5;
     velocityX = (random.nextDouble() - 0.5) * 0.002;
     velocityY = (random.nextDouble() - 0.5) * 0.002;
     opacity = random.nextDouble() * 0.5 + 0.2;
   }
   void update() {
-    x += velocityX; y += velocityY;
+    x += velocityX;
+    y += velocityY;
     if (x < 0 || x > 1.0) velocityX *= -1;
     if (y < 0 || y > 1.0) velocityY *= -1;
   }
@@ -320,13 +419,19 @@ class _ParticlePainter extends CustomPainter {
   _ParticlePainter(this.particles, this.animationValue);
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+    final paint = Paint()
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
     for (final p in particles) {
       p.update();
       paint.color = Colors.white.withOpacity(p.opacity);
-      canvas.drawCircle(Offset(p.x * size.width, p.y * size.height), p.size, paint);
+      canvas.drawCircle(
+        Offset(p.x * size.width, p.y * size.height),
+        p.size,
+        paint,
+      );
     }
   }
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
@@ -345,22 +450,39 @@ class _BasicGradientAppButtonState extends State<_BasicGradientAppButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _scale = 0.95),
-      onTapUp: (_) { setState(() => _scale = 1.0); widget.onPressed(); },
+      onTapUp: (_) {
+        setState(() => _scale = 1.0);
+        widget.onPressed();
+      },
       onTapCancel: () => setState(() => _scale = 1.0),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
         transform: Matrix4.identity()..scale(_scale),
-        height: 55, width: double.infinity,
+        height: 55,
+        width: double.infinity,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [AppColors.thirdly, AppColors.primary, AppColors.secondary],
             stops: [0.0, 0.5, 1.0],
           ),
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))],
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
         child: Center(
-          child: Text(widget.title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 17)),
+          child: Text(
+            widget.title,
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              fontSize: 17,
+            ),
+          ),
         ),
       ),
     );

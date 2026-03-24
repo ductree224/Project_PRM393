@@ -14,10 +14,13 @@ class ApiUrls {
       return 'http://localhost:5196';
     } else if (Platform.isAndroid) {
       return 'http://10.0.2.2:5196'; // Emulator Android
-    } else if (Platform.isIOS || Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+    } else if (Platform.isIOS ||
+        Platform.isMacOS ||
+        Platform.isWindows ||
+        Platform.isLinux) {
       return 'http://localhost:5196';
     }
-    
+
     return 'http://localhost:5196';
   }
 
@@ -34,6 +37,10 @@ class ApiUrls {
   static const String trendingTracks = '/api/tracks/trending';
   static String getTrack(String id) => '/api/tracks/$id';
   static String getStreamUrl(String id) => '/api/tracks/$id/stream';
+
+  // Artists & Albums
+  static const String artists = '/api/artists';
+  static const String albums = '/api/albums';
 
   // Tags (Jamendo genre browsing)
   static String tracksByTag(String tag) => '/api/tracks/tags/$tag';

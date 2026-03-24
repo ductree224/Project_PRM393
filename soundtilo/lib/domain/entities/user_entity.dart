@@ -6,6 +6,7 @@ class UserEntity extends Equatable {
   final String email;
   final String? displayName;
   final String? avatarUrl;
+  final String? role;
   final DateTime createdAt;
 
   const UserEntity({
@@ -14,6 +15,7 @@ class UserEntity extends Equatable {
     required this.email,
     this.displayName,
     this.avatarUrl,
+    this.role,
     required this.createdAt,
   });
 
@@ -24,6 +26,7 @@ class UserEntity extends Equatable {
     email,
     displayName,
     avatarUrl,
+    role,
     createdAt,
   ];
 }

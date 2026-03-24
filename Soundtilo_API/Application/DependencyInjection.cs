@@ -6,18 +6,20 @@ namespace Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
-    {
-        services.AddScoped<AuthService>();
-        services.AddScoped<TrackService>();
-        services.AddScoped<PlaylistService>();
-        services.AddScoped<FavoriteService>();
-        services.AddScoped<HistoryService>();
-        services.AddScoped<LyricsService>();
-        services.AddScoped<UserService>();
-        services.AddScoped<AdminService>();
-        services.AddScoped<CommentService>();
+        public static IServiceCollection AddApplication(this IServiceCollection services)
+        {
+                services.AddScoped<AuthService>();
+                services.AddScoped<TrackService>();
+                services.AddScoped<PlaylistService>();
+                services.AddScoped<FavoriteService>();
+                services.AddScoped<HistoryService>();
+                services.AddScoped<LyricsService>();
+                services.AddScoped<UserService>();
+                services.AddScoped<AdminService>();
+                services.AddScoped<CommentService>();
+                services.AddScoped<Interfaces.IArtistService, ArtistService>();
+                services.AddScoped<Interfaces.IAlbumService, AlbumService>();
 
-        return services;
-    }
+                return services;
+        }
 }
