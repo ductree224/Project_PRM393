@@ -495,24 +495,14 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
       cells: [
         DataCell(Row(
           children: [
-            track.artworkUrl != null
-                ? Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      image: DecorationImage(
-                          image: NetworkImage(track.artworkUrl!),
-                          fit: BoxFit.cover),
-                    ),
-                  )
-                : Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                        color: const Color(0xFF353534),
-                        borderRadius: BorderRadius.circular(4)),
-                    child: const Icon(Icons.music_note, color: Colors.white24, size: 20)),
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: _buildImage(track.artworkUrl),
+              ),
+            ),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -614,9 +604,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                     itemBuilder: (context, index) {
                       final album = albums[index];
                       return ListTile(
-                        leading: album.coverImageUrl != null
-                            ? Image.network(album.coverImageUrl!, width: 40, height: 40, fit: BoxFit.cover)
-                            : const Icon(Icons.album, color: Colors.grey),
+                        leading: _buildImage(album.coverImageUrl),
                         title: Text(album.title, style: const TextStyle(color: Colors.white)),
                         subtitle: Text(album.artist?.name ?? 'Unknown Artist', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         onTap: () {
@@ -644,5 +632,27 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildImage(String? url) {
+    if (url == null || url.isEmpty) {
+      return const Icon(Icons.album, color: Colors.grey);
+    }
+
+    try {
+      final uri = Uri.parse(url);
+      if (!uri.hasScheme || uri.scheme == 'file') {
+        return const Icon(Icons.album, color: Colors.grey);
+      }
+      return Image.network(
+        url,
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.grey, size: 20),
+      );
+    } catch (_) {
+      return const Icon(Icons.album, color: Colors.grey);
+    }
   }
 }
