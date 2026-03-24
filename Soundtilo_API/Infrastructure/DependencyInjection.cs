@@ -26,6 +26,8 @@ public static class DependencyInjection
         services.AddScoped<IHistoryRepository, HistoryRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        services.AddScoped<IArtistRepository, ArtistRepository>();
+        services.AddScoped<IAlbumRepository, AlbumRepository>();
 
         // External API clients
         services.AddHttpClient<IAudiusApiClient, AudiusApiClient>();
