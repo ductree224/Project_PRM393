@@ -13,6 +13,7 @@ import 'package:soundtilo/data/sources/playlist_remote_data_source.dart';
 import 'package:soundtilo/data/sources/favorite_remote_data_source.dart';
 import 'package:soundtilo/data/sources/history_remote_data_source.dart';
 import 'package:soundtilo/data/sources/lyrics_remote_data_source.dart';
+import 'package:soundtilo/data/sources/comment_remote_data_source.dart';
 import 'package:soundtilo/data/sources/admin_remote_data_source.dart';
 
 // Repository Implementations
@@ -22,6 +23,7 @@ import 'package:soundtilo/data/repository/playlist_repository_impl.dart';
 import 'package:soundtilo/data/repository/favorite_repository_impl.dart';
 import 'package:soundtilo/data/repository/history_repository_impl.dart';
 import 'package:soundtilo/data/repository/lyrics_repository_impl.dart';
+import 'package:soundtilo/data/repository/comment_repository_impl.dart';
 import 'package:soundtilo/data/repository/admin_repository_impl.dart';
 
 // Domain Repositories (abstract)
@@ -31,11 +33,13 @@ import 'package:soundtilo/domain/repository/playlist_repository.dart';
 import 'package:soundtilo/domain/repository/favorite_repository.dart';
 import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/repository/lyrics_repository.dart';
+import 'package:soundtilo/domain/repository/comment_repository.dart';
 import 'package:soundtilo/domain/repository/admin_repository.dart';
 
 // Use Cases
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
 import 'package:soundtilo/domain/usecases/track_usecases.dart';
+import 'package:soundtilo/domain/usecases/comment_usecases.dart';
 import 'package:soundtilo/domain/usecases/playlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
 import 'package:soundtilo/domain/usecases/admin_user_usecases.dart';
@@ -85,9 +89,13 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<LyricsRemoteDataSource>(
     () => LyricsRemoteDataSource(sl<ApiClient>().dio),
   );
+  sl.registerLazySingleton<CommentRemoteDataSource>(
+        () => CommentRemoteDataSource(sl<ApiClient>().dio),
+  );
   sl.registerLazySingleton<AdminRemoteDataSource>(
     () => AdminRemoteDataSource(sl<ApiClient>().dio),
   );
+
 
   // ===================== Repositories =====================
   sl.registerLazySingleton<AuthRepository>(
@@ -108,6 +116,9 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton<LyricsRepository>(
     () => LyricsRepositoryImpl(sl<LyricsRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<CommentRepository>(
+        () => CommentRepositoryImpl(sl<CommentRemoteDataSource>()),
   );
   sl.registerLazySingleton<AdminRepository>(
     () => AdminRepositoryImpl(sl<AdminRemoteDataSource>()),
@@ -163,6 +174,16 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton(() => GetFavoritesUseCase(sl<FavoriteRepository>()));
   sl.registerLazySingleton(() => IsFavoriteUseCase(sl<FavoriteRepository>()));
+// Comments
+  sl.registerLazySingleton(
+        () => GetCommentsUseCase(sl<CommentRepository>()),
+  );
+  sl.registerLazySingleton(
+        () => AddCommentUseCase(sl<CommentRepository>()),
+  );
+  sl.registerLazySingleton(
+          () => DeleteCommentUseCase(sl<CommentRepository>()),
+  );
 
   // Admin Users
   sl.registerLazySingleton(() => GetAdminUsersUseCase(sl<AdminRepository>()));
