@@ -1,7 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:soundtilo/common/helper/jwt_helper.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
+import 'package:soundtilo/core/di/service_locator.dart';
+import 'package:soundtilo/presentation/admin/pages/users_page.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
@@ -83,6 +87,8 @@ class ProfilePage extends StatelessWidget {
               String username = 'Người dùng';
               String email = '';
               String? avatarUrl;
+              final token = sl<SharedPreferences>().getString('access_token');
+              final isAdmin = JwtHelper.isAdmin(token);
 
               if (state is AuthAuthenticated) {
                 username = state.user.displayName ?? state.user.username;
@@ -109,12 +115,15 @@ class ProfilePage extends StatelessWidget {
                                 height: 100,
                                 memCacheWidth: 200,
                                 memCacheHeight: 200,
-                                errorWidget: (context, url, error) => _AvatarFallback(username: username),
+                                errorWidget: (context, url, error) =>
+                                    _AvatarFallback(username: username),
                                 placeholder: (context, url) => const Center(
                                   child: SizedBox(
                                     width: 18,
                                     height: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -129,7 +138,10 @@ class ProfilePage extends StatelessWidget {
                   Text(
                     username,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   if (email.isNotEmpty)
                     Padding(
@@ -154,6 +166,19 @@ class ProfilePage extends StatelessWidget {
                       );
                     },
                   ),
+                  if (isAdmin)
+                    _MenuItem(
+                      icon: Icons.manage_accounts,
+                      title: 'Admin Users',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminUsersPage(),
+                          ),
+                        );
+                      },
+                    ),
                   _MenuItem(
                     icon: Icons.dark_mode_outlined,
                     title: 'Giao diện',
@@ -202,7 +227,9 @@ class ProfilePage extends StatelessWidget {
                         context: context,
                         builder: (ctx) => AlertDialog(
                           title: const Text('Đăng xuất'),
-                          content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+                          content: const Text(
+                            'Bạn có chắc chắn muốn đăng xuất?',
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
@@ -211,10 +238,13 @@ class ProfilePage extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () {
                                 Navigator.pop(ctx);
-                                context.read<AuthBloc>().add(AuthLogoutRequested());
+                                context.read<AuthBloc>().add(
+                                  AuthLogoutRequested(),
+                                );
                               },
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.errorColor),
+                                backgroundColor: AppColors.errorColor,
+                              ),
                               child: const Text('Đăng xuất'),
                             ),
                           ],
@@ -222,8 +252,13 @@ class ProfilePage extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.logout, color: AppColors.errorColor),
-                    label: const Text('Đăng xuất',
-                        style: TextStyle(color: AppColors.errorColor, fontSize: 16)),
+                    label: const Text(
+                      'Đăng xuất',
+                      style: TextStyle(
+                        color: AppColors.errorColor,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ],
               );

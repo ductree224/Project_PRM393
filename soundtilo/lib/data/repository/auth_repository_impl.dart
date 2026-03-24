@@ -50,7 +50,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right((user, response.toTokens()));
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] ?? 'Đăng ký thất bại. Vui lòng thử lại.';
+      final message =
+          e.response?.data?['message'] ?? 'Đăng ký thất bại. Vui lòng thử lại.';
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -78,7 +79,9 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right((user, response.toTokens()));
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] ?? 'Đăng nhập thất bại. Vui lòng thử lại.';
+      final message =
+          e.response?.data?['message'] ??
+          'Đăng nhập thất bại. Vui lòng thử lại.';
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -137,7 +140,8 @@ class AuthRepositoryImpl implements AuthRepository {
       await _saveTokens(response);
       return Right(response.toTokens());
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] ?? 'Phiên đăng nhập đã hết hạn.';
+      final message =
+          e.response?.data?['message'] ?? 'Phiên đăng nhập đã hết hạn.';
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -150,7 +154,8 @@ class AuthRepositoryImpl implements AuthRepository {
       final token = await _remoteDataSource.forgotPassword(email);
       return Right(token);
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] ?? 'Yêu cầu đặt lại mật khẩu thất bại.';
+      final message =
+          e.response?.data?['message'] ?? 'Yêu cầu đặt lại mật khẩu thất bại.';
       return Left(message);
     } on FormatException catch (e) {
       return Left(e.message);
@@ -171,7 +176,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(message);
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] ?? 'Đặt lại mật khẩu thất bại.';
+      final message =
+          e.response?.data?['message'] ?? 'Đặt lại mật khẩu thất bại.';
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
