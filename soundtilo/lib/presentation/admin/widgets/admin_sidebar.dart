@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
+import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 
 class AdminSidebar extends StatelessWidget {
   final int selectedIndex;
@@ -87,7 +90,20 @@ class AdminSidebar extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const Divider(color: Colors.white10, height: 1, thickness: 1),
+          _NavItem(
+            icon: Icons.logout,
+            label: 'Logout',
+            isSelected: false,
+            onTap: () {
+              // Trigger AuthLogoutRequested
+              context.read<AuthBloc>().add(AuthLogoutRequested());
+              
+              // Optional: Show a confirmation dialog or just logout
+              // For now, making it direct as per most dashboard patterns
+            },
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );

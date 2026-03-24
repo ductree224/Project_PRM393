@@ -22,6 +22,7 @@ import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_event.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
+import 'package:soundtilo/presentation/intro/pages/get_started.dart';
 import 'package:soundtilo/presentation/splash/pages/splash.dart';
 
 final ValueNotifier<bool> _isPlayerRouteActive = ValueNotifier<bool>(false);
@@ -117,6 +118,10 @@ class MyApp extends StatelessWidget {
             listener: (context, state) {
               if (state is AuthUnauthenticated) {
                 context.read<PlayerBloc>().add(PlayerStop());
+                AppNavigator.key.currentState?.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const GetStartedPage()),
+                  (route) => false,
+                );
               }
             },
           ),

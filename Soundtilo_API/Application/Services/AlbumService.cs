@@ -41,7 +41,9 @@ public class AlbumService : IAlbumService
             ArtistId = payload.ArtistId,
             Title = payload.Title,
             Description = payload.Description,
-            ReleaseDate = payload.ReleaseDate,
+            ReleaseDate = payload.ReleaseDate.HasValue
+                ? DateTime.SpecifyKind(payload.ReleaseDate.Value, DateTimeKind.Utc)
+                : null,
             CoverImageUrl = payload.CoverImageUrl,
             Tags = payload.Tags ?? new List<string>(),
             IsOverride = payload.IsOverride,
@@ -64,7 +66,9 @@ public class AlbumService : IAlbumService
         album.ArtistId = payload.ArtistId;
         album.Title = payload.Title;
         album.Description = payload.Description;
-        album.ReleaseDate = payload.ReleaseDate;
+        album.ReleaseDate = payload.ReleaseDate.HasValue
+            ? DateTime.SpecifyKind(payload.ReleaseDate.Value, DateTimeKind.Utc)
+            : null;
         album.CoverImageUrl = payload.CoverImageUrl;
         album.Tags = payload.Tags ?? new List<string>();
         album.IsOverride = payload.IsOverride;
