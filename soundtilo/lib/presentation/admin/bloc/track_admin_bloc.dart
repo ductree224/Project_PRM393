@@ -1,0 +1,57 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../domain/repositories/track_admin_repository.dart';
+import 'track_admin_event.dart';
+import 'track_admin_state.dart';
+
+class TrackAdminBloc extends Bloc<TrackAdminEvent, TrackAdminState> {
+  final TrackAdminRepository repository;
+
+  TrackAdminBloc({required this.repository}) : super(TrackAdminInitial()) {
+    on<LoadTracks>(_onLoadTracks);
+    on<UpdateTrackStatus>(_onUpdateTrackStatus);
+  }
+
+  Future<void> _onLoadTracks(LoadTracks event, Emitter<TrackAdminState> emit) async {
+    emit(TrackAdminLoading());
+    final result = await repository.getTracks(
+      status: event.status,
+      query: event.query,
+      limit: event.limit,
+      offset: event.offset,
+    );
+
+    result.fold(
+      (error) => emit(TrackAdminError(error)),
+      (tracks) => emit(TrackAdminLoaded(
+        tracks: tracks,
+        currentStatus: event.status,
+        currentQuery: event.query,
+      )),
+    );
+  }
+
+  Future<void> _onUpdateTrackStatus(UpdateTrackStatus event, Emitter<TrackAdminState> emit) async {
+    // Keep track of current state to reload after success
+    final currentState = state;
+    String? statusFilter;
+    String? queryFilter;
+    if (currentState is TrackAdminLoaded) {
+      statusFilter = currentState.currentStatus;
+      queryFilter = currentState.currentQuery;
+    }
+
+    emit(TrackAdminLoading());
+    final result = await repository.updateTrackStatus(
+      externalIds: event.externalIds,
+      status: event.status,
+    );
+
+    result.fold(
+      (error) => emit(TrackAdminError(error)),
+      (_) {
+        emit(TrackAdminOperationSuccess('Track status updated to ${event.status}'));
+        add(LoadTracks(status: statusFilter, query: queryFilter));
+      },
+    );
+  }
+}

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
-using Application.Services;
+using Application.Interfaces;
+using Application.DTOs.Tracks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,9 +12,9 @@ namespace Presentation.Controllers;
 [Authorize]
 public class TracksController : ControllerBase
 {
-    private readonly TrackService _trackService;
+    private readonly ITrackService _trackService;
 
-    public TracksController(TrackService trackService)
+    public TracksController(ITrackService trackService)
     {
         _trackService = trackService;
     }

@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Enums;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -62,6 +63,7 @@ public class TrackCacheRepository : ITrackCacheRepository
             existing.Genre = track.Genre;
             existing.Mood = track.Mood;
             existing.PlayCount = track.PlayCount;
+            // Status is preserved unless explicitly changed by admin
             existing.ExternalData = track.ExternalData;
             existing.CachedAt = DateTime.UtcNow;
             existing.ExpiresAt = DateTime.UtcNow.AddHours(24);
@@ -92,6 +94,7 @@ public class TrackCacheRepository : ITrackCacheRepository
                 existing.Genre = track.Genre;
                 existing.Mood = track.Mood;
                 existing.PlayCount = track.PlayCount;
+                // Status is preserved
                 existing.ExternalData = track.ExternalData;
                 existing.CachedAt = DateTime.UtcNow;
                 existing.ExpiresAt = DateTime.UtcNow.AddHours(24);
@@ -109,6 +112,45 @@ public class TrackCacheRepository : ITrackCacheRepository
     {
         var expired = _context.CachedTracks.Where(t => t.ExpiresAt <= DateTime.UtcNow);
         _context.CachedTracks.RemoveRange(expired);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<CachedTrack>> ListAsync(TrackStatus? status = null, string? query = null, int limit = 50, int offset = 0)
+    {
+        var safeLimit = Math.Clamp(limit, 1, 100);
+        var safeOffset = Math.Max(offset, 0);
+
+        var tracksQuery = _context.CachedTracks.AsQueryable();
+
+        if (status.HasValue)
+        {
+            tracksQuery = tracksQuery.Where(t => t.Status == status.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var normalized = query.Trim();
+            tracksQuery = tracksQuery.Where(t => EF.Functions.ILike(t.Title, $"%{normalized}%") || EF.Functions.ILike(t.ArtistName, $"%{normalized}%"));
+        }
+
+        return await tracksQuery
+            .OrderByDescending(t => t.CachedAt)
+            .Skip(safeOffset)
+            .Take(safeLimit)
+            .ToListAsync();
+    }
+
+    public async Task UpdateStatusesAsync(IEnumerable<string> externalIds, TrackStatus status)
+    {
+        var tracks = await _context.CachedTracks
+            .Where(t => externalIds.Contains(t.ExternalId))
+            .ToListAsync();
+
+        foreach (var track in tracks)
+        {
+            track.Status = status;
+        }
+
         await _context.SaveChangesAsync();
     }
 }

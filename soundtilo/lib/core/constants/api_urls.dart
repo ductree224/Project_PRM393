@@ -51,4 +51,8 @@ class ApiUrls {
 
   // Albums
   static const String albums = '/api/albums';
+
+  // Admin Tracks
+  static const String adminTracks = '/api/admin/tracks';
+  static const String updateAdminTrackStatus = '/api/admin/tracks/status';
 }

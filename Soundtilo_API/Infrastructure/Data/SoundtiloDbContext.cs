@@ -98,6 +98,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.Genre).HasColumnName("genre").HasMaxLength(100);
             entity.Property(e => e.Mood).HasColumnName("mood").HasMaxLength(100);
             entity.Property(e => e.PlayCount).HasColumnName("play_count");
+            entity.Property(e => e.Status).HasColumnName("status").HasDefaultValue(Domain.Enums.TrackStatus.Active);
             entity.Property(e => e.ExternalData).HasColumnName("external_data").HasColumnType("jsonb");
             entity.Property(e => e.CachedAt).HasColumnName("cached_at");
             entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");

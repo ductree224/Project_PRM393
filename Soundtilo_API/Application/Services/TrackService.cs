@@ -1,11 +1,13 @@
+using Application.DTOs;
 using Application.DTOs.Tracks;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 
 namespace Application.Services;
 
-public class TrackService
+public class TrackService : ITrackService
 {
     private readonly IAudiusApiClient _audiusApi;
     private readonly IDeezerApiClient _deezerApi;
@@ -314,5 +316,26 @@ public class TrackService
         await _trackCache.UpsertManyAsync(cachedEntities);
 
         return new TrackSearchResponse(tracks, tracks.Count);
+    }
+
+    public async Task<IEnumerable<TrackAdminDto>> GetTracksAsync(TrackStatus? status = null, string? query = null, int limit = 50, int offset = 0)
+    {
+        var tracks = await _trackCache.ListAsync(status, query, limit, offset);
+        return tracks.Select(t => new TrackAdminDto
+        {
+            ExternalId = t.ExternalId,
+            Source = t.Source,
+            Title = t.Title,
+            ArtistName = t.ArtistName,
+            AlbumName = t.AlbumName,
+            ArtworkUrl = t.ArtworkUrl,
+            Status = t.Status.ToString(),
+            CachedAt = t.CachedAt
+        });
+    }
+
+    public async Task UpdateStatusesAsync(UpdateTrackStatusDto payload)
+    {
+        await _trackCache.UpdateStatusesAsync(payload.ExternalIds, payload.Status);
     }
 }
