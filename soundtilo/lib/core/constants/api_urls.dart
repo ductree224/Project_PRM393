@@ -1,12 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:io' show Platform;
 
 class ApiUrls {
-  // Configured via .env file:
-  //   Android Emulator -> API_BASE_URL=http://10.0.2.2:5196
-  //   Physical device  -> API_BASE_URL=http://<LAN_IP>:5196
-  //   Desktop/Web      -> API_BASE_URL=http://localhost:5196
-  static String get baseUrl =>
-      dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:5196';
+  static String get baseUrl {
+    // Ưu tiên giá trị từ file .env nếu có
+    if (dotenv.env['API_BASE_URL'] != null) {
+      return dotenv.env['API_BASE_URL']!;
+    }
+
+    // Tự động nhận diện dựa trên nền tảng
+    if (kIsWeb) {
+      return 'http://localhost:5196';
+    } else if (Platform.isAndroid) {
+      return 'http://10.0.2.2:5196'; // Emulator Android
+    } else if (Platform.isIOS || Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+      return 'http://localhost:5196';
+    }
+    
+    return 'http://localhost:5196';
+  }
 
   // Auth
   static const String register = '/api/auth/register';

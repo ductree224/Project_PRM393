@@ -16,94 +16,104 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeLoadTrending>(_onLoadTrending, transformer: droppable());
     on<HomeRefresh>(_onRefresh, transformer: droppable());
     on<HomeLoadMore>(_onLoadMore, transformer: droppable());
+    on<HomeLoadByTag>(_onLoadByTag, transformer: restartable());
   }
 
   Future<void> _onLoadTrending(
       HomeLoadTrending event, Emitter<HomeState> emit) async {
-    if (state is HomeLoaded || state is HomeRefreshing || state is HomeLoading) {
-      PerfTrace.log(
-        'home.loadTrending.skip',
-        'skip duplicate initial load while state already has content/loading',
-      );
-      return;
-    }
+    if (state is HomeLoaded || state is HomeRefreshing || state is HomeLoading) return;
 
-    final stopwatch = Stopwatch()..start();
-    if (state is HomeInitial || state is HomeError) {
-      emit(HomeLoading());
-    }
+    emit(HomeLoading());
 
-    final result = await _getTrendingUseCase(limit: _pageSize, offset: 0);
-    result.fold(
+    final trendingResult = await _getTrendingUseCase(limit: _pageSize, offset: 0);
+    final tagResult = await _getTrendingUseCase(genre: 'pop', limit: 10, offset: 0);
+
+    trendingResult.fold(
       (error) => emit(HomeError(error)),
-      (tracks) => emit(HomeLoaded(
-        trendingTracks: tracks,
-        currentOffset: tracks.length,
-        hasMore: tracks.length >= _pageSize,
-      )),
+      (trendingTracks) {
+        tagResult.fold(
+          (error) => emit(HomeLoaded(trendingTracks: trendingTracks, currentOffset: trendingTracks.length)),
+          (tagTracks) => emit(HomeLoaded(
+            trendingTracks: trendingTracks,
+            tagTracks: tagTracks,
+            selectedTag: 'pop',
+            currentOffset: trendingTracks.length,
+            hasMore: trendingTracks.length >= _pageSize,
+          )),
+        );
+      },
     );
+  }
 
-    stopwatch.stop();
-    PerfTrace.slow(
-      'home.loadTrending',
-      stopwatch,
-      thresholdMs: 180,
+  Future<void> _onLoadByTag(HomeLoadByTag event, Emitter<HomeState> emit) async {
+    if (state is! HomeLoaded) return;
+    
+    // Cập nhật tag ngay lập tức để UI sáng lên đúng chỗ
+    final currentState = state as HomeLoaded;
+    emit(currentState.copyWith(isTagLoading: true, selectedTag: event.tag));
+
+    final result = await _getTrendingUseCase(genre: event.tag, limit: 12, offset: 0);
+
+    result.fold(
+      (error) {
+        if (state is HomeLoaded) {
+          emit((state as HomeLoaded).copyWith(isTagLoading: false));
+        }
+      },
+      (tracks) {
+        if (state is HomeLoaded) {
+          // QUAN TRỌNG: Phải lấy state hiện tại (đã có selectedTag mới) để copyWith
+          emit((state as HomeLoaded).copyWith(
+            tagTracks: tracks,
+            isTagLoading: false,
+            // Đảm bảo không truyền selectedTag vào đây để nó giữ nguyên giá trị đã update ở trên
+          ));
+        }
+      },
     );
   }
 
   Future<void> _onRefresh(HomeRefresh event, Emitter<HomeState> emit) async {
-    final stopwatch = Stopwatch()..start();
-    List<TrackEntity>? previousTracks;
-    if (state is HomeLoaded) {
-      final loaded = state as HomeLoaded;
-      previousTracks = loaded.trendingTracks;
+    final current = state;
+    if (current is HomeLoaded) {
       emit(HomeRefreshing(
-        trendingTracks: loaded.trendingTracks,
-        currentOffset: loaded.currentOffset,
-        hasMore: loaded.hasMore,
+        trendingTracks: current.trendingTracks,
+        currentOffset: current.currentOffset,
+        hasMore: current.hasMore,
       ));
-    } else if (state is HomeRefreshing) {
-      previousTracks = (state as HomeRefreshing).trendingTracks;
-    } else if (state is! HomeLoading) {
+    } else if (current is! HomeRefreshing && current is! HomeLoading) {
       emit(HomeLoading());
     }
 
     final result = await _getTrendingUseCase(limit: _pageSize, offset: 0);
+    
     result.fold(
       (error) {
-        if (previousTracks != null) {
-          emit(HomeLoaded(
-            trendingTracks: List.unmodifiable(previousTracks),
-            currentOffset: previousTracks.length,
-            hasMore: previousTracks.length >= _pageSize,
-          ));
-          return;
+        if (state is HomeRefreshing || state is HomeLoaded) {
+          // Trả về trạng thái cũ nếu lỗi
+          if (current is HomeLoaded) emit(current);
+        } else {
+          emit(HomeError(error));
         }
-        emit(HomeError(error));
       },
-      (tracks) => emit(HomeLoaded(
-        trendingTracks: tracks,
-        currentOffset: tracks.length,
-        hasMore: tracks.length >= _pageSize,
-      )),
-    );
-
-    stopwatch.stop();
-    PerfTrace.slow(
-      'home.refresh',
-      stopwatch,
-      thresholdMs: 180,
+      (tracks) {
+        if (current is HomeLoaded) {
+          emit(current.copyWith(
+            trendingTracks: tracks,
+            currentOffset: tracks.length,
+            hasMore: tracks.length >= _pageSize,
+          ));
+        } else {
+          emit(HomeLoaded(trendingTracks: tracks, currentOffset: tracks.length));
+        }
+      },
     );
   }
 
-  Future<void> _onLoadMore(
-      HomeLoadMore event, Emitter<HomeState> emit) async {
+  Future<void> _onLoadMore(HomeLoadMore event, Emitter<HomeState> emit) async {
     final current = state;
-    if (current is! HomeLoaded || !current.hasMore || current.isLoadingMore) {
-      return;
-    }
+    if (current is! HomeLoaded || !current.hasMore || current.isLoadingMore) return;
 
-    final stopwatch = Stopwatch()..start();
     emit(current.copyWith(isLoadingMore: true));
 
     final result = await _getTrendingUseCase(
@@ -112,29 +122,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     );
 
     result.fold(
-      (error) {
-        PerfTrace.log('home.loadMore.error', error);
-        emit(current.copyWith(isLoadingMore: false));
-      },
+      (error) => emit(current.copyWith(isLoadingMore: false)),
       (newTracks) {
         final merged = [...current.trendingTracks, ...newTracks];
-        emit(HomeLoaded(
+        emit(current.copyWith(
           trendingTracks: merged,
           currentOffset: merged.length,
           hasMore: newTracks.length >= _pageSize,
           isLoadingMore: false,
         ));
-      },
-    );
-
-    stopwatch.stop();
-    PerfTrace.slow(
-      'home.loadMore',
-      stopwatch,
-      thresholdMs: 180,
-      values: <String, Object?>{
-        'offset': current.currentOffset,
-        'pageSize': _pageSize,
       },
     );
   }
