@@ -12,6 +12,9 @@ import 'package:soundtilo/presentation/home/bloc/home_event.dart';
 import 'package:soundtilo/presentation/home/bloc/home_state.dart';
 import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
+import 'package:soundtilo/presentation/home/models/local_album.dart';
+import 'package:soundtilo/presentation/home/widgets/album_card.dart';
+import 'package:soundtilo/presentation/home/pages/album_detail.dart';
 import 'package:soundtilo/presentation/search/bloc/search_bloc.dart';
 import 'package:soundtilo/presentation/search/pages/search.dart';
 
@@ -91,6 +94,27 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context, List<TrackEntity> tracks) {
+    // Group tracks into Albums
+    final Map<String, List<TrackEntity>> albumGroups = {};
+    for (final track in tracks) {
+      final key = '${track.albumName ?? track.title}_${track.artistName}';
+      albumGroups.putIfAbsent(key, () => []).add(track);
+    }
+
+    final trendingAlbums = albumGroups.values.map((albumTracks) {
+      final firstTrack = albumTracks.first;
+      return LocalAlbum(
+        title: firstTrack.albumName ?? firstTrack.title,
+        artistName: firstTrack.artistName,
+        coverImageUrl: firstTrack.artworkUrl ?? '',
+        tracks: albumTracks,
+      );
+    }).toList();
+
+    final displayedAlbums = trendingAlbums.length > _horizontalPreviewLimit
+        ? trendingAlbums.take(_horizontalPreviewLimit).toList(growable: false)
+        : trendingAlbums;
+
     final visibleTracks = tracks.length > _verticalListLimit
         ? tracks.take(_verticalListLimit).toList(growable: false)
         : tracks;
@@ -151,13 +175,22 @@ class HomePage extends StatelessWidget {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: tracks.length > _horizontalPreviewLimit
-                    ? _horizontalPreviewLimit
-                    : tracks.length,
+                itemCount: displayedAlbums.length,
                 itemBuilder: (context, index) {
-                  return TrackCard(
-                    track: tracks[index],
-                    onTap: () => _openPlayer(context, tracks[index], tracks),
+                  return AlbumCard(
+                    album: displayedAlbums[index],
+                    onTap: () {
+                      final libraryBloc = context.read<LibraryBloc>();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider.value(
+                            value: libraryBloc,
+                            child: AlbumDetailPage(album: displayedAlbums[index]),
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
