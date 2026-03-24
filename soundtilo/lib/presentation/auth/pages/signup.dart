@@ -1,19 +1,18 @@
+import 'dart:ui';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:soundtilo/common/widgets/appbar/app_bar.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/auth/pages/signin.dart';
-
-import '../../../common/widgets/button/basic_app_button.dart';
 import '../../../common/widgets/textFormField/custom_field.dart';
 
 class SignUpPage extends StatefulWidget {
-
   const SignUpPage({super.key});
 
   @override
@@ -26,7 +25,6 @@ class _SignUpPageState extends State<SignUpPage> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
-
 
   @override
   void dispose() {
@@ -42,137 +40,209 @@ class _SignUpPageState extends State<SignUpPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthSignUpSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Row(
-                children: [
-                  Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Đăng ký thành công! Vui lòng đăng nhập.',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: const Color(0xFF323232),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              duration: const Duration(seconds: 3),
-            ),
-          );
+          _showSuccessSnackBar(context, 'Đăng ký thành công! Vui lòng đăng nhập.');
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const SignInPage()),
             (route) => false,
           );
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.white, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      state.message,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: const Color(0xFF323232),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              duration: const Duration(seconds: 4),
-            ),
-          );
+          _showErrorSnackBar(context, state.message);
         }
       },
       child: Scaffold(
-        bottomNavigationBar: _signInPage(context),
-          appBar: BasicAppBar(
-            title: SvgPicture.asset(
-                AppVectors.logo,
-              height: 50,
-              width: 50,
-            ),
+        backgroundColor: Colors.black,
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
           ),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 25,
-              vertical: 10,
-            ),
-            child: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _registerTextField(),
-                    const SizedBox(height: 10,),
-                    _fullNameTextField(context),
-                    const SizedBox(height: 10,),
-                    _emailTextField(context),
-                    const SizedBox(height: 10,),
-                    _passwordTextField(context),
-                    const SizedBox(height: 10,),
-                    _confirmPasswordTextFeild(context),
-                    const SizedBox(height: 10,),
-                    BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, state) {
-                        if (state is AuthLoading) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        return BasicAppButton(
-                          onPressed: _onSignUp,
-                          title: "Đăng ký",
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16,),
-                    _dividerWithText("hoặc"),
-                    const SizedBox(height: 16,),
-                    _googleSignInButton(context),
-                  ],
+          title: SvgPicture.asset(AppVectors.logo, height: 40),
+          centerTitle: true,
+        ),
+        body: Stack(
+          children: [
+            // 1. NỀN ĐỘNG (Đồng bộ)
+            Positioned.fill(child: _SoundParticlesWidget()),
+            
+            // 2. LỚP PHỦ GRADIENT
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withOpacity(0.1), Colors.black.withOpacity(0.9)],
                 ),
               ),
             ),
-          ),
+
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    children: [
+                      // 3. TIÊU ĐỀ
+                      _DelayedWidget(
+                        delay: const Duration(milliseconds: 100),
+                        child: Text(
+                          'Tạo tài khoản mới',
+                          style: GoogleFonts.inter(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _DelayedWidget(
+                        delay: const Duration(milliseconds: 200),
+                        child: Text(
+                          'Bắt đầu hành trình âm nhạc của bạn',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 30),
+
+                      // 4. FORM CARD (Glassmorphism)
+                      _DelayedWidget(
+                        delay: const Duration(milliseconds: 300),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              ),
+                              child: Column(
+                                children: [
+                                  CustomField(
+                                    labelText: 'Tên đăng nhập',
+                                    controller: nameController,
+                                  ),
+                                  const SizedBox(height: 15),
+                                  CustomField(
+                                    labelText: 'Email',
+                                    controller: emailController,
+                                  ),
+                                  const SizedBox(height: 15),
+                                  CustomField(
+                                    labelText: 'Mật khẩu',
+                                    controller: passwordController,
+                                    isObscureText: true,
+                                  ),
+                                  const SizedBox(height: 15),
+                                  CustomField(
+                                    labelText: 'Xác nhận mật khẩu',
+                                    controller: confirmPasswordController,
+                                    isObscureText: true,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // 5. NÚT ĐĂNG KÝ
+                      _DelayedWidget(
+                        delay: const Duration(milliseconds: 400),
+                        child: BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, state) {
+                            if (state is AuthLoading) {
+                              return const Center(child: CircularProgressIndicator(color: Color(0xFF6B4EEA)));
+                            }
+                            return _BasicGradientAppButton(
+                              onPressed: _onSignUp,
+                              title: 'Đăng ký',
+                            );
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // 6. DẤU PHÂN CÁCH
+                      _DelayedWidget(
+                        delay: const Duration(milliseconds: 500),
+                        child: Row(
+                          children: [
+                            Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15),
+                              child: Text('hoặc', style: GoogleFonts.inter(color: Colors.grey.shade600, fontSize: 13)),
+                            ),
+                            Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // 7. GOOGLE SIGNUP
+                      _DelayedWidget(
+                        delay: const Duration(milliseconds: 600),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.read<AuthBloc>().add(AuthGoogleSignInRequested()),
+                            icon: SvgPicture.asset(AppVectors.google, width: 22),
+                            label: Text('Đăng ký với Google', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 30),
+                      
+                      // FOOTER
+                      _DelayedWidget(
+                        delay: const Duration(milliseconds: 700),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Bạn đã có tài khoản?', style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14)),
+                            TextButton(
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SignInPage())),
+                              child: Text('Đăng nhập', style: GoogleFonts.inter(color: const Color(0xFF2E63FF), fontWeight: FontWeight.bold, fontSize: 14)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+      ),
     );
   }
 
   void _onSignUp() {
     if (formKey.currentState?.validate() ?? false) {
       if (passwordController.text != confirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white, size: 20),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Mật khẩu xác nhận không khớp',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Color(0xFF323232),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-            margin: EdgeInsets.all(16),
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            duration: Duration(seconds: 4),
-          ),
-        );
+        _showErrorSnackBar(context, 'Mật khẩu xác nhận không khớp');
         return;
       }
       context.read<AuthBloc>().add(AuthSignUpRequested(
@@ -183,129 +253,143 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  Widget _registerTextField() {
-    return const Text(
-      "Đăng ký",
-      style: TextStyle(
-        fontSize: 25,
-        fontWeight: FontWeight.bold,
-      ),
-      textAlign: TextAlign.center,
-    );
-  }
-
-  Widget _fullNameTextField(BuildContext context) {
-    return CustomField(
-      labelText: "Tên đăng nhập",
-      controller: nameController,
-    );
-  }
-
-  Widget _emailTextField(BuildContext context) {
-    return CustomField(
-      labelText: "Email",
-      controller: emailController,
-    );
-  }
-
-  Widget _passwordTextField(BuildContext context) {
-    return CustomField(
-      labelText: "Mật khẩu",
-      controller: passwordController,
-      isObscureText: true,
-    );
-  }
-
-  Widget _confirmPasswordTextFeild(BuildContext context) {
-    return CustomField(
-      labelText: "Xác nhận mật khẩu",
-      controller: confirmPasswordController,
-      isObscureText: true,
-    );
-  }
-
-  Widget _signInPage(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsGeometry.symmetric(
-        vertical: 5,
-      ),
-      child: Row (
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            "Bạn đã có tài khoản ?",
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          TextButton(
-            onPressed: (){
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (BuildContext context) => const SignInPage(),
-                  )
-              );
-            } ,
-            child: const Text(
-              "Đăng nhập",
-              style: TextStyle(
-                color: AppColors.secondary,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
-  Widget _dividerWithText(String text) {
-    return Row(
-      children: [
-        const Expanded(child: Divider()),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            text,
-            style: TextStyle(
-              color: AppColors.grey,
-              fontSize: 14,
-            ),
-          ),
-        ),
-        const Expanded(child: Divider()),
-      ],
+  void _showSuccessSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
+}
 
-  Widget _googleSignInButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: OutlinedButton.icon(
-        onPressed: () {
-          context.read<AuthBloc>().add(AuthGoogleSignInRequested());
-        },
-        icon: SvgPicture.asset(
-          AppVectors.google,
-          width: 24,
-          height: 24,
-        ),
-        label: const Text(
-          'Đăng ký với Google',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+// --------------------------------------------------------------------------
+// REUSE CUSTOM WIDGETS
+// --------------------------------------------------------------------------
+class _DelayedWidget extends StatefulWidget {
+  final Widget child;
+  final Duration delay;
+  const _DelayedWidget({required this.child, required this.delay});
+  @override
+  State<_DelayedWidget> createState() => _DelayedWidgetState();
+}
+
+class _DelayedWidgetState extends State<_DelayedWidget> {
+  bool _show = false;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(widget.delay, () { if (mounted) setState(() => _show = true); });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return _show ? widget.child : const SizedBox.shrink();
+  }
+}
+
+class _SoundParticlesWidget extends StatefulWidget {
+  @override
+  _SoundParticlesWidgetState createState() => _SoundParticlesWidgetState();
+}
+
+class _SoundParticlesWidgetState extends State<_SoundParticlesWidget> with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  final List<_Particle> _particles = [];
+  final int _numberOfParticles = 70;
+  final math.Random _random = math.Random();
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+    for (int i = 0; i < _numberOfParticles; i++) { _particles.add(_Particle(_random)); }
+  }
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) => CustomPaint(painter: _ParticlePainter(_particles, _controller.value)),
+    );
+  }
+}
+
+class _Particle {
+  late double x, y, size, velocityY, velocityX, opacity;
+  _Particle(math.Random random) {
+    x = random.nextDouble(); y = random.nextDouble();
+    size = random.nextDouble() * 3.5 + 1.5;
+    velocityX = (random.nextDouble() - 0.5) * 0.002;
+    velocityY = (random.nextDouble() - 0.5) * 0.002;
+    opacity = random.nextDouble() * 0.5 + 0.2;
+  }
+  void update() {
+    x += velocityX; y += velocityY;
+    if (x < 0 || x > 1.0) velocityX *= -1;
+    if (y < 0 || y > 1.0) velocityY *= -1;
+  }
+}
+
+class _ParticlePainter extends CustomPainter {
+  final List<_Particle> particles;
+  final double animationValue;
+  _ParticlePainter(this.particles, this.animationValue);
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+    for (final p in particles) {
+      p.update();
+      paint.color = Colors.white.withOpacity(p.opacity);
+      canvas.drawCircle(Offset(p.x * size.width, p.y * size.height), p.size, paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _BasicGradientAppButton extends StatefulWidget {
+  final VoidCallback onPressed;
+  final String title;
+  const _BasicGradientAppButton({required this.onPressed, required this.title});
+  @override
+  _BasicGradientAppButtonState createState() => _BasicGradientAppButtonState();
+}
+
+class _BasicGradientAppButtonState extends State<_BasicGradientAppButton> {
+  double _scale = 1.0;
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _scale = 0.95),
+      onTapUp: (_) { setState(() => _scale = 1.0); widget.onPressed(); },
+      onTapCancel: () => setState(() => _scale = 1.0),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        transform: Matrix4.identity()..scale(_scale),
+        height: 55, width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6B4EEA), Color(0xFFE56BFA), Color(0xFF2E63FF)],
+            stops: [0.1, 0.5, 0.9],
           ),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [BoxShadow(color: const Color(0xFF6B4EEA).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
         ),
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.grey),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
+        child: Center(
+          child: Text(widget.title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 17)),
         ),
       ),
     );

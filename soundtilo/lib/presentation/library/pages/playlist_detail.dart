@@ -74,7 +74,8 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
   }
 
   Future<List<TrackEntity>> _fetchTracks(
-      List<PlaylistTrackEntity> tracks) async {
+    List<PlaylistTrackEntity> tracks,
+  ) async {
     if (tracks.isEmpty) return const [];
 
     final ids = tracks.map((t) => t.trackExternalId).toList(growable: false);
@@ -86,15 +87,17 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
     }
 
     return ids
-        .map((id) =>
-            byId[id] ??
-            TrackEntity(
-              externalId: id,
-              source: 'audius',
-              title: id,
-              artistName: '',
-              durationSeconds: 0,
-            ))
+        .map(
+          (id) =>
+              byId[id] ??
+              TrackEntity(
+                externalId: id,
+                source: 'audius',
+                title: id,
+                artistName: '',
+                durationSeconds: 0,
+              ),
+        )
         .toList(growable: false);
   }
 
@@ -133,10 +136,12 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
       _resolvedTracks = newResolved;
     });
 
-    context.read<LibraryBloc>().add(LibraryRemoveTrackFromPlaylist(
-          playlistId: widget.playlistId,
-          trackExternalId: trackExternalId,
-        ));
+    context.read<LibraryBloc>().add(
+      LibraryRemoveTrackFromPlaylist(
+        playlistId: widget.playlistId,
+        trackExternalId: trackExternalId,
+      ),
+    );
   }
 
   void _showAddTrackSheet() {
@@ -183,21 +188,18 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
       _isSavingOrder = true;
     });
 
-    final ids =
-        playlistTracks.map((t) => t.trackExternalId).toList(growable: false);
+    final ids = playlistTracks
+        .map((t) => t.trackExternalId)
+        .toList(growable: false);
     final result = await _reorderTracksUseCase(widget.playlistId, ids);
     if (!mounted) return;
 
-    result.fold(
-      (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(error), backgroundColor: AppColors.errorColor),
-        );
-        _loadPlaylistDetail();
-      },
-      (_) => _loadPlaylistDetail(),
-    );
+    result.fold((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: AppColors.errorColor),
+      );
+      _loadPlaylistDetail();
+    }, (_) => _loadPlaylistDetail());
 
     if (mounted) setState(() => _isSavingOrder = false);
   }
@@ -236,8 +238,9 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
               ),
               const SizedBox(height: 12),
               ElevatedButton(
-                  onPressed: _loadPlaylistDetail,
-                  child: const Text('Thử lại')),
+                onPressed: _loadPlaylistDetail,
+                child: const Text('Thử lại'),
+              ),
             ],
           ),
         ),
@@ -288,7 +291,8 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
 
             return _TrackRow(
               key: ValueKey(
-                  '${playlistTrack.trackExternalId}-${playlistTrack.position}'),
+                '${playlistTrack.trackExternalId}-${playlistTrack.position}',
+              ),
               track: track,
               onTap: () => _openPlayer(index),
               onRemove: () => _removeTrack(playlistTrack.trackExternalId),
@@ -324,8 +328,7 @@ class _TrackRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       onTap: onTap,
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8),
@@ -339,16 +342,13 @@ class _TrackRow extends StatelessWidget {
                   memCacheWidth: 104,
                   memCacheHeight: 104,
                   placeholder: (context, url) => const _ArtworkPlaceholder(),
-                  errorWidget: (context, url, error) => const _ArtworkPlaceholder(),
+                  errorWidget: (context, url, error) =>
+                      const _ArtworkPlaceholder(),
                 )
               : const _ArtworkPlaceholder(),
         ),
       ),
-      title: Text(
-        track.title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+      title: Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
         track.artistName,
         maxLines: 1,
@@ -380,17 +380,16 @@ class _ArtworkPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ColoredBox(
-        color: AppColors.grey.withValues(alpha: 0.3),
-        child: const Icon(Icons.music_note, color: AppColors.grey),
-      );
+    color: AppColors.grey.withValues(alpha: 0.3),
+    child: const Icon(Icons.music_note, color: AppColors.grey),
+  );
 }
 
 class _AddTrackSheet extends StatefulWidget {
   final String playlistId;
   final VoidCallback onTrackAdded;
 
-  const _AddTrackSheet(
-      {required this.playlistId, required this.onTrackAdded});
+  const _AddTrackSheet({required this.playlistId, required this.onTrackAdded});
 
   @override
   State<_AddTrackSheet> createState() => _AddTrackSheetState();
@@ -450,10 +449,12 @@ class _AddTrackSheetState extends State<_AddTrackSheet> {
     if (_addedIds.contains(track.externalId)) return;
     setState(() => _addedIds.add(track.externalId));
 
-    context.read<LibraryBloc>().add(LibraryAddTrackToPlaylist(
-          playlistId: widget.playlistId,
-          trackExternalId: track.externalId,
-        ));
+    context.read<LibraryBloc>().add(
+      LibraryAddTrackToPlaylist(
+        playlistId: widget.playlistId,
+        trackExternalId: track.externalId,
+      ),
+    );
 
     widget.onTrackAdded();
 
@@ -471,7 +472,8 @@ class _AddTrackSheetState extends State<_AddTrackSheet> {
       expand: false,
       builder: (_, scrollController) => Padding(
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom),
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: Column(
           children: [
             const SizedBox(height: 8),
@@ -493,9 +495,9 @@ class _AddTrackSheetState extends State<_AddTrackSheet> {
                   hintText: 'Tìm bài hát...',
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
                 onChanged: _onChanged,
               ),
@@ -514,18 +516,27 @@ class _AddTrackSheetState extends State<_AddTrackSheet> {
     }
     if (_searchError != null) {
       return Center(
-          child: Text(_searchError!,
-              style: const TextStyle(color: AppColors.errorColor)));
+        child: Text(
+          _searchError!,
+          style: const TextStyle(color: AppColors.errorColor),
+        ),
+      );
     }
     if (_controller.text.trim().isEmpty) {
       return const Center(
-          child: Text('Nhập tên bài hát để tìm kiếm',
-              style: TextStyle(color: AppColors.grey)));
+        child: Text(
+          'Nhập tên bài hát để tìm kiếm',
+          style: TextStyle(color: AppColors.grey),
+        ),
+      );
     }
     if (_results.isEmpty) {
       return const Center(
-          child: Text('Không tìm thấy kết quả',
-              style: TextStyle(color: AppColors.grey)));
+        child: Text(
+          'Không tìm thấy kết quả',
+          style: TextStyle(color: AppColors.grey),
+        ),
+      );
     }
 
     return ListView.builder(
@@ -535,8 +546,10 @@ class _AddTrackSheetState extends State<_AddTrackSheet> {
         final track = _results[index];
         final added = _addedIds.contains(track.externalId);
         return ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 2,
+          ),
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: SizedBox(
@@ -546,22 +559,31 @@ class _AddTrackSheetState extends State<_AddTrackSheet> {
                   ? CachedNetworkImage(
                       imageUrl: track.artworkUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => const _ArtworkPlaceholder(),
+                      placeholder: (context, url) =>
+                          const _ArtworkPlaceholder(),
                       errorWidget: (context, url, error) =>
                           const _ArtworkPlaceholder(),
                     )
                   : const _ArtworkPlaceholder(),
             ),
           ),
-          title: Text(track.title,
-              maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text(track.artistName,
-              maxLines: 1, overflow: TextOverflow.ellipsis),
+          title: Text(
+            track.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            track.artistName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           trailing: added
               ? const Icon(Icons.check_circle, color: AppColors.primary)
               : IconButton(
-                  icon: const Icon(Icons.add_circle_outline,
-                      color: AppColors.primary),
+                  icon: const Icon(
+                    Icons.add_circle_outline,
+                    color: AppColors.primary,
+                  ),
                   onPressed: () => _addTrack(track),
                 ),
         );

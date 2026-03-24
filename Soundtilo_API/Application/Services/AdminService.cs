@@ -77,6 +77,92 @@ public class AdminService
         );
     }
 
+    public async Task<AdminUserHistoryListResponse> GetUserHistoryAsync(
+        Guid userId,
+        int page = 1,
+        int pageSize = 20)
+    {
+        await EnsureUserExistsAsync(userId);
+
+        var safePage = Math.Max(page, 1);
+        var safePageSize = Math.Clamp(pageSize, 1, 100);
+
+        var history = await _historyRepository.GetByUserIdAsync(userId, safePage, safePageSize);
+        var total = await _historyRepository.GetTotalListensAsync(userId);
+        var totalPages = (int)Math.Ceiling((double)total / safePageSize);
+
+        return new AdminUserHistoryListResponse(
+            history.Select(h => new AdminUserHistoryItemDto(
+                h.Id,
+                h.TrackExternalId,
+                h.ListenedAt,
+                h.DurationListened,
+                h.Completed
+            )),
+            total,
+            safePage,
+            safePageSize,
+            totalPages
+        );
+    }
+
+    public async Task<AdminUserFavoriteListResponse> GetUserFavoritesAsync(
+        Guid userId,
+        int page = 1,
+        int pageSize = 20)
+    {
+        await EnsureUserExistsAsync(userId);
+
+        var safePage = Math.Max(page, 1);
+        var safePageSize = Math.Clamp(pageSize, 1, 100);
+
+        var favorites = await _favoriteRepository.GetByUserIdAsync(userId, safePage, safePageSize);
+        var total = await _favoriteRepository.GetCountAsync(userId);
+        var totalPages = (int)Math.Ceiling((double)total / safePageSize);
+
+        return new AdminUserFavoriteListResponse(
+            favorites.Select(f => new AdminUserFavoriteItemDto(
+                f.TrackExternalId,
+                f.CreatedAt
+            )),
+            total,
+            safePage,
+            safePageSize,
+            totalPages
+        );
+    }
+
+    public async Task<AdminUserPlaylistListResponse> GetUserPlaylistsAsync(
+        Guid userId,
+        int page = 1,
+        int pageSize = 20)
+    {
+        await EnsureUserExistsAsync(userId);
+
+        var safePage = Math.Max(page, 1);
+        var safePageSize = Math.Clamp(pageSize, 1, 100);
+
+        var (playlists, total) = await _playlistRepository.GetPagedByUserIdAsync(userId, safePage, safePageSize);
+        var totalPages = (int)Math.Ceiling((double)total / safePageSize);
+
+        return new AdminUserPlaylistListResponse(
+            playlists.Select(p => new AdminUserPlaylistItemDto(
+                p.Id,
+                p.Name,
+                p.Description,
+                p.CoverImageUrl,
+                p.IsPublic,
+                p.PlaylistTracks.Count,
+                p.CreatedAt,
+                p.UpdatedAt
+            )),
+            total,
+            safePage,
+            safePageSize,
+            totalPages
+        );
+    }
+
     public async Task BanUserAsync(Guid adminId, Guid targetUserId, string? reason)
     {
         var user = await _userRepository.GetByIdAsync(targetUserId)
@@ -230,4 +316,10 @@ public class AdminService
         user.BannedReason,
         user.CreatedAt
     );
+
+    private async Task EnsureUserExistsAsync(Guid userId)
+    {
+        _ = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException($"User {userId} not found.");
+    }
 }

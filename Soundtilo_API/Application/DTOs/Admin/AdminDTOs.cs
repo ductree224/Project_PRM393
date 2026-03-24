@@ -38,6 +38,54 @@ public record AdminUserListResponse(
     int TotalPages
 );
 
+public record AdminUserHistoryItemDto(
+    Guid Id,
+    string TrackExternalId,
+    DateTime ListenedAt,
+    int DurationListened,
+    bool Completed
+);
+
+public record AdminUserHistoryListResponse(
+    IEnumerable<AdminUserHistoryItemDto> History,
+    int Total,
+    int Page,
+    int PageSize,
+    int TotalPages
+);
+
+public record AdminUserFavoriteItemDto(
+    string TrackExternalId,
+    DateTime CreatedAt
+);
+
+public record AdminUserFavoriteListResponse(
+    IEnumerable<AdminUserFavoriteItemDto> Favorites,
+    int Total,
+    int Page,
+    int PageSize,
+    int TotalPages
+);
+
+public record AdminUserPlaylistItemDto(
+    Guid Id,
+    string Name,
+    string? Description,
+    string? CoverImageUrl,
+    bool IsPublic,
+    int TrackCount,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
+);
+
+public record AdminUserPlaylistListResponse(
+    IEnumerable<AdminUserPlaylistItemDto> Playlists,
+    int Total,
+    int Page,
+    int PageSize,
+    int TotalPages
+);
+
 public record BanUserRequest(
     string? Reason
 );
