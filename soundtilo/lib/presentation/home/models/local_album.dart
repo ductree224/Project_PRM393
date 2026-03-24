@@ -1,6 +1,7 @@
 import 'package:soundtilo/domain/entities/track_entity.dart';
 
 class LocalAlbum {
+  final String id;
   final String title;
   final String artistName;
   final String coverImageUrl;
@@ -8,6 +9,7 @@ class LocalAlbum {
   final int totalDurationSeconds;
 
   LocalAlbum({
+    required this.id,
     required this.title,
     required this.artistName,
     required this.coverImageUrl,

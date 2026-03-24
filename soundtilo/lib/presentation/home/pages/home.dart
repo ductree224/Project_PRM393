@@ -20,7 +20,6 @@ import 'package:soundtilo/presentation/search/bloc/search_bloc.dart';
 import 'package:soundtilo/presentation/search/pages/search.dart';
 
 class HomePage extends StatelessWidget {
-  static const int _horizontalPreviewLimit = 8;
   static const int _verticalListLimit = 12;
 
   const HomePage({super.key});
@@ -98,6 +97,7 @@ class HomePage extends StatelessWidget {
     // Show only admin-managed albums
     final List<LocalAlbum> displayedAlbums = adminAlbums.map((adminAlbum) {
       return LocalAlbum(
+        id: adminAlbum.id,
         title: adminAlbum.title,
         artistName: adminAlbum.artist?.name ?? 'Unknown',
         coverImageUrl: adminAlbum.coverImageUrl ?? '',

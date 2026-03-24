@@ -14,6 +14,7 @@ public class AlbumDto
     public List<string> Tags { get; set; } = new();
     public bool IsOverride { get; set; }
     public DateTime CreatedAt { get; set; }
+    public ArtistDto? Artist { get; set; }
     public List<AlbumTrackDto> Tracks { get; set; } = new();
 }
 

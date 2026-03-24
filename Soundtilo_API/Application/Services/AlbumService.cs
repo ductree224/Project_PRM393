@@ -198,7 +198,18 @@ public class AlbumService : IAlbumService
             CoverImageUrl = entity.CoverImageUrl,
             Tags = entity.Tags,
             IsOverride = entity.IsOverride,
-            CreatedAt = entity.CreatedAt
+            CreatedAt = entity.CreatedAt,
+            Artist = entity.Artist == null ? null : new ArtistDto
+            {
+                Id = entity.Artist.Id,
+                ExternalId = entity.Artist.ExternalId,
+                Name = entity.Artist.Name,
+                Bio = entity.Artist.Bio,
+                ImageUrl = entity.Artist.ImageUrl,
+                Tags = entity.Artist.Tags,
+                IsOverride = entity.Artist.IsOverride,
+                CreatedAt = entity.Artist.CreatedAt
+            }
         };
     }
 }

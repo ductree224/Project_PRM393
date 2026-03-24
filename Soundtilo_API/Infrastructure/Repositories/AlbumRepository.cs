@@ -16,7 +16,7 @@ public class AlbumRepository : IAlbumRepository
 
     public async Task<Album?> GetByIdAsync(Guid id, bool includeTracks = false)
     {
-        var query = _context.Albums.AsQueryable();
+        var query = _context.Albums.Include(a => a.Artist).AsQueryable();
         if (includeTracks)
         {
             query = query.Include(a => a.AlbumTracks);
@@ -31,7 +31,7 @@ public class AlbumRepository : IAlbumRepository
 
     public async Task<IEnumerable<Album>> GetAllAsync(string? tag = null, Guid? artistId = null)
     {
-        var query = _context.Albums.AsQueryable();
+        var query = _context.Albums.Include(a => a.Artist).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(tag))
         {

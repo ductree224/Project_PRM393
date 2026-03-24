@@ -568,6 +568,16 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                     status: 'Active',
                   ));
                 }),
+            IconButton(
+                icon: const Icon(Icons.library_add, color: Colors.grey, size: 18),
+                tooltip: 'Add to Album',
+                onPressed: () {
+                  setState(() {
+                    _selectedTrackIds.clear();
+                    _selectedTrackIds.add(track.externalId);
+                  });
+                  _showAlbumSelectionDialog(context);
+                }),
           ],
         )),
       ],
@@ -575,61 +585,88 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
   }
 
   void _showAlbumSelectionDialog(BuildContext context) {
+    String? selectedAlbumId;
+
     showDialog(
       context: context,
       builder: (dialogContext) => BlocProvider(
         create: (context) => sl<album_bloc.AlbumAdminBloc>()..add(const album_event.LoadAlbums()),
-        child: AlertDialog(
-          backgroundColor: const Color(0xFF1A1A1A),
-          title: const Text('Select Album', style: TextStyle(color: Colors.white)),
-          content: SizedBox(
-            width: 400,
-            height: 400,
-            child: BlocBuilder<album_bloc.AlbumAdminBloc, album_state.AlbumAdminState>(
-              builder: (context, state) {
-                if (state is album_state.AlbumAdminLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (state is album_state.AlbumAdminError) {
-                  return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
-                }
-                if (state is album_state.AlbumAdminLoaded) {
-                  final albums = state.albums;
-                  if (albums.isEmpty) {
-                    return const Center(child: Text('No albums found', style: TextStyle(color: Colors.grey)));
+        child: StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1A1A1A),
+            title: const Text('Select Album', style: TextStyle(color: Colors.white)),
+            content: SizedBox(
+              width: 400,
+              height: 400,
+              child: BlocBuilder<album_bloc.AlbumAdminBloc, album_state.AlbumAdminState>(
+                builder: (context, state) {
+                  if (state is album_state.AlbumAdminLoading) {
+                    return const Center(child: CircularProgressIndicator());
                   }
-                  return ListView.separated(
-                    itemCount: albums.length,
-                    separatorBuilder: (context, index) => const Divider(color: Colors.white10),
-                    itemBuilder: (context, index) {
-                      final album = albums[index];
-                      return ListTile(
-                        leading: _buildImage(album.coverImageUrl),
-                        title: Text(album.title, style: const TextStyle(color: Colors.white)),
-                        subtitle: Text(album.artist?.name ?? 'Unknown Artist', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                        onTap: () {
-                          // Dispatch bulk add event to TrackAdminBloc
-                          this.context.read<TrackAdminBloc>().add(AddTracksToAlbum(
-                                albumId: album.id,
-                                trackIds: _selectedTrackIds.toList(),
-                              ));
-                          Navigator.pop(dialogContext);
-                        },
-                      );
-                    },
-                  );
-                }
-                return const Center(child: Text('Unexpected state'));
-              },
+                  if (state is album_state.AlbumAdminError) {
+                    return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+                  }
+                  if (state is album_state.AlbumAdminLoaded) {
+                    final albums = state.albums;
+                    if (albums.isEmpty) {
+                      return const Center(child: Text('No albums found', style: TextStyle(color: Colors.grey)));
+                    }
+                    return ListView.separated(
+                      itemCount: albums.length,
+                      separatorBuilder: (context, index) => const Divider(color: Colors.white10),
+                      itemBuilder: (context, index) {
+                        final album = albums[index];
+                        final isSelected = selectedAlbumId == album.id;
+                        return ListTile(
+                          selected: isSelected,
+                          selectedTileColor: const Color(0xFFFFD79B).withValues(alpha: 0.1),
+                          leading: _buildImage(album.coverImageUrl),
+                          title: Text(album.title, style: TextStyle(color: isSelected ? const Color(0xFFFFD79B) : Colors.white)),
+                          subtitle: Text(album.artist?.name ?? 'Unknown Artist', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          trailing: Icon(
+                            isSelected ? Icons.check_circle : Icons.add_circle_outline,
+                            color: isSelected ? const Color(0xFFFFD79B) : Colors.grey,
+                            size: 20,
+                          ),
+                          onTap: () {
+                            setDialogState(() {
+                              selectedAlbumId = isSelected ? null : album.id;
+                            });
+                          },
+                        );
+                      },
+                    );
+                  }
+                  return const Center(child: Text('Unexpected state'));
+                },
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD79B),
+                  foregroundColor: Colors.black,
+                  disabledBackgroundColor: Colors.grey.withValues(alpha: 0.2),
+                ),
+                onPressed: selectedAlbumId == null
+                    ? null
+                    : () {
+                        // Dispatch bulk add event to TrackAdminBloc
+                        this.context.read<TrackAdminBloc>().add(AddTracksToAlbum(
+                              albumId: selectedAlbumId!,
+                              trackIds: _selectedTrackIds.toList(),
+                            ));
+                        Navigator.pop(dialogContext);
+                      },
+                child: const Text('Add to Album'),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

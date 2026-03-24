@@ -13,6 +13,7 @@ import '../../../../data/models/artist_model.dart';
 import '../../../../data/models/album_model.dart';
 import '../widgets/artist_form_dialog.dart';
 import '../widgets/album_form_dialog.dart';
+import '../widgets/album_track_management_dialog.dart';
 
 class AdminArtistsAlbumsPage extends StatelessWidget {
   const AdminArtistsAlbumsPage({super.key});
@@ -161,7 +162,7 @@ class _AdminArtistsAlbumsContent extends StatelessWidget {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: WidgetStateProperty.all(const Color(0xFF2A2A2A).withOpacity(0.5)),
+                        headingRowColor: WidgetStateProperty.all(const Color(0xFF2A2A2A).withValues(alpha: 0.5)),
                         columns: const [
                           DataColumn(label: Text('ARTIST', style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1))),
                           DataColumn(label: Text('STATUS', style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1))),
@@ -203,7 +204,7 @@ class _AdminArtistsAlbumsContent extends StatelessWidget {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: WidgetStateProperty.all(const Color(0xFF2A2A2A).withOpacity(0.5)),
+                        headingRowColor: WidgetStateProperty.all(const Color(0xFF2A2A2A).withValues(alpha: 0.5)),
                         columns: const [
                           DataColumn(label: Text('ALBUM NAME', style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1))),
                           DataColumn(label: Text('ARTIST', style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1))),
@@ -240,7 +241,7 @@ class _AdminArtistsAlbumsContent extends StatelessWidget {
         )),
         DataCell(Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
           child: Text(status.toUpperCase(), style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
         )),
         DataCell(const Text('-', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
@@ -280,6 +281,7 @@ class _AdminArtistsAlbumsContent extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(icon: const Icon(Icons.edit, color: Colors.grey, size: 20), onPressed: () => _showAlbumDialog(context, album: album)),
+            IconButton(icon: const Icon(Icons.queue_music, color: Colors.grey, size: 20), tooltip: 'Manage Tracks', onPressed: () => _showManageTracksDialog(context, album)),
             IconButton(icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20), onPressed: () => _showDeleteConfirmDialog(context, 'album', album.id)),
           ],
         )),
@@ -338,6 +340,16 @@ class _AdminArtistsAlbumsContent extends StatelessWidget {
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showManageTracksDialog(BuildContext context, AlbumModel album) {
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider.value(
+        value: context.read<AlbumAdminBloc>(),
+        child: AlbumTrackManagementDialog(album: album),
       ),
     );
   }
