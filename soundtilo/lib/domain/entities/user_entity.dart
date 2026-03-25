@@ -7,6 +7,8 @@ class UserEntity extends Equatable {
   final String? displayName;
   final String? avatarUrl;
   final String? role;
+  final bool isBanned;
+  final String? bannedReason;
   final DateTime createdAt;
 
   const UserEntity({
@@ -16,6 +18,8 @@ class UserEntity extends Equatable {
     this.displayName,
     this.avatarUrl,
     this.role,
+    this.isBanned = false,
+    this.bannedReason,
     required this.createdAt,
   });
 
@@ -27,6 +31,8 @@ class UserEntity extends Equatable {
     displayName,
     avatarUrl,
     role,
+    isBanned,
+    bannedReason,
     createdAt,
   ];
 }

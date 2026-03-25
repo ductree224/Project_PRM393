@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,6 +18,7 @@ import 'package:soundtilo/presentation/auth/pages/signup.dart';
 import 'package:soundtilo/presentation/main_shell.dart';
 import 'package:soundtilo/presentation/admin/pages/admin_main_shell.dart';
 
+import '../../../common/widgets/button/basic_app_button.dart';
 import '../../../common/widgets/textFormField/custom_field.dart';
 
 class SignInPage extends StatefulWidget {
@@ -68,6 +71,11 @@ class _SignInPageState extends State<SignInPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
+          if (state.user.isBanned) {
+            _showBannedDialog(context, state.user.bannedReason);
+            return;
+          }
+
           if (state.user.role == 'admin') {
             Navigator.pushAndRemoveUntil(
               context,
@@ -377,6 +385,103 @@ class _SignInPageState extends State<SignInPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
+  }
+
+  void _showBannedDialog(BuildContext context, String? bannedReason) {
+    final hasReason = bannedReason != null && bannedReason.trim().isNotEmpty;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF121212),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Colors.redAccent, width: 1.8),
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red.shade400),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'You have been banned',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.redAccent.withOpacity(0.45)),
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Your account can not access the application.',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+              ),
+              if (hasReason) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'Reason: ${bannedReason!.trim()}',
+                  style: GoogleFonts.inter(
+                    color: Colors.red.shade200,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (mounted) {
+                  context.read<AuthBloc>().add(AuthLogoutRequested());
+                }
+                _forceCloseApp();
+              },
+              child: Text(
+                'Proceed',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _forceCloseApp() {
+    SystemNavigator.pop();
+    Future<void>.delayed(const Duration(milliseconds: 120), () {
+      exit(0);
+    });
   }
 }
 

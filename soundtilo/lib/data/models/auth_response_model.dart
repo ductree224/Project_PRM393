@@ -7,6 +7,8 @@ class AuthResponseModel {
   final String? displayName;
   final String? avatarUrl;
   final String? role;
+  final bool isBanned;
+  final String? bannedReason;
   final String accessToken;
   final String refreshToken;
   final DateTime expiresAt;
@@ -18,6 +20,8 @@ class AuthResponseModel {
     this.displayName,
     this.avatarUrl,
     this.role,
+    this.isBanned = false,
+    this.bannedReason,
     required this.accessToken,
     required this.refreshToken,
     required this.expiresAt,
@@ -31,6 +35,8 @@ class AuthResponseModel {
       displayName: json['displayName'],
       avatarUrl: json['avatarUrl'],
       role: json['role']?.toString(),
+      isBanned: json['isBanned'] == true,
+      bannedReason: json['bannedReason']?.toString(),
       accessToken: json['accessToken'] ?? '',
       refreshToken: json['refreshToken'] ?? '',
       expiresAt: json['expiresAt'] != null

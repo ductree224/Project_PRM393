@@ -58,6 +58,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         displayName: _prefs.getString('display_name'),
         avatarUrl: _prefs.getString('avatar_url'),
         role: _prefs.getString('role'),
+        isBanned: _prefs.getBool('is_banned') ?? false,
+        bannedReason: _prefs.getString('banned_reason'),
         createdAt: DateTime.now(),
       );
       emit(AuthAuthenticated(user));

@@ -25,6 +25,8 @@ class AuthRepositoryImpl implements AuthRepository {
   static const _displayNameKey = 'display_name';
   static const _avatarUrlKey = 'avatar_url';
   static const _roleKey = 'role';
+  static const _isBannedKey = 'is_banned';
+  static const _bannedReasonKey = 'banned_reason';
 
   @override
   Future<Either<String, (UserEntity, AuthTokens)>> register({
@@ -48,6 +50,8 @@ class AuthRepositoryImpl implements AuthRepository {
         displayName: response.displayName,
         avatarUrl: response.avatarUrl,
         role: response.role,
+        isBanned: response.isBanned,
+        bannedReason: response.bannedReason,
         createdAt: DateTime.now(),
       );
       return Right((user, response.toTokens()));
@@ -81,6 +85,8 @@ class AuthRepositoryImpl implements AuthRepository {
         displayName: response.displayName,
         avatarUrl: response.avatarUrl,
         role: response.role,
+        isBanned: response.isBanned,
+        bannedReason: response.bannedReason,
         createdAt: DateTime.now(),
       );
       return Right((user, response.toTokens()));
@@ -123,6 +129,8 @@ class AuthRepositoryImpl implements AuthRepository {
         displayName: response.displayName,
         avatarUrl: response.avatarUrl,
         role: response.role,
+        isBanned: response.isBanned,
+        bannedReason: response.bannedReason,
         createdAt: DateTime.now(),
       );
       return Right((user, response.toTokens()));
@@ -213,6 +221,8 @@ class AuthRepositoryImpl implements AuthRepository {
     await _prefs.remove(_displayNameKey);
     await _prefs.remove(_avatarUrlKey);
     await _prefs.remove(_roleKey);
+    await _prefs.remove(_isBannedKey);
+    await _prefs.remove(_bannedReasonKey);
   }
 
   @override
@@ -266,5 +276,11 @@ class AuthRepositoryImpl implements AuthRepository {
       await _prefs.setString(_avatarUrlKey, response.avatarUrl!);
     }
     await _prefs.setString(_roleKey, response.role ?? 'User');
+    await _prefs.setBool(_isBannedKey, response.isBanned);
+    if (response.bannedReason != null && response.bannedReason!.isNotEmpty) {
+      await _prefs.setString(_bannedReasonKey, response.bannedReason!);
+    } else {
+      await _prefs.remove(_bannedReasonKey);
+    }
   }
 }
