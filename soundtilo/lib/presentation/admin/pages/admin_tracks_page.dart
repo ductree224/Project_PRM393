@@ -109,11 +109,13 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                     width: double.infinity,
                     child: state is TrackAdminLoading
                         ? const Center(child: CircularProgressIndicator())
-                        : state is TrackAdminLoaded
+                        : (state is TrackAdminLoaded)
                             ? _buildTable(context, state.tracks)
-                            : const Center(
-                                child: Text('No tracks loaded',
-                                    style: TextStyle(color: Colors.grey))),
+                            : (state is TrackAdminOperationInProgress)
+                                ? _buildTable(context, state.tracks)
+                                : const Center(
+                                    child: Text('No tracks loaded',
+                                        style: TextStyle(color: Colors.grey))),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -428,6 +430,8 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
     int total = 0;
     if (state is TrackAdminLoaded) {
       total = state.tracks.length;
+    } else if (state is TrackAdminOperationInProgress) {
+      total = state.tracks.length;
     }
 
     return Container(
@@ -658,7 +662,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
               ),
               BlocBuilder<TrackAdminBloc, TrackAdminState>(
                 builder: (context, state) {
-                  final isLoading = state is TrackAdminLoading;
+                  final isLoading = state is TrackAdminLoading || state is TrackAdminOperationInProgress;
                   return ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFD79B),
@@ -669,7 +673,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                         ? null
                         : () {
                             // Dispatch bulk add event
-                            this.context.read<TrackAdminBloc>().add(AddTracksToAlbum(
+                            trackAdminBloc.add(AddTracksToAlbum(
                                   albumId: selectedAlbumId!,
                                   trackIds: _selectedTrackIds.toList(),
                                 ));

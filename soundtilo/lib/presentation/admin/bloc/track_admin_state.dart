@@ -36,6 +36,21 @@ class TrackAdminError extends TrackAdminState {
   List<Object?> get props => [message];
 }
 
+class TrackAdminOperationInProgress extends TrackAdminState {
+  final List<TrackAdminModel> tracks;
+  final String? currentStatus;
+  final String? currentQuery;
+
+  const TrackAdminOperationInProgress({
+    required this.tracks,
+    this.currentStatus,
+    this.currentQuery,
+  });
+
+  @override
+  List<Object?> get props => [tracks, currentStatus, currentQuery];
+}
+
 class TrackAdminOperationSuccess extends TrackAdminState {
   final String message;
 

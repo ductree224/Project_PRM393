@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/repositories/track_admin_repository.dart';
 import 'track_admin_event.dart';
 import 'track_admin_state.dart';
+import '../../../../data/models/track_admin_model.dart';
 
 class TrackAdminBloc extends Bloc<TrackAdminEvent, TrackAdminState> {
   final TrackAdminRepository repository;
@@ -32,16 +33,25 @@ class TrackAdminBloc extends Bloc<TrackAdminEvent, TrackAdminState> {
   }
 
   Future<void> _onUpdateTrackStatus(UpdateTrackStatus event, Emitter<TrackAdminState> emit) async {
-    // Keep track of current state to reload after success
     final currentState = state;
     String? statusFilter;
     String? queryFilter;
+    List<TrackAdminModel> tracks = [];
     if (currentState is TrackAdminLoaded) {
       statusFilter = currentState.currentStatus;
       queryFilter = currentState.currentQuery;
+      tracks = currentState.tracks;
+    } else if (currentState is TrackAdminOperationInProgress) {
+      statusFilter = currentState.currentStatus;
+      queryFilter = currentState.currentQuery;
+      tracks = currentState.tracks;
     }
 
-    emit(TrackAdminLoading());
+    emit(TrackAdminOperationInProgress(
+      tracks: tracks,
+      currentStatus: statusFilter,
+      currentQuery: queryFilter,
+    ));
     final result = await repository.updateTrackStatus(
       externalIds: event.externalIds,
       status: event.status,
@@ -60,12 +70,22 @@ class TrackAdminBloc extends Bloc<TrackAdminEvent, TrackAdminState> {
     final currentState = state;
     String? statusFilter;
     String? queryFilter;
+    List<TrackAdminModel> tracks = [];
     if (currentState is TrackAdminLoaded) {
       statusFilter = currentState.currentStatus;
       queryFilter = currentState.currentQuery;
+      tracks = currentState.tracks;
+    } else if (currentState is TrackAdminOperationInProgress) {
+      statusFilter = currentState.currentStatus;
+      queryFilter = currentState.currentQuery;
+      tracks = currentState.tracks;
     }
 
-    emit(TrackAdminLoading());
+    emit(TrackAdminOperationInProgress(
+      tracks: tracks,
+      currentStatus: statusFilter,
+      currentQuery: queryFilter,
+    ));
     final result = await repository.addTracksToAlbum(
       albumId: event.albumId,
       trackIds: event.trackIds,
