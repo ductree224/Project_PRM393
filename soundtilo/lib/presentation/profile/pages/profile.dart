@@ -12,6 +12,9 @@ import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:soundtilo/presentation/history/pages/history.dart';
 import 'package:soundtilo/presentation/intro/pages/get_started.dart';
+import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
+import 'package:soundtilo/presentation/player/bloc/player_state.dart';
+import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -137,8 +140,19 @@ class ProfilePage extends StatelessWidget {
                 ),
               ],
             ),
-            body: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+            body: BlocSelector<PlayerBloc, PlayerState, bool>(
+              selector: (state) =>
+                  state.currentTrack != null &&
+                  state.status != PlayerStatus.idle &&
+                  state.status != PlayerStatus.error,
+              builder: (context, isMiniPlayerVisible) => ListView(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  bottom: isMiniPlayerVisible
+                      ? MiniPlayer.shellReservedHeight
+                      : 24,
+                ),
               children: [
                 const SizedBox(height: 20),
 
@@ -234,9 +248,8 @@ class ProfilePage extends StatelessWidget {
 
                 // Logout button
                 _LogoutButton(onTap: () => _showLogoutDialog(context)),
-
-                const SizedBox(height: 24),
               ],
+            ),
             ),
           );
         },

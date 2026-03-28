@@ -23,7 +23,14 @@ import 'package:soundtilo/presentation/search/pages/search.dart';
 class HomePage extends StatelessWidget {
   static const int _horizontalPreviewLimit = 8;
   final List<String> _tags = const [
-    'pop', 'rock', 'hip-hop', 'electronic', 'jazz', 'classical', 'lofi', 'r&b'
+    'pop',
+    'rock',
+    'hip-hop',
+    'electronic',
+    'jazz',
+    'classical',
+    'lofi',
+    'r&b',
   ];
 
   const HomePage({super.key});
@@ -46,6 +53,17 @@ class HomePage extends StatelessWidget {
               return _buildContent(context, state);
             }
 
+            if (state is HomeRefreshing) {
+              return _buildContent(
+                context,
+                HomeLoaded(
+                  trendingTracks: state.trendingTracks,
+                  currentOffset: state.currentOffset,
+                  hasMore: state.hasMore,
+                ),
+              );
+            }
+
             return const SizedBox.shrink();
           },
         ),
@@ -56,22 +74,33 @@ class HomePage extends StatelessWidget {
   Widget _buildContent(BuildContext context, HomeLoaded state) {
     return RefreshIndicator(
       onRefresh: () async => context.read<HomeBloc>().add(HomeRefresh()),
-      child: CustomScrollView(
-        slivers: [
-          _buildAppBar(context),
-          
-          _buildSectionHeader(context, 'Thịnh hành'),
-          _buildTrendingList(state.trendingTracks),
+      child: NotificationListener<ScrollEndNotification>(
+        onNotification: (notification) {
+          final metrics = notification.metrics;
+          if (metrics.pixels >= metrics.maxScrollExtent - 200 &&
+              state.hasMore &&
+              !state.isLoadingMore) {
+            context.read<HomeBloc>().add(HomeLoadMore());
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            _buildAppBar(context),
 
-          _buildSectionHeader(context, 'Khám phá theo thể loại'),
-          _buildTagBar(context, state.selectedTag),
-          _buildTagTracks(context, state),
+            _buildSectionHeader(context, 'Thịnh hành'),
+            _buildTrendingList(state.trendingTracks),
 
-          _buildSectionHeader(context, 'Dành cho bạn'),
-          _buildInfiniteList(context, state),
+            _buildSectionHeader(context, 'Khám phá theo thể loại'),
+            _buildTagBar(context, state.selectedTag),
+            _buildTagTracks(context, state),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
+            _buildSectionHeader(context, 'Dành cho bạn'),
+            _buildInfiniteList(context, state),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
@@ -81,10 +110,14 @@ class HomePage extends StatelessWidget {
       floating: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leadingWidth: 70, 
+      leadingWidth: 70,
       leading: Padding(
         padding: const EdgeInsets.only(left: 12),
-        child: SvgPicture.asset(AppVectors.logo, height: 30, alignment: Alignment.centerLeft),
+        child: SvgPicture.asset(
+          AppVectors.logo,
+          height: 30,
+          alignment: Alignment.centerLeft,
+        ),
       ),
       title: GestureDetector(
         onTap: () => _openSearch(context),
@@ -113,10 +146,7 @@ class HomePage extends StatelessWidget {
         ),
       ),
       centerTitle: true,
-      actions: [
-        _buildThemeSwitcher(),
-        const SizedBox(width: 4),
-      ],
+      actions: [_buildThemeSwitcher(), const SizedBox(width: 4)],
     );
   }
 
@@ -138,26 +168,41 @@ class HomePage extends StatelessWidget {
                 onTap: () => context.read<HomeBloc>().add(HomeLoadByTag(tag)),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    gradient: isSelected ? const LinearGradient(
-                      colors: [AppColors.primary, AppColors.thirdly],
-                    ) : null,
-                    color: isSelected ? null : (context.isDarkMode ? Colors.white10 : Colors.grey.shade200),
+                    gradient: isSelected
+                        ? const LinearGradient(
+                            colors: [AppColors.primary, AppColors.thirdly],
+                          )
+                        : null,
+                    color: isSelected
+                        ? null
+                        : (context.isDarkMode
+                              ? Colors.white10
+                              : Colors.grey.shade200),
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: isSelected ? [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      )
-                    ] : [],
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : [],
                   ),
                   child: Center(
                     child: Text(
                       tag.toUpperCase(),
                       style: GoogleFonts.inter(
-                        color: isSelected ? Colors.white : (context.isDarkMode ? Colors.grey : Colors.black87),
+                        color: isSelected
+                            ? Colors.white
+                            : (context.isDarkMode
+                                  ? Colors.grey
+                                  : Colors.black87),
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -199,7 +244,9 @@ class HomePage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.primary.withOpacity(context.isDarkMode ? 0.2 : 0.1),
+                      AppColors.primary.withOpacity(
+                        context.isDarkMode ? 0.2 : 0.1,
+                      ),
                       AppColors.primary.withOpacity(0),
                     ],
                   ),
@@ -216,7 +263,9 @@ class HomePage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.thirdly.withOpacity(context.isDarkMode ? 0.2 : 0.1),
+                      AppColors.thirdly.withOpacity(
+                        context.isDarkMode ? 0.2 : 0.1,
+                      ),
                       AppColors.thirdly.withOpacity(0),
                     ],
                   ),
@@ -241,7 +290,11 @@ class HomePage extends StatelessWidget {
               itemCount: state.tagTracks.length,
               itemBuilder: (context, index) {
                 final track = state.tagTracks[index];
-                return _buildHorizontalTrackItem(context, track, state.tagTracks);
+                return _buildHorizontalTrackItem(
+                  context,
+                  track,
+                  state.tagTracks,
+                );
               },
             ),
           ],
@@ -250,7 +303,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalTrackItem(BuildContext context, TrackEntity track, List<TrackEntity> queue) {
+  Widget _buildHorizontalTrackItem(
+    BuildContext context,
+    TrackEntity track,
+    List<TrackEntity> queue,
+  ) {
     return GestureDetector(
       onTap: () => _openPlayer(context, track, queue),
       child: Container(
@@ -265,7 +322,8 @@ class HomePage extends StatelessWidget {
                 height: 55,
                 fit: BoxFit.cover,
                 errorWidget: (_, __, ___) => Container(
-                  width: 55, height: 55,
+                  width: 55,
+                  height: 55,
                   color: AppColors.grey.withOpacity(0.1),
                   child: const Icon(Icons.music_note, color: AppColors.grey),
                 ),
@@ -313,7 +371,9 @@ class HomePage extends StatelessWidget {
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          itemCount: tracks.length > _horizontalPreviewLimit ? _horizontalPreviewLimit : tracks.length,
+          itemCount: tracks.length > _horizontalPreviewLimit
+              ? _horizontalPreviewLimit
+              : tracks.length,
           itemBuilder: (context, index) => TrackCard(
             track: tracks[index],
             onTap: () => _openPlayer(context, tracks[index], tracks),
@@ -325,20 +385,19 @@ class HomePage extends StatelessWidget {
 
   Widget _buildInfiniteList(BuildContext context, HomeLoaded state) {
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          if (index >= state.trendingTracks.length) {
-            return state.hasMore ? _buildShimmerLoading(context) : const SizedBox.shrink();
-          }
-          final track = state.trendingTracks[index];
-          return TrackTile(
-            key: ValueKey(track.externalId),
-            track: track,
-            onTap: () => _openPlayer(context, track, state.trendingTracks),
-          );
-        },
-        childCount: state.trendingTracks.length + (state.hasMore ? 1 : 0),
-      ),
+      delegate: SliverChildBuilderDelegate((context, index) {
+        if (index >= state.trendingTracks.length) {
+          return state.hasMore
+              ? _buildShimmerLoading(context)
+              : const SizedBox.shrink();
+        }
+        final track = state.trendingTracks[index];
+        return TrackTile(
+          key: ValueKey(track.externalId),
+          track: track,
+          onTap: () => _openPlayer(context, track, state.trendingTracks),
+        );
+      }, childCount: state.trendingTracks.length + (state.hasMore ? 1 : 0)),
     );
   }
 
@@ -361,14 +420,18 @@ class HomePage extends StatelessWidget {
   Widget _buildThemeSwitcher() {
     return BlocBuilder<ThemeCubit, ThemeMode>(
       builder: (context, mode) {
-        final isDark = mode == ThemeMode.dark || (mode == ThemeMode.system && context.isDarkMode);
+        final isDark =
+            mode == ThemeMode.dark ||
+            (mode == ThemeMode.system && context.isDarkMode);
         return IconButton(
           icon: Icon(
             isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
             color: isDark ? Colors.orangeAccent : Colors.indigo,
             size: 20,
           ),
-          onPressed: () => context.read<ThemeCubit>().updateTheme(isDark ? ThemeMode.light : ThemeMode.dark),
+          onPressed: () => context.read<ThemeCubit>().updateTheme(
+            isDark ? ThemeMode.light : ThemeMode.dark,
+          ),
         );
       },
     );
@@ -391,7 +454,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  void _openPlayer(BuildContext context, TrackEntity track, List<TrackEntity> queue) {
+  void _openPlayer(
+    BuildContext context,
+    TrackEntity track,
+    List<TrackEntity> queue,
+  ) {
     Navigator.push(context, PlayerPage.createRoute(track: track, queue: queue));
   }
 
@@ -416,7 +483,9 @@ class HomePage extends StatelessWidget {
   Widget _buildHorizontalShimmerGrid(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: context.isDarkMode ? Colors.white10 : Colors.grey.shade200,
-      highlightColor: context.isDarkMode ? Colors.white24 : Colors.grey.shade100,
+      highlightColor: context.isDarkMode
+          ? Colors.white24
+          : Colors.grey.shade100,
       child: GridView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -429,17 +498,26 @@ class HomePage extends StatelessWidget {
         itemCount: 6,
         itemBuilder: (_, __) => Row(
           children: [
-            Container(width: 55, height: 55, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
+            Container(
+              width: 55,
+              height: 55,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(height: 14, width: 150, color: Colors.white),
-                const SizedBox(height: 6),
-                Container(height: 10, width: 80, color: Colors.white),
-              ],
-            ))
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(height: 14, width: 150, color: Colors.white),
+                  const SizedBox(height: 6),
+                  Container(height: 10, width: 80, color: Colors.white),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -449,7 +527,9 @@ class HomePage extends StatelessWidget {
   Widget _buildShimmerLoading(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: context.isDarkMode ? Colors.white10 : Colors.grey.shade200,
-      highlightColor: context.isDarkMode ? Colors.white24 : Colors.grey.shade100,
+      highlightColor: context.isDarkMode
+          ? Colors.white24
+          : Colors.grey.shade100,
       child: ListTile(
         leading: Container(width: 56, height: 56, color: Colors.white),
         title: Container(height: 14, width: 100, color: Colors.white),

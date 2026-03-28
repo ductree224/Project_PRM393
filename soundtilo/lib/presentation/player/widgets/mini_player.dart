@@ -60,6 +60,7 @@ class MiniPlayer extends StatelessWidget {
             },
             child: Container(
               height: _barHeight,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: AppColors.darkBackground,
                 borderRadius: BorderRadius.circular(14),
@@ -111,13 +112,11 @@ class _MiniPlayerProgressBar extends StatelessWidget {
         final playedMs = progress.$1.inMilliseconds;
         final ratio = totalMs > 0 ? (playedMs / totalMs).clamp(0.0, 1.0) : 0.0;
 
-        return SizedBox(
-          height: 3,
-          child: LinearProgressIndicator(
-            value: ratio,
-            backgroundColor: AppColors.grey.withValues(alpha: 0.22),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-          ),
+        return LinearProgressIndicator(
+          value: ratio,
+          minHeight: 3,
+          backgroundColor: AppColors.grey.withValues(alpha: 0.22),
+          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
         );
       },
     );
