@@ -73,4 +73,15 @@ class ApiUrls {
       '/api/admin/users/$userId/favorites';
   static String adminUserPlaylists(String userId) =>
       '/api/admin/users/$userId/playlists';
+
+  // Artists
+  static const String artists = '/api/artists';
+
+  // Albums
+  static const String albums = '/api/albums';
+
+  // Admin Tracks
+  static const String adminTracks = '/api/admin/tracks';
+  static const String updateAdminTrackStatus = '/api/admin/tracks/status';
+  static const String addTracksToAlbumToAdmin = '/api/admin/tracks/add-to-album';
 }

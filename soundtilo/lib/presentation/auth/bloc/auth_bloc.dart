@@ -57,6 +57,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: _prefs.getString('email') ?? '',
         displayName: _prefs.getString('display_name'),
         avatarUrl: _prefs.getString('avatar_url'),
+        role: _prefs.getString('role'),
         createdAt: DateTime.now(),
       );
       emit(AuthAuthenticated(user));

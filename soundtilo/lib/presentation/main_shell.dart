@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/debug/perf_trace.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
+import 'package:soundtilo/domain/repositories/album_repository.dart';
 import 'package:soundtilo/domain/usecases/track_usecases.dart';
 import 'package:soundtilo/presentation/home/bloc/home_bloc.dart';
 import 'package:soundtilo/presentation/home/bloc/home_event.dart';
@@ -42,6 +43,7 @@ class _MainShellState extends State<MainShell> {
 
     _homeBloc = HomeBloc(
       getTrendingUseCase: sl<GetTrendingUseCase>(),
+      albumRepository: sl<AlbumRepository>(),
     );
 
     _searchBloc = SearchBloc(
