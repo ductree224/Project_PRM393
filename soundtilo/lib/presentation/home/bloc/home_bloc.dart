@@ -39,38 +39,35 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     emit(HomeLoading());
 
-    // Fetch trending tracks and admin albums in parallel
+    // Fetch trending tracks, tag tracks, and admin albums all in parallel
     final results = await Future.wait([
       _getTrendingUseCase(limit: _pageSize, offset: 0),
+      _getTrendingUseCase(genre: 'pop', limit: 12, offset: 0),
       _fetchAdminAlbums(),
     ]);
 
     final trendingResult = results[0] as Either<String, List<TrackEntity>>;
-    final adminAlbums = results[1] as List<AlbumModel>;
+    final tagResult = results[1] as Either<String, List<TrackEntity>>;
+    final adminAlbums = results[2] as List<AlbumModel>;
 
-    trendingResult.fold(
-      (error) => emit(HomeError(error)),
-      (trendingTracks) async {
-        // Sau khi có trending, load thêm nhạc theo tag mặc định 'pop'
-        final tagResult = await _getTrendingUseCase(genre: 'pop', limit: 12, offset: 0);
-        
-        tagResult.fold(
-          (error) => emit(HomeLoaded(
-            trendingTracks: trendingTracks,
-            adminAlbums: adminAlbums,
-            currentOffset: trendingTracks.length,
-          )),
-          (tagTracks) => emit(HomeLoaded(
-            trendingTracks: trendingTracks,
-            tagTracks: tagTracks,
-            selectedTag: 'pop',
-            adminAlbums: adminAlbums,
-            currentOffset: trendingTracks.length,
-            hasMore: trendingTracks.length >= _pageSize,
-          )),
-        );
-      },
-    );
+    if (emit.isDone) return;
+
+    if (trendingResult.isLeft()) {
+      emit(HomeError(trendingResult.fold((e) => e, (_) => 'Lỗi không xác định')));
+      return;
+    }
+
+    final trendingTracks = trendingResult.getOrElse(() => []);
+    final tagTracks = tagResult.getOrElse(() => []);
+
+    emit(HomeLoaded(
+      trendingTracks: trendingTracks,
+      tagTracks: tagTracks,
+      selectedTag: 'pop',
+      adminAlbums: adminAlbums,
+      currentOffset: trendingTracks.length,
+      hasMore: trendingTracks.length >= _pageSize,
+    ));
   }
 
   Future<void> _onLoadByTag(HomeLoadByTag event, Emitter<HomeState> emit) async {
