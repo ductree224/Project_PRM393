@@ -1,6 +1,6 @@
+import 'package:dartz/dartz.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:soundtilo/core/debug/perf_trace.dart';
 import 'package:soundtilo/data/models/album_model.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/domain/repositories/album_repository.dart';
@@ -39,41 +39,37 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     emit(HomeLoading());
 
-<<<<<<< HEAD
-    final trendingResult = await _getTrendingUseCase(limit: _pageSize, offset: 0);
-    final tagResult = await _getTrendingUseCase(genre: 'pop', limit: 10, offset: 0);
+    // Fetch trending tracks and admin albums in parallel
+    final results = await Future.wait([
+      _getTrendingUseCase(limit: _pageSize, offset: 0),
+      _fetchAdminAlbums(),
+    ]);
+
+    final trendingResult = results[0] as Either<String, List<TrackEntity>>;
+    final adminAlbums = results[1] as List<AlbumModel>;
 
     trendingResult.fold(
       (error) => emit(HomeError(error)),
-      (trendingTracks) {
+      (trendingTracks) async {
+        // Sau khi có trending, load thêm nhạc theo tag mặc định 'pop'
+        final tagResult = await _getTrendingUseCase(genre: 'pop', limit: 12, offset: 0);
+        
         tagResult.fold(
-          (error) => emit(HomeLoaded(trendingTracks: trendingTracks, currentOffset: trendingTracks.length)),
+          (error) => emit(HomeLoaded(
+            trendingTracks: trendingTracks,
+            adminAlbums: adminAlbums,
+            currentOffset: trendingTracks.length,
+          )),
           (tagTracks) => emit(HomeLoaded(
             trendingTracks: trendingTracks,
             tagTracks: tagTracks,
             selectedTag: 'pop',
+            adminAlbums: adminAlbums,
             currentOffset: trendingTracks.length,
             hasMore: trendingTracks.length >= _pageSize,
           )),
         );
       },
-=======
-    // Fetch trending tracks and admin albums in parallel
-    final results = await Future.wait([
-      _getTrendingUseCase(limit: _homeTrendingLimit),
-      _fetchAdminAlbums(),
-    ]);
-
-    final trackResult = results[0] as dynamic;
-    final adminAlbums = results[1] as List<AlbumModel>;
-
-    trackResult.fold(
-      (error) => emit(HomeError(error)),
-      (tracks) => emit(HomeLoaded(
-        trendingTracks: tracks as List<TrackEntity>,
-        adminAlbums: adminAlbums,
-      )),
->>>>>>> quan
     );
   }
 
@@ -106,77 +102,48 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _onRefresh(HomeRefresh event, Emitter<HomeState> emit) async {
-<<<<<<< HEAD
-    final current = state;
-    if (current is HomeLoaded) {
+    if (state is HomeLoaded) {
+      final current = state as HomeLoaded;
       emit(HomeRefreshing(
         trendingTracks: current.trendingTracks,
+        adminAlbums: current.adminAlbums,
         currentOffset: current.currentOffset,
         hasMore: current.hasMore,
       ));
-    } else if (current is! HomeRefreshing && current is! HomeLoading) {
-      emit(HomeLoading());
-    }
-
-    final result = await _getTrendingUseCase(limit: _pageSize, offset: 0);
-    
-    result.fold(
-      (error) {
-        if (state is HomeRefreshing || state is HomeLoaded) {
-          // Trả về trạng thái cũ nếu lỗi
-          if (current is HomeLoaded) emit(current);
-        } else {
-          emit(HomeError(error));
-=======
-    final stopwatch = Stopwatch()..start();
-    List<TrackEntity>? previousTracks;
-    List<AlbumModel> previousAlbums = const [];
-
-    if (state is HomeLoaded) {
-      previousTracks = (state as HomeLoaded).trendingTracks;
-      previousAlbums = (state as HomeLoaded).adminAlbums;
-      emit(HomeRefreshing(
-        trendingTracks: previousTracks,
-        adminAlbums: previousAlbums,
-      ));
-    } else if (state is HomeRefreshing) {
-      previousTracks = (state as HomeRefreshing).trendingTracks;
-      previousAlbums = (state as HomeRefreshing).adminAlbums;
-    } else if (state is! HomeLoading) {
+    } else if (state is! HomeRefreshing && state is! HomeLoading) {
       emit(HomeLoading());
     }
 
     // Fetch trending tracks and admin albums in parallel
     final results = await Future.wait([
-      _getTrendingUseCase(limit: _homeTrendingLimit),
+      _getTrendingUseCase(limit: _pageSize, offset: 0),
       _fetchAdminAlbums(),
     ]);
 
-    final trackResult = results[0] as dynamic;
+    final trendingResult = results[0] as Either<String, List<TrackEntity>>;
     final adminAlbums = results[1] as List<AlbumModel>;
 
-    trackResult.fold(
+    trendingResult.fold(
       (error) {
-        if (previousTracks != null) {
+        final current = state;
+        if (current is HomeRefreshing) {
           emit(HomeLoaded(
-            trendingTracks: List.unmodifiable(previousTracks),
-            adminAlbums: previousAlbums,
-          ));
-          return;
->>>>>>> quan
-        }
-      },
-<<<<<<< HEAD
-      (tracks) {
-        if (current is HomeLoaded) {
-          emit(current.copyWith(
-            trendingTracks: tracks,
-            currentOffset: tracks.length,
-            hasMore: tracks.length >= _pageSize,
+            trendingTracks: current.trendingTracks,
+            adminAlbums: current.adminAlbums,
+            currentOffset: current.currentOffset,
+            hasMore: current.hasMore,
           ));
         } else {
-          emit(HomeLoaded(trendingTracks: tracks, currentOffset: tracks.length));
+          emit(HomeError(error));
         }
+      },
+      (tracks) {
+        emit(HomeLoaded(
+          trendingTracks: tracks,
+          adminAlbums: adminAlbums,
+          currentOffset: tracks.length,
+          hasMore: tracks.length >= _pageSize,
+        ));
       },
     );
   }
@@ -190,12 +157,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final result = await _getTrendingUseCase(
       limit: _pageSize,
       offset: current.currentOffset,
-=======
-      (tracks) => emit(HomeLoaded(
-        trendingTracks: tracks as List<TrackEntity>,
-        adminAlbums: adminAlbums,
-      )),
->>>>>>> quan
     );
 
     result.fold(

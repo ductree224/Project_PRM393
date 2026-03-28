@@ -1,0 +1,271 @@
+﻿Analyzing soundtilo...                                          
+
+   info - Unnecessary use of multiple underscores - lib\common\widgets\track\track_card.dart:37:42 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\common\widgets\track\track_card.dart:38:49 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\common\widgets\track\track_card.dart:41:42 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\common\widgets\track\track_card.dart:41:46 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\common\widgets\track\track_card.dart:42:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\common\widgets\track\track_card.dart:47:47 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\common\widgets\track\track_tile.dart:36:36 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\common\widgets\track\track_tile.dart:37:43 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\common\widgets\track\track_tile.dart:40:36 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\common\widgets\track\track_tile.dart:40:40 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\common\widgets\track\track_tile.dart:41:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\common\widgets\track\track_tile.dart:46:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\common\widgets\track\track_tile.dart:64:42 - deprecated_member_use
+warning - This class (or a class that this class inherits from) is marked as '@immutable', but one or more of its instance fields aren't final: UserEntity.quan - lib\data\models\user_model.dart:3:7 - must_be_immutable
+  error - Can't define a const constructor for a class with non-final fields - lib\data\models\user_model.dart:4:9 - const_constructor_with_non_final_field
+   info - Statements in an if should be enclosed in a block - lib\data\repository\track_admin_repository_impl.dart:60:33 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\data\repository\track_admin_repository_impl.dart:61:36 - curly_braces_in_flow_control_structures
+warning - This class (or a class that this class inherits from) is marked as '@immutable', but one or more of its instance fields aren't final: UserEntity.quan - lib\domain\entities\user_entity.dart:3:7 - must_be_immutable
+  error - Can't define a const constructor for a class with non-final fields - lib\domain\entities\user_entity.dart:12:9 - const_constructor_with_non_final_field
+   info - Missing type annotation - lib\domain\entities\user_entity.dart:23:1 - strict_top_level_inference
+warning - The method doesn't override an inherited method - lib\domain\entities\user_entity.dart:23:1 - override_on_non_overriding_member
+  error - Methods must have an explicit list of parameters - lib\domain\entities\user_entity.dart:23:1 - missing_method_parameters
+  error - Operator '<<' should declare exactly 1 parameters, but 0 found - lib\domain\entities\user_entity.dart:23:1 - wrong_number_of_parameters_for_operator
+  error - Operator declarations must be preceded by the keyword 'operator' - lib\domain\entities\user_entity.dart:23:1 - missing_keyword_operator
+   info - Missing type annotation - lib\domain\entities\user_entity.dart:23:3 - strict_top_level_inference
+  error - A function body must be provided - lib\domain\entities\user_entity.dart:23:3 - missing_function_body
+  error - Methods must have an explicit list of parameters - lib\domain\entities\user_entity.dart:23:3 - missing_method_parameters
+  error - Operator '<<' should declare exactly 1 parameters, but 0 found - lib\domain\entities\user_entity.dart:23:3 - wrong_number_of_parameters_for_operator
+  error - Operator declarations must be preceded by the keyword 'operator' - lib\domain\entities\user_entity.dart:23:3 - missing_keyword_operator
+  error - The name '<<' is already defined - lib\domain\entities\user_entity.dart:23:3 - duplicate_definition
+   info - Missing type annotation - lib\domain\entities\user_entity.dart:23:5 - strict_top_level_inference
+  error - A function body must be provided - lib\domain\entities\user_entity.dart:23:5 - missing_function_body
+  error - Methods must have an explicit list of parameters - lib\domain\entities\user_entity.dart:23:5 - missing_method_parameters
+  error - Operator '<<' should declare exactly 1 parameters, but 0 found - lib\domain\entities\user_entity.dart:23:5 - wrong_number_of_parameters_for_operator
+  error - Operator declarations must be preceded by the keyword 'operator' - lib\domain\entities\user_entity.dart:23:5 - missing_keyword_operator
+  error - The name '<<' is already defined - lib\domain\entities\user_entity.dart:23:5 - duplicate_definition
+  error - Types parameters aren't allowed when defining an operator - lib\domain\entities\user_entity.dart:23:7 - type_parameter_on_operator
+  error - Expected to find '>' - lib\domain\entities\user_entity.dart:23:9 - expected_token
+  error - A function body must be provided - lib\domain\entities\user_entity.dart:24:3 - missing_function_body
+   info - The member 'props' overrides an inherited member but isn't annotated with '@override' - lib\domain\entities\user_entity.dart:24:21 - annotate_overrides
+  error - Expected a class member - lib\domain\entities\user_entity.dart:32:1 - expected_class_member
+  error - The '===' operator is not supported - lib\domain\entities\user_entity.dart:32:1 - unsupported_operator
+  error - Expected a class member - lib\domain\entities\user_entity.dart:32:4 - expected_class_member
+  error - The '===' operator is not supported - lib\domain\entities\user_entity.dart:32:4 - unsupported_operator
+   info - Missing type annotation - lib\domain\entities\user_entity.dart:32:7 - strict_top_level_inference
+  error - Methods must have an explicit list of parameters - lib\domain\entities\user_entity.dart:32:7 - missing_method_parameters
+  error - Operator declarations must be preceded by the keyword 'operator' - lib\domain\entities\user_entity.dart:32:7 - missing_keyword_operator
+  error - The string '=' isn't a user-definable operator - lib\domain\entities\user_entity.dart:32:7 - invalid_operator
+  error - A function body must be provided - lib\domain\entities\user_entity.dart:33:3 - missing_function_body
+   info - The member 'props' overrides an inherited member but isn't annotated with '@override' - lib\domain\entities\user_entity.dart:33:21 - annotate_overrides
+  error - The name 'props' is already defined - lib\domain\entities\user_entity.dart:33:21 - duplicate_definition
+   info - Missing type annotation - lib\domain\entities\user_entity.dart:34:1 - strict_top_level_inference
+  error - Methods must have an explicit list of parameters - lib\domain\entities\user_entity.dart:34:1 - missing_method_parameters
+  error - Operator '>>>' should declare exactly 1 parameters, but 0 found - lib\domain\entities\user_entity.dart:34:1 - wrong_number_of_parameters_for_operator
+  error - Operator declarations must be preceded by the keyword 'operator' - lib\domain\entities\user_entity.dart:34:1 - missing_keyword_operator
+   info - Missing type annotation - lib\domain\entities\user_entity.dart:34:4 - strict_top_level_inference
+  error - A function body must be provided - lib\domain\entities\user_entity.dart:34:4 - missing_function_body
+  error - Methods must have an explicit list of parameters - lib\domain\entities\user_entity.dart:34:4 - missing_method_parameters
+  error - Operator '>>>' should declare exactly 1 parameters, but 0 found - lib\domain\entities\user_entity.dart:34:4 - wrong_number_of_parameters_for_operator
+  error - Operator declarations must be preceded by the keyword 'operator' - lib\domain\entities\user_entity.dart:34:4 - missing_keyword_operator
+  error - The name '>>>' is already defined - lib\domain\entities\user_entity.dart:34:4 - duplicate_definition
+   info - Missing type annotation - lib\domain\entities\user_entity.dart:34:7 - strict_top_level_inference
+  error - A function body must be provided - lib\domain\entities\user_entity.dart:34:7 - missing_function_body
+  error - Methods must have an explicit list of parameters - lib\domain\entities\user_entity.dart:34:7 - missing_method_parameters
+  error - Operator '>' should declare exactly 1 parameters, but 0 found - lib\domain\entities\user_entity.dart:34:7 - wrong_number_of_parameters_for_operator
+  error - Operator declarations must be preceded by the keyword 'operator' - lib\domain\entities\user_entity.dart:34:7 - missing_keyword_operator
+   info - An uninitialized field should have an explicit type annotation - lib\domain\entities\user_entity.dart:34:9 - prefer_typing_uninitialized_variables
+   info - Missing type annotation - lib\domain\entities\user_entity.dart:34:9 - strict_top_level_inference
+  error - A function body must be provided - lib\domain\entities\user_entity.dart:34:9 - missing_function_body
+  error - Expected to find ';' - lib\domain\entities\user_entity.dart:34:9 - expected_token
+  error - Variables must be declared using the keywords 'const', 'final', 'var' or a type name - lib\domain\entities\user_entity.dart:34:9 - missing_const_final_var_or_type
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:102:85 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:106:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:115:86 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:207:65 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:230:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:244:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_users_page.dart:81:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_users_page.dart:117:84 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\widgets\admin_sidebar.dart:132:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\widgets\admin_sidebar.dart:145:85 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\widgets\admin_sidebar.dart:152:87 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\widgets\admin_topbar.dart:12:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\widgets\admin_topbar.dart:14:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\widgets\admin_topbar.dart:30:69 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\widgets\admin_topbar.dart:50:63 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\widgets\admin_topbar.dart:73:65 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\presentation\admin\widgets\album_form_dialog.dart:124:19 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\presentation\admin\widgets\album_form_dialog.dart:192:23 - deprecated_member_use
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\presentation\admin\widgets\artist_form_dialog.dart:107:23 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\forgot_password.dart:72:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\forgot_password.dart:72:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\forgot_password.dart:122:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\forgot_password.dart:124:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\forgot_password.dart:271:34 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\presentation\auth\pages\forgot_password.dart:297:40 - deprecated_member_use
+warning - Unused import: '../../../common/widgets/button/basic_app_button.dart' - lib\presentation\auth\pages\signin.dart:19:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:108:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:108:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:145:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:147:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:162:80 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:198:73 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:203:73 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:218:68 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signin.dart:341:34 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\presentation\auth\pages\signin.dart:367:40 - deprecated_member_use
+warning - The declaration '<unnamed>' isn't referenced - lib\presentation\auth\pages\signup.dart:1:1 - unused_element
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:14:1 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:14:3 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:14:5 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:14:7 - expected_executable
+   info - An uninitialized variable should have an explicit type annotation - lib\presentation\auth\pages\signup.dart:14:9 - prefer_typing_uninitialized_variables
+   info - Missing type annotation - lib\presentation\auth\pages\signup.dart:14:9 - strict_top_level_inference
+   info - The variable name 'HEAD' isn't a lowerCamelCase identifier - lib\presentation\auth\pages\signup.dart:14:9 - non_constant_identifier_names
+  error - Expected to find ';' - lib\presentation\auth\pages\signup.dart:14:9 - expected_token
+  error - Variables must be declared using the keywords 'const', 'final', 'var' or a type name - lib\presentation\auth\pages\signup.dart:14:9 - missing_const_final_var_or_type
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:15:1 - expected_executable
+  error - The '===' operator is not supported - lib\presentation\auth\pages\signup.dart:15:1 - unsupported_operator
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:15:4 - expected_executable
+  error - The '===' operator is not supported - lib\presentation\auth\pages\signup.dart:15:4 - unsupported_operator
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:15:7 - expected_executable
+  error - Directives must appear before any declarations - lib\presentation\auth\pages\signup.dart:16:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\auth\pages\signup.dart:18:1 - directive_after_declaration
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:19:1 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:19:4 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\auth\pages\signup.dart:19:7 - expected_executable
+  error - Expected to find ';' - lib\presentation\auth\pages\signup.dart:19:9 - expected_token
+  error - Undefined class 'quan' - lib\presentation\auth\pages\signup.dart:19:9 - undefined_class
+  error - Directives must appear before any declarations - lib\presentation\auth\pages\signup.dart:20:1 - directive_after_declaration
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:20:1 - missing_identifier
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:49:1 - missing_identifier
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:49:3 - missing_identifier
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:49:5 - missing_identifier
+  error - Expected to find ';' - lib\presentation\auth\pages\signup.dart:49:9 - expected_token
+  error - Expected to find '>' - lib\presentation\auth\pages\signup.dart:49:9 - expected_token
+  error - The name 'HEAD' isn't a type, so it can't be used as a type argument - lib\presentation\auth\pages\signup.dart:49:9 - non_type_as_type_argument
+  error - Expected to find '[' - lib\presentation\auth\pages\signup.dart:50:9 - expected_token
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:63:1 - missing_identifier
+  error - The '===' operator is not supported - lib\presentation\auth\pages\signup.dart:63:1 - unsupported_operator
+  error - Illegal assignment to non-assignable expression - lib\presentation\auth\pages\signup.dart:63:4 - illegal_assignment_to_non_assignable
+  error - Missing selector such as '.identifier' or '[0]' - lib\presentation\auth\pages\signup.dart:63:4 - missing_assignable_selector
+  error - The '===' operator is not supported - lib\presentation\auth\pages\signup.dart:63:4 - unsupported_operator
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:63:7 - missing_identifier
+  error - Expected to find ';' - lib\presentation\auth\pages\signup.dart:63:7 - expected_token
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:64:9 - missing_identifier
+warning - Unnecessary type check; the result is always 'true' - lib\presentation\auth\pages\signup.dart:64:13 - unnecessary_type_check
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:78:1 - missing_identifier
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:78:4 - missing_identifier
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:78:7 - missing_identifier
+  error - Expected to find ';' - lib\presentation\auth\pages\signup.dart:78:9 - expected_token
+  error - Undefined name 'quan' - lib\presentation\auth\pages\signup.dart:78:9 - undefined_identifier
+warning - Dead code - lib\presentation\auth\pages\signup.dart:79:16 - dead_code
+  error - The getter 'message' isn't defined for the type 'AuthAuthenticated' - lib\presentation\auth\pages\signup.dart:80:45 - undefined_getter
+  error - Expected to find ';' - lib\presentation\auth\pages\signup.dart:82:7 - expected_token
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:82:8 - missing_identifier
+  error - Unexpected text ';' - lib\presentation\auth\pages\signup.dart:82:8 - unexpected_token
+warning - The label 'child' isn't used - lib\presentation\auth\pages\signup.dart:83:7 - unused_label
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup.dart:104:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup.dart:104:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup.dart:140:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup.dart:142:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup.dart:194:73 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup.dart:199:73 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup.dart:214:68 - deprecated_member_use
+  error - Expected to find ';' - lib\presentation\auth\pages\signup.dart:242:7 - expected_token
+  error - Expected an identifier - lib\presentation\auth\pages\signup.dart:242:8 - missing_identifier
+  error - Unexpected text ';' - lib\presentation\auth\pages\signup.dart:242:8 - unexpected_token
+  error - Expected to find '}' - lib\presentation\auth\pages\signup.dart:243:5 - expected_token
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup.dart:349:34 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\presentation\auth\pages\signup.dart:375:40 - deprecated_member_use
+   info - The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\presentation\auth\pages\signup_or_signin.dart:1:8 - unnecessary_import
+warning - Unused import: 'package:soundtilo/common/helper/is_dark_mode.dart' - lib\presentation\auth\pages\signup_or_signin.dart:6:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup_or_signin.dart:33:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup_or_signin.dart:34:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup_or_signin.dart:143:68 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\auth\pages\signup_or_signin.dart:257:34 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\presentation\auth\pages\signup_or_signin.dart:283:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\choose_mode\pages\choose_mode.dart:33:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\choose_mode\pages\choose_mode.dart:34:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\choose_mode\pages\choose_mode.dart:321:34 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\presentation\choose_mode\pages\choose_mode.dart:347:40 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\history\pages\history.dart:289:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\history\pages\history.dart:403:29 - deprecated_member_use
+warning - Unused import: 'package:soundtilo/core/debug/perf_trace.dart' - lib\presentation\home\bloc\home_bloc.dart:4:8 - unused_import
+  error - The named parameter 'libraryBloc' isn't defined - lib\presentation\home\pages\album_detail.dart:367:9 - undefined_named_parameter
+warning - The value of the field '_verticalListLimit' isn't used - lib\presentation\home\pages\home.dart:30:20 - unused_field
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:244:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:296:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:297:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:313:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:314:41 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:361:34 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:361:38 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:363:41 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:524:26 - unnecessary_underscores
+   info - The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\presentation\intro\pages\get_started.dart:1:8 - unnecessary_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\intro\pages\get_started.dart:31:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\intro\pages\get_started.dart:32:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\intro\pages\get_started.dart:205:34 - deprecated_member_use
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\presentation\intro\pages\get_started.dart:231:40 - deprecated_member_use
+   info - Empty catch block - lib\presentation\library\bloc\waitlist\waitlist_bloc.dart:125:100 - empty_catches
+   info - Empty catch block - lib\presentation\library\bloc\waitlist\waitlist_bloc.dart:149:67 - empty_catches
+warning - Duplicate import - lib\presentation\library\pages\playlist_detail.dart:5:8 - duplicate_import
+warning - The value of the local variable 'historyTracks' isn't used - lib\presentation\library\pages\waitlist_page.dart:74:25 - unused_local_variable
+   info - Unnecessary use of multiple underscores - lib\presentation\library\pages\waitlist_page.dart:185:145 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\library\pages\waitlist_page.dart:185:148 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\lyrics\pages\lyrics_sheet.dart:59:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\lyrics\pages\lyrics_sheet.dart:100:65 - deprecated_member_use
+warning - The declaration '<unnamed>' isn't referenced - lib\presentation\main_shell.dart:1:1 - unused_element
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:6:1 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:6:3 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:6:5 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:6:7 - expected_executable
+   info - An uninitialized variable should have an explicit type annotation - lib\presentation\main_shell.dart:6:9 - prefer_typing_uninitialized_variables
+   info - Missing type annotation - lib\presentation\main_shell.dart:6:9 - strict_top_level_inference
+   info - The variable name 'HEAD' isn't a lowerCamelCase identifier - lib\presentation\main_shell.dart:6:9 - non_constant_identifier_names
+  error - Expected to find ';' - lib\presentation\main_shell.dart:6:9 - expected_token
+  error - Variables must be declared using the keywords 'const', 'final', 'var' or a type name - lib\presentation\main_shell.dart:6:9 - missing_const_final_var_or_type
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:7:1 - expected_executable
+  error - The '===' operator is not supported - lib\presentation\main_shell.dart:7:1 - unsupported_operator
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:7:4 - expected_executable
+  error - The '===' operator is not supported - lib\presentation\main_shell.dart:7:4 - unsupported_operator
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:7:7 - expected_executable
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:8:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:9:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:10:1 - directive_after_declaration
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:11:1 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:11:4 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\presentation\main_shell.dart:11:7 - expected_executable
+  error - Expected to find ';' - lib\presentation\main_shell.dart:11:9 - expected_token
+  error - Undefined class 'quan' - lib\presentation\main_shell.dart:11:9 - undefined_class
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:12:1 - directive_after_declaration
+  error - Expected an identifier - lib\presentation\main_shell.dart:12:1 - missing_identifier
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:13:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:14:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:15:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:16:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:17:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:18:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:19:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:20:1 - directive_after_declaration
+  error - Directives must appear before any declarations - lib\presentation\main_shell.dart:21:1 - directive_after_declaration
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:270:34 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:270:38 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:271:34 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:317:38 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:317:42 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:319:38 - unnecessary_underscores
+
+flutter : 249 issues 
+found. (ran in 11.1s)
+At line:1 char:1
++ flutter analyze > flu
+tter_analyze_results_v3
+.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (249 issues fo   
+ und. (ran in 11.1s    
+):String) [], Remo    
+teException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 

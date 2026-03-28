@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:soundtilo/common/helper/is_dark_mode.dart';
 import 'package:soundtilo/common/widgets/track/track_tile.dart';
+import 'package:soundtilo/common/widgets/track/track_card.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/data/models/album_model.dart';
@@ -25,14 +26,10 @@ import 'package:soundtilo/presentation/search/bloc/search_bloc.dart';
 import 'package:soundtilo/presentation/search/pages/search.dart';
 
 class HomePage extends StatelessWidget {
-<<<<<<< HEAD
   static const int _horizontalPreviewLimit = 8;
   final List<String> _tags = const [
     'pop', 'rock', 'hip-hop', 'electronic', 'jazz', 'classical', 'lofi', 'r&b'
   ];
-=======
-  static const int _verticalListLimit = 12;
->>>>>>> quan
 
   const HomePage({super.key});
 
@@ -51,16 +48,13 @@ class HomePage extends StatelessWidget {
             }
 
             if (state is HomeLoaded) {
-<<<<<<< HEAD
               return _buildContent(context, state);
-=======
-              return _buildContent(context, state.trendingTracks, state.adminAlbums);
             }
 
             if (state is HomeRefreshing) {
               return Stack(
                 children: [
-                  _buildContent(context, state.trendingTracks, state.adminAlbums),
+                  _buildContentFromState(context, state.trendingTracks, state.adminAlbums, state.currentOffset, state.hasMore),
                   const Positioned(
                     top: 0,
                     left: 0,
@@ -69,7 +63,6 @@ class HomePage extends StatelessWidget {
                   ),
                 ],
               );
->>>>>>> quan
             }
 
             return const SizedBox.shrink();
@@ -79,10 +72,31 @@ class HomePage extends StatelessWidget {
     );
   }
 
-<<<<<<< HEAD
   Widget _buildContent(BuildContext context, HomeLoaded state) {
-=======
-  Widget _buildContent(BuildContext context, List<TrackEntity> tracks, List<AlbumModel> adminAlbums) {
+    return _buildContentFromState(
+      context, 
+      state.trendingTracks, 
+      state.adminAlbums, 
+      state.currentOffset, 
+      state.hasMore,
+      selectedTag: state.selectedTag,
+      tagTracks: state.tagTracks,
+      isTagLoading: state.isTagLoading,
+    );
+  }
+
+  Widget _buildContentFromState(
+    BuildContext context, 
+    List<TrackEntity> trendingTracks, 
+    List<AlbumModel> adminAlbums,
+    int currentOffset,
+    bool hasMore,
+    {
+      String selectedTag = 'pop',
+      List<TrackEntity> tagTracks = const [],
+      bool isTagLoading = false,
+    }
+  ) {
     // Show only admin-managed albums
     final List<LocalAlbum> displayedAlbums = adminAlbums.map((adminAlbum) {
       return LocalAlbum(
@@ -101,11 +115,6 @@ class HomePage extends StatelessWidget {
       );
     }).toList();
 
-    final visibleTracks = tracks.length > _verticalListLimit
-        ? tracks.take(_verticalListLimit).toList(growable: false)
-        : tracks;
-
->>>>>>> quan
     return RefreshIndicator(
       onRefresh: () async => context.read<HomeBloc>().add(HomeRefresh()),
       child: CustomScrollView(
@@ -113,59 +122,46 @@ class HomePage extends StatelessWidget {
           _buildAppBar(context),
           
           _buildSectionHeader(context, 'Thịnh hành'),
-          _buildTrendingList(state.trendingTracks),
+          _buildTrendingList(trendingTracks),
 
-<<<<<<< HEAD
           _buildSectionHeader(context, 'Khám phá theo thể loại'),
-          _buildTagBar(context, state.selectedTag),
-          _buildTagTracks(context, state),
-=======
-          // Section: Thịnh hành (horizontal scroll)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                'Album Thịnh hành',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: context.isDarkMode ? Colors.white : Colors.black,
+          _buildTagBar(context, selectedTag),
+          _buildTagTracks(context, tagTracks, isTagLoading),
+
+          if (displayedAlbums.isNotEmpty) ...[
+            _buildSectionHeader(context, 'Album Thịnh hành'),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 210,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: displayedAlbums.length,
+                  itemBuilder: (context, index) {
+                    final album = displayedAlbums[index];
+                    return AlbumCard(
+                      album: album,
+                      onTap: () {
+                        final libraryBloc = context.read<LibraryBloc>();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: libraryBloc,
+                              child: AlbumDetailPage(album: album),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 210,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: displayedAlbums.length,
-                itemBuilder: (context, index) {
-                  final album = displayedAlbums[index];
-                  return AlbumCard(
-                    album: album,
-                    onTap: () {
-                      final libraryBloc = context.read<LibraryBloc>();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider.value(
-                            value: libraryBloc,
-                            child: AlbumDetailPage(album: album),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
->>>>>>> quan
+          ],
 
           _buildSectionHeader(context, 'Dành cho bạn'),
-          _buildInfiniteList(context, state),
+          _buildInfiniteList(context, trendingTracks, hasMore),
 
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
@@ -269,8 +265,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTagTracks(BuildContext context, HomeLoaded state) {
-    if (state.isTagLoading) {
+  Widget _buildTagTracks(BuildContext context, List<TrackEntity> tagTracks, bool isTagLoading) {
+    if (isTagLoading) {
       return SliverToBoxAdapter(
         child: SizedBox(
           height: 240,
@@ -335,10 +331,10 @@ class HomePage extends StatelessWidget {
                 mainAxisSpacing: 15,
                 crossAxisSpacing: 10,
               ),
-              itemCount: state.tagTracks.length,
+              itemCount: tagTracks.length,
               itemBuilder: (context, index) {
-                final track = state.tagTracks[index];
-                return _buildHorizontalTrackItem(context, track, state.tagTracks);
+                final track = tagTracks[index];
+                return _buildHorizontalTrackItem(context, track, tagTracks);
               },
             ),
           ],
@@ -420,21 +416,21 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfiniteList(BuildContext context, HomeLoaded state) {
+  Widget _buildInfiniteList(BuildContext context, List<TrackEntity> tracks, bool hasMore) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          if (index >= state.trendingTracks.length) {
-            return state.hasMore ? _buildShimmerLoading(context) : const SizedBox.shrink();
+          if (index >= tracks.length) {
+            return hasMore ? _buildShimmerLoading(context) : const SizedBox.shrink();
           }
-          final track = state.trendingTracks[index];
+          final track = tracks[index];
           return TrackTile(
             key: ValueKey(track.externalId),
             track: track,
-            onTap: () => _openPlayer(context, track, state.trendingTracks),
+            onTap: () => _openPlayer(context, track, tracks),
           );
         },
-        childCount: state.trendingTracks.length + (state.hasMore ? 1 : 0),
+        childCount: tracks.length + (hasMore ? 1 : 0),
       ),
     );
   }

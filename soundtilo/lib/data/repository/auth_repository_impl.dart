@@ -52,16 +52,11 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right((user, response.toTokens()));
     } on DioException catch (e) {
-<<<<<<< HEAD
-      final message =
-          e.response?.data?['message'] ?? 'Đăng ký thất bại. Vui lòng thử lại.';
-=======
       final data = e.response?.data;
       String message = 'Đăng ký thất bại. Vui lòng thử lại.';
       if (data is Map) {
         message = data['message']?.toString() ?? message;
       }
->>>>>>> quan
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -90,17 +85,11 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right((user, response.toTokens()));
     } on DioException catch (e) {
-<<<<<<< HEAD
-      final message =
-          e.response?.data?['message'] ??
-          'Đăng nhập thất bại. Vui lòng thử lại.';
-=======
       final data = e.response?.data;
       String message = 'Đăng nhập thất bại. Vui lòng thử lại.';
       if (data is Map) {
         message = data['message']?.toString() ?? message;
       }
->>>>>>> quan
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -160,16 +149,11 @@ class AuthRepositoryImpl implements AuthRepository {
       await _saveTokens(response);
       return Right(response.toTokens());
     } on DioException catch (e) {
-<<<<<<< HEAD
-      final message =
-          e.response?.data?['message'] ?? 'Phiên đăng nhập đã hết hạn.';
-=======
       final data = e.response?.data;
       String message = 'Phiên đăng nhập đã hết hạn.';
       if (data is Map) {
         message = data['message']?.toString() ?? message;
       }
->>>>>>> quan
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -182,16 +166,11 @@ class AuthRepositoryImpl implements AuthRepository {
       final token = await _remoteDataSource.forgotPassword(email);
       return Right(token);
     } on DioException catch (e) {
-<<<<<<< HEAD
-      final message =
-          e.response?.data?['message'] ?? 'Yêu cầu đặt lại mật khẩu thất bại.';
-=======
       final data = e.response?.data;
       String message = 'Yêu cầu đặt lại mật khẩu thất bại.';
       if (data is Map) {
         message = data['message']?.toString() ?? message;
       }
->>>>>>> quan
       return Left(message);
     } on FormatException catch (e) {
       return Left(e.message);
@@ -212,16 +191,11 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(message);
     } on DioException catch (e) {
-<<<<<<< HEAD
-      final message =
-          e.response?.data?['message'] ?? 'Đặt lại mật khẩu thất bại.';
-=======
       final data = e.response?.data;
       String message = 'Đặt lại mật khẩu thất bại.';
       if (data is Map) {
         message = data['message']?.toString() ?? message;
       }
->>>>>>> quan
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');

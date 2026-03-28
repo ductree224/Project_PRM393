@@ -1,14 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/common/helper/is_dark_mode.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/presentation/home/models/local_album.dart';
-import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
 import 'package:soundtilo/data/models/track_model.dart';
-
 import '../../../../core/di/service_locator.dart';
 import '../../../../domain/repositories/album_repository.dart';
 
@@ -149,7 +146,6 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
           errorWidget: (context, url, error) => _buildPlaceholderImage(height, width),
         );
       }
-      // Handle local paths if necessary (e.g. file:// or just absolute paths)
       return _buildPlaceholderImage(height, width);
     } catch (e) {
       return _buildPlaceholderImage(height, width);
@@ -232,7 +228,7 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
               children: [
                 Text(
                   album.artistName,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,
@@ -358,13 +354,11 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
 
   void _playTrack(BuildContext context, TrackEntity track) {
     final album = _currentAlbum;
-    final libraryBloc = context.read<LibraryBloc>();
     Navigator.push(
       context,
       PlayerPage.createRoute(
         track: track,
         queue: album.tracks,
-        libraryBloc: libraryBloc,
       ),
     );
   }

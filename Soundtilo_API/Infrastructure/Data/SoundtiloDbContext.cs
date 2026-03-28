@@ -17,15 +17,12 @@ public class SoundtiloDbContext : DbContext
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
-<<<<<<< HEAD
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Waitlist> Waitlists { get; set; }
     public DbSet<WaitlistTrack> WaitlistTracks { get; set; }
-=======
     public DbSet<Artist> Artists => Set<Artist>();
     public DbSet<Album> Albums => Set<Album>();
->>>>>>> quan
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,7 +45,6 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.BannedReason).HasColumnName("banned_reason");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            entity.Property(e => e.Role).HasColumnName("role").HasDefaultValue("User");
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Role);

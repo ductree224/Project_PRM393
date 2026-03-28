@@ -14,7 +14,7 @@ public class User
     public string? BannedReason { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public string Role { get; set; } = "User";
+
 
     // Navigation properties
     [System.Text.Json.Serialization.JsonIgnore]

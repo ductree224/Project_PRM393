@@ -7,7 +7,7 @@ namespace Application.Interfaces;
 public interface ITrackService
 {
     Task<TrackSearchResponse> SearchAsync(string query, string? source = null, int limit = 20, int offset = 0, bool cacheOnly = false, bool fallbackExternal = true);
-    Task<TrendingResponse> GetTrendingAsync(string? genre = null, string? time = null, int limit = 20);
+    Task<TrendingResponse> GetTrendingAsync(string? genre = null, string? time = null, int limit = 20, int offset = 0);
     Task<TrackDto?> GetTrackAsync(string externalId, string source = "audius");
     Task<string?> GetStreamUrlAsync(string trackId);
     Task<TrackSearchResponse> GetByTagAsync(string tag, int limit = 20);

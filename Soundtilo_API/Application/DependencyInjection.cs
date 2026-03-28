@@ -16,13 +16,12 @@ public static class DependencyInjection
         services.AddScoped<HistoryService>();
         services.AddScoped<LyricsService>();
         services.AddScoped<UserService>();
-<<<<<<< HEAD
+
         services.AddScoped<AdminService>();
         services.AddScoped<CommentService>();
-=======
+
         services.AddScoped<Interfaces.IArtistService, ArtistService>();
         services.AddScoped<Interfaces.IAlbumService, AlbumService>();
->>>>>>> quan
 
         return services;
     }

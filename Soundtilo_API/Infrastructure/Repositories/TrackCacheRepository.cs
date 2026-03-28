@@ -58,28 +58,7 @@ public class TrackCacheRepository : ITrackCacheRepository
 
         if (!string.IsNullOrWhiteSpace(genre))
         {
-<<<<<<< HEAD
             query = query.Where(t => t.Genre != null && EF.Functions.ILike(t.Genre, $"%{genre}%"));
-=======
-            existing.Title = track.Title;
-            existing.ArtistName = track.ArtistName;
-            existing.AlbumName = track.AlbumName;
-            existing.ArtworkUrl = track.ArtworkUrl;
-            existing.StreamUrl = track.StreamUrl;
-            existing.PreviewUrl = track.PreviewUrl;
-            existing.DurationSeconds = track.DurationSeconds;
-            existing.Genre = track.Genre;
-            existing.Mood = track.Mood;
-            existing.PlayCount = track.PlayCount;
-            // Status is preserved unless explicitly changed by admin
-            existing.ExternalData = track.ExternalData;
-            existing.CachedAt = DateTime.UtcNow;
-            existing.ExpiresAt = DateTime.UtcNow.AddHours(24);
-        }
-        else
-        {
-            _context.CachedTracks.Add(track);
->>>>>>> quan
         }
 
         return await query
@@ -120,34 +99,7 @@ public class TrackCacheRepository : ITrackCacheRepository
         // Deduplicate input by ExternalId (last wins)
         var uniqueTracks = new Dictionary<string, CachedTrack>(StringComparer.OrdinalIgnoreCase);
         foreach (var track in tracks)
-<<<<<<< HEAD
             uniqueTracks[track.ExternalId] = track;
-=======
-        {
-            var existing = await _context.CachedTracks.FirstOrDefaultAsync(t => t.ExternalId == track.ExternalId);
-            if (existing != null)
-            {
-                existing.Title = track.Title;
-                existing.ArtistName = track.ArtistName;
-                existing.AlbumName = track.AlbumName;
-                existing.ArtworkUrl = track.ArtworkUrl;
-                existing.StreamUrl = track.StreamUrl;
-                existing.PreviewUrl = track.PreviewUrl;
-                existing.DurationSeconds = track.DurationSeconds;
-                existing.Genre = track.Genre;
-                existing.Mood = track.Mood;
-                existing.PlayCount = track.PlayCount;
-                // Status is preserved
-                existing.ExternalData = track.ExternalData;
-                existing.CachedAt = DateTime.UtcNow;
-                existing.ExpiresAt = DateTime.UtcNow.AddHours(24);
-            }
-            else
-            {
-                _context.CachedTracks.Add(track);
-            }
-        }
->>>>>>> quan
 
         if (uniqueTracks.Count == 0) return;
 
