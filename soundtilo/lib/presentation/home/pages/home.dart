@@ -89,6 +89,7 @@ class HomePage extends StatelessWidget {
       selectedTag: state.selectedTag,
       tagTracks: state.tagTracks,
       isTagLoading: state.isTagLoading,
+      isLoadingMore: state.isLoadingMore,
     );
   }
 
@@ -102,6 +103,7 @@ class HomePage extends StatelessWidget {
       String selectedTag = 'pop',
       List<TrackEntity> tagTracks = const [],
       bool isTagLoading = false,
+      bool isLoadingMore = false,
     }
   ) {
     // Show only admin-managed albums
@@ -128,8 +130,8 @@ class HomePage extends StatelessWidget {
         onNotification: (notification) {
           final metrics = notification.metrics;
           if (metrics.pixels >= metrics.maxScrollExtent - 200 &&
-              state.hasMore &&
-              !state.isLoadingMore) {
+              hasMore &&
+              !isLoadingMore) {
             context.read<HomeBloc>().add(HomeLoadMore());
           }
           return false;
@@ -139,7 +141,7 @@ class HomePage extends StatelessWidget {
             _buildAppBar(context),
 
             _buildSectionHeader(context, 'Thịnh hành'),
-            _buildTrendingList(state.trendingTracks),
+            _buildTrendingList(trendingTracks),
 
           _buildSectionHeader(context, 'Khám phá theo thể loại'),
           _buildTagBar(context, selectedTag),
