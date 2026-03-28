@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io' show Platform;
 
 class ApiUrls {
+<<<<<<< HEAD
   static String get baseUrl {
     // Ưu tiên giá trị từ file .env nếu có
     if (dotenv.env['API_BASE_URL'] != null) {
@@ -20,6 +21,14 @@ class ApiUrls {
     
     return 'http://localhost:5196';
   }
+=======
+  // Configured via .env file:
+  //   Android Emulator -> API_BASE_URL=http://10.0.2.2:5196
+  //   Physical device  -> API_BASE_URL=http://<LAN_IP>:5196
+  //   Desktop/Web      -> API_BASE_URL=http://localhost:5196
+  static String get baseUrl =>
+      dotenv.env['API_BASE_URL'] ?? 'http://localhost:5196';
+>>>>>>> quan
 
   // Auth
   static const String register = '/api/auth/register';
@@ -59,6 +68,7 @@ class ApiUrls {
   // Users
   static const String userProfile = '/api/users/profile';
 
+<<<<<<< HEAD
   // Admin - Users
   static const String adminUsers = '/api/admin/users';
   static String adminUserById(String userId) => '/api/admin/users/$userId';
@@ -73,4 +83,16 @@ class ApiUrls {
       '/api/admin/users/$userId/favorites';
   static String adminUserPlaylists(String userId) =>
       '/api/admin/users/$userId/playlists';
+=======
+  // Artists
+  static const String artists = '/api/artists';
+
+  // Albums
+  static const String albums = '/api/albums';
+
+  // Admin Tracks
+  static const String adminTracks = '/api/admin/tracks';
+  static const String updateAdminTrackStatus = '/api/admin/tracks/status';
+  static const String addTracksToAlbumToAdmin = '/api/admin/tracks/add-to-album';
+>>>>>>> quan
 }

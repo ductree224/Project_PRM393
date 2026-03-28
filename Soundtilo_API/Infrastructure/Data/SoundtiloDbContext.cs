@@ -11,15 +11,21 @@ public class SoundtiloDbContext : DbContext
     public DbSet<CachedTrack> CachedTracks => Set<CachedTrack>();
     public DbSet<Playlist> Playlists => Set<Playlist>();
     public DbSet<PlaylistTrack> PlaylistTracks => Set<PlaylistTrack>();
+    public DbSet<AlbumTrack> AlbumTracks => Set<AlbumTrack>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+<<<<<<< HEAD
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Waitlist> Waitlists { get; set; }
     public DbSet<WaitlistTrack> WaitlistTracks { get; set; }
+=======
+    public DbSet<Artist> Artists => Set<Artist>();
+    public DbSet<Album> Albums => Set<Album>();
+>>>>>>> quan
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,9 +48,48 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.BannedReason).HasColumnName("banned_reason");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.Role).HasColumnName("role").HasDefaultValue("User");
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Role);
+        });
+
+        // Artist
+        modelBuilder.Entity<Artist>(entity =>
+        {
+            entity.ToTable("artists");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ExternalId).HasColumnName("external_id").HasMaxLength(255);
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Bio).HasColumnName("bio");
+            entity.Property(e => e.ImageUrl).HasColumnName("image_url");
+            entity.Property(e => e.Tags).HasColumnName("tags").HasColumnType("text[]");
+            entity.Property(e => e.IsOverride).HasColumnName("is_override").HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.HasIndex(e => e.ExternalId);
+        });
+
+        // Album
+        modelBuilder.Entity<Album>(entity =>
+        {
+            entity.ToTable("albums");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ExternalId).HasColumnName("external_id").HasMaxLength(255);
+            entity.Property(e => e.ArtistId).HasColumnName("artist_id");
+            entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.ReleaseDate).HasColumnName("release_date");
+            entity.Property(e => e.CoverImageUrl).HasColumnName("cover_image_url");
+            entity.Property(e => e.Tags).HasColumnName("tags").HasColumnType("text[]");
+            entity.Property(e => e.IsOverride).HasColumnName("is_override").HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            
+            entity.HasOne(e => e.Artist).WithMany(a => a.Albums).HasForeignKey(e => e.ArtistId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.ExternalId);
         });
 
         // CachedTrack
@@ -65,6 +110,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.Genre).HasColumnName("genre").HasMaxLength(100);
             entity.Property(e => e.Mood).HasColumnName("mood").HasMaxLength(100);
             entity.Property(e => e.PlayCount).HasColumnName("play_count");
+            entity.Property(e => e.Status).HasColumnName("status").HasDefaultValue(Domain.Enums.TrackStatus.Active);
             entity.Property(e => e.ExternalData).HasColumnName("external_data").HasColumnType("jsonb");
             entity.Property(e => e.CachedAt).HasColumnName("cached_at");
             entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
@@ -87,19 +133,21 @@ public class SoundtiloDbContext : DbContext
             entity.HasOne(e => e.User).WithMany(u => u.Playlists).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
-        // PlaylistTrack
-        modelBuilder.Entity<PlaylistTrack>(entity =>
+        // AlbumTrack
+        modelBuilder.Entity<AlbumTrack>(entity =>
         {
-            entity.ToTable("playlist_tracks");
+            entity.ToTable("album_tracks");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.PlaylistId).HasColumnName("playlist_id");
+            entity.Property(e => e.AlbumId).HasColumnName("album_id");
             entity.Property(e => e.TrackExternalId).HasColumnName("track_external_id").HasMaxLength(255).IsRequired();
             entity.Property(e => e.Position).HasColumnName("position");
             entity.Property(e => e.AddedAt).HasColumnName("added_at");
-            entity.HasOne(e => e.Playlist).WithMany(p => p.PlaylistTracks).HasForeignKey(e => e.PlaylistId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.PlaylistId, e.TrackExternalId }).IsUnique();
+            entity.HasOne(e => e.Album).WithMany(a => a.AlbumTracks).HasForeignKey(e => e.AlbumId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.AlbumId, e.TrackExternalId }).IsUnique();
         });
+
+        // PlaylistTrack
 
         // Favorite
         modelBuilder.Entity<Favorite>(entity =>

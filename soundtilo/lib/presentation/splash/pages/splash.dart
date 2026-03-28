@@ -6,6 +6,7 @@ import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/intro/pages/get_started.dart';
 import 'package:soundtilo/presentation/main_shell.dart';
+import 'package:soundtilo/presentation/admin/pages/admin_main_shell.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -28,7 +29,11 @@ class _SplashPageState extends State<SplashPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          _navigateToMainShell();
+          if (state.user.role == 'Admin') {
+            _navigateToAdminShell();
+          } else {
+            _navigateToMainShell();
+          }
         } else if (state is AuthUnauthenticated || state is AuthError) {
           _navigateToGetStarted();
         }
@@ -48,7 +53,11 @@ class _SplashPageState extends State<SplashPage> {
     final authState = context.read<AuthBloc>().state;
 
     if (authState is AuthAuthenticated) {
-      _navigateToMainShell();
+      if (authState.user.role == 'Admin') {
+        _navigateToAdminShell();
+      } else {
+        _navigateToMainShell();
+      }
     } else if (authState is AuthUnauthenticated || authState is AuthError) {
       _navigateToGetStarted();
     }
@@ -60,6 +69,15 @@ class _SplashPageState extends State<SplashPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const MainShell()),
+    );
+  }
+
+  void _navigateToAdminShell() {
+    if (!mounted || _hasRedirected) return;
+    _hasRedirected = true;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AdminMainShell()),
     );
   }
 

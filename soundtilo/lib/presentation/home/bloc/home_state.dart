@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:soundtilo/data/models/album_model.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 
 abstract class HomeState extends Equatable {
@@ -14,6 +15,7 @@ class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
   final List<TrackEntity> trendingTracks;
+<<<<<<< HEAD
   final List<TrackEntity> tagTracks; // Thêm danh sách nhạc theo tag
   final String selectedTag; // Thêm tag đang chọn
   final int currentOffset;
@@ -61,10 +63,22 @@ class HomeLoaded extends HomeState {
         isLoadingMore,
         isTagLoading,
       ];
+=======
+  final List<AlbumModel> adminAlbums;
+
+  const HomeLoaded({
+    required this.trendingTracks,
+    this.adminAlbums = const [],
+  });
+
+  @override
+  List<Object?> get props => [trendingTracks, adminAlbums];
+>>>>>>> quan
 }
 
 class HomeRefreshing extends HomeState {
   final List<TrackEntity> trendingTracks;
+<<<<<<< HEAD
   final int currentOffset;
   final bool hasMore;
 
@@ -76,6 +90,17 @@ class HomeRefreshing extends HomeState {
 
   @override
   List<Object?> get props => [trendingTracks, currentOffset, hasMore];
+=======
+  final List<AlbumModel> adminAlbums;
+
+  const HomeRefreshing({
+    required this.trendingTracks,
+    this.adminAlbums = const [],
+  });
+
+  @override
+  List<Object?> get props => [trendingTracks, adminAlbums];
+>>>>>>> quan
 }
 
 class HomeError extends HomeState {

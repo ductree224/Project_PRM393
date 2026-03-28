@@ -92,8 +92,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+<<<<<<< HEAD
 
 // Note: HttpsRedirection can sometimes cause CORS issues during local development with Web/Desktop
+=======
+>>>>>>> quan
 // app.UseHttpsRedirection();
 
 app.UseCors("AllowFlutterApp");

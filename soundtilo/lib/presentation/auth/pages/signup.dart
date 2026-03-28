@@ -11,6 +11,12 @@ import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/auth/pages/signin.dart';
 import 'package:soundtilo/presentation/main_shell.dart';
+<<<<<<< HEAD
+=======
+import 'package:soundtilo/presentation/admin/pages/admin_main_shell.dart';
+
+import '../../../common/widgets/button/basic_app_button.dart';
+>>>>>>> quan
 import '../../../common/widgets/textFormField/custom_field.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -40,6 +46,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
+<<<<<<< HEAD
         if (state is AuthSignUpSuccess) {
           _showSuccessSnackBar(context, 'Đăng ký thành công! Vui lòng đăng nhập.');
           Navigator.pushAndRemoveUntil(
@@ -53,6 +60,22 @@ class _SignUpPageState extends State<SignUpPage> {
                 MaterialPageRoute(builder: (_) => const MainShell()),
                 (route) => false,
             );
+=======
+        if (state is AuthAuthenticated) {
+          if (state.user.role == 'Admin') {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminMainShell()),
+              (route) => false,
+            );
+          } else {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const MainShell()),
+              (route) => false,
+            );
+          }
+>>>>>>> quan
         } else if (state is AuthError) {
           _showErrorSnackBar(context, state.message);
         }

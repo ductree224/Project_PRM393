@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Enums;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +58,28 @@ public class TrackCacheRepository : ITrackCacheRepository
 
         if (!string.IsNullOrWhiteSpace(genre))
         {
+<<<<<<< HEAD
             query = query.Where(t => t.Genre != null && EF.Functions.ILike(t.Genre, $"%{genre}%"));
+=======
+            existing.Title = track.Title;
+            existing.ArtistName = track.ArtistName;
+            existing.AlbumName = track.AlbumName;
+            existing.ArtworkUrl = track.ArtworkUrl;
+            existing.StreamUrl = track.StreamUrl;
+            existing.PreviewUrl = track.PreviewUrl;
+            existing.DurationSeconds = track.DurationSeconds;
+            existing.Genre = track.Genre;
+            existing.Mood = track.Mood;
+            existing.PlayCount = track.PlayCount;
+            // Status is preserved unless explicitly changed by admin
+            existing.ExternalData = track.ExternalData;
+            existing.CachedAt = DateTime.UtcNow;
+            existing.ExpiresAt = DateTime.UtcNow.AddHours(24);
+        }
+        else
+        {
+            _context.CachedTracks.Add(track);
+>>>>>>> quan
         }
 
         return await query
@@ -98,7 +120,34 @@ public class TrackCacheRepository : ITrackCacheRepository
         // Deduplicate input by ExternalId (last wins)
         var uniqueTracks = new Dictionary<string, CachedTrack>(StringComparer.OrdinalIgnoreCase);
         foreach (var track in tracks)
+<<<<<<< HEAD
             uniqueTracks[track.ExternalId] = track;
+=======
+        {
+            var existing = await _context.CachedTracks.FirstOrDefaultAsync(t => t.ExternalId == track.ExternalId);
+            if (existing != null)
+            {
+                existing.Title = track.Title;
+                existing.ArtistName = track.ArtistName;
+                existing.AlbumName = track.AlbumName;
+                existing.ArtworkUrl = track.ArtworkUrl;
+                existing.StreamUrl = track.StreamUrl;
+                existing.PreviewUrl = track.PreviewUrl;
+                existing.DurationSeconds = track.DurationSeconds;
+                existing.Genre = track.Genre;
+                existing.Mood = track.Mood;
+                existing.PlayCount = track.PlayCount;
+                // Status is preserved
+                existing.ExternalData = track.ExternalData;
+                existing.CachedAt = DateTime.UtcNow;
+                existing.ExpiresAt = DateTime.UtcNow.AddHours(24);
+            }
+            else
+            {
+                _context.CachedTracks.Add(track);
+            }
+        }
+>>>>>>> quan
 
         if (uniqueTracks.Count == 0) return;
 
@@ -131,6 +180,45 @@ public class TrackCacheRepository : ITrackCacheRepository
     {
         var expired = _context.CachedTracks.Where(t => t.ExpiresAt <= DateTime.UtcNow);
         _context.CachedTracks.RemoveRange(expired);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<CachedTrack>> ListAsync(TrackStatus? status = null, string? query = null, int limit = 50, int offset = 0)
+    {
+        var safeLimit = Math.Clamp(limit, 1, 100);
+        var safeOffset = Math.Max(offset, 0);
+
+        var tracksQuery = _context.CachedTracks.AsQueryable();
+
+        if (status.HasValue)
+        {
+            tracksQuery = tracksQuery.Where(t => t.Status == status.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var normalized = query.Trim();
+            tracksQuery = tracksQuery.Where(t => EF.Functions.ILike(t.Title, $"%{normalized}%") || EF.Functions.ILike(t.ArtistName, $"%{normalized}%"));
+        }
+
+        return await tracksQuery
+            .OrderByDescending(t => t.CachedAt)
+            .Skip(safeOffset)
+            .Take(safeLimit)
+            .ToListAsync();
+    }
+
+    public async Task UpdateStatusesAsync(IEnumerable<string> externalIds, TrackStatus status)
+    {
+        var tracks = await _context.CachedTracks
+            .Where(t => externalIds.Contains(t.ExternalId))
+            .ToListAsync();
+
+        foreach (var track in tracks)
+        {
+            track.Status = status;
+        }
+
         await _context.SaveChangesAsync();
     }
 }

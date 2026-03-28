@@ -13,10 +13,15 @@ import 'package:soundtilo/data/sources/playlist_remote_data_source.dart';
 import 'package:soundtilo/data/sources/favorite_remote_data_source.dart';
 import 'package:soundtilo/data/sources/history_remote_data_source.dart';
 import 'package:soundtilo/data/sources/lyrics_remote_data_source.dart';
+<<<<<<< HEAD
 import 'package:soundtilo/data/sources/comment_remote_data_source.dart';
 import 'package:soundtilo/data/sources/admin_remote_data_source.dart';
 // BỔ SUNG: Data Source cho Waitlist
 import 'package:soundtilo/data/sources/waitlist_remote_data_source.dart';
+=======
+import 'package:soundtilo/data/sources/artist_remote_data_source.dart';
+import 'package:soundtilo/data/sources/album_remote_data_source.dart';
+>>>>>>> quan
 
 // Repository Implementations
 import 'package:soundtilo/data/repository/auth_repository_impl.dart';
@@ -25,10 +30,15 @@ import 'package:soundtilo/data/repository/playlist_repository_impl.dart';
 import 'package:soundtilo/data/repository/favorite_repository_impl.dart';
 import 'package:soundtilo/data/repository/history_repository_impl.dart';
 import 'package:soundtilo/data/repository/lyrics_repository_impl.dart';
+<<<<<<< HEAD
 import 'package:soundtilo/data/repository/comment_repository_impl.dart';
 import 'package:soundtilo/data/repository/admin_repository_impl.dart';
 // BỔ SUNG: Repository Impl cho Waitlist
 import 'package:soundtilo/data/repository/waitlist_repository_impl.dart';
+=======
+import 'package:soundtilo/data/repository/artist_repository_impl.dart';
+import 'package:soundtilo/data/repository/album_repository_impl.dart';
+>>>>>>> quan
 
 // Domain Repositories (abstract)
 import 'package:soundtilo/domain/repository/auth_repository.dart';
@@ -37,10 +47,20 @@ import 'package:soundtilo/domain/repository/playlist_repository.dart';
 import 'package:soundtilo/domain/repository/favorite_repository.dart';
 import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/repository/lyrics_repository.dart';
+<<<<<<< HEAD
 import 'package:soundtilo/domain/repository/comment_repository.dart';
 import 'package:soundtilo/domain/repository/admin_repository.dart';
 // BỔ SUNG: Domain Repository cho Waitlist
 import 'package:soundtilo/domain/repository/waitlist_repository.dart';
+=======
+import 'package:soundtilo/domain/repositories/artist_repository.dart';
+import 'package:soundtilo/domain/repositories/album_repository.dart';
+import 'package:soundtilo/domain/repositories/track_admin_repository.dart';
+import 'package:soundtilo/data/repository/track_admin_repository_impl.dart';
+import 'package:soundtilo/presentation/admin/bloc/track_admin_bloc.dart';
+import 'package:soundtilo/presentation/admin/bloc/album_admin_bloc.dart';
+import 'package:soundtilo/presentation/admin/bloc/artist_admin_bloc.dart';
+>>>>>>> quan
 
 // Use Cases
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
@@ -97,6 +117,7 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<LyricsRemoteDataSource>(
         () => LyricsRemoteDataSource(sl<ApiClient>().dio),
   );
+<<<<<<< HEAD
   sl.registerLazySingleton<CommentRemoteDataSource>(
         () => CommentRemoteDataSource(sl<ApiClient>().dio),
   );
@@ -108,6 +129,14 @@ Future<void> initServiceLocator() async {
         () => WaitlistRemoteDataSourceImpl(sl<ApiClient>().dio),
   );
 
+=======
+  sl.registerLazySingleton<ArtistRemoteDataSource>(
+    () => ArtistRemoteDataSourceImpl(sl<ApiClient>().dio),
+  );
+  sl.registerLazySingleton<AlbumRemoteDataSource>(
+    () => AlbumRemoteDataSourceImpl(sl<ApiClient>().dio),
+  );
+>>>>>>> quan
 
   // ===================== Repositories =====================
   sl.registerLazySingleton<AuthRepository>(
@@ -139,6 +168,18 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<WaitlistRepository>(
         () => WaitlistRepositoryImpl(sl<WaitlistRemoteDataSource>()),
   );
+  sl.registerLazySingleton<ArtistRepository>(
+    () => ArtistRepositoryImpl(sl<ArtistRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<AlbumRepository>(
+    () => AlbumRepositoryImpl(sl<AlbumRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<TrackAdminRepository>(
+    () => TrackAdminRepositoryImpl(sl<ApiClient>().dio),
+  );
+  sl.registerFactory(() => TrackAdminBloc(repository: sl<TrackAdminRepository>()));
+  sl.registerFactory(() => AlbumAdminBloc(repository: sl<AlbumRepository>()));
+  sl.registerFactory(() => ArtistAdminBloc(repository: sl<ArtistRepository>()));
 
   // ===================== API Client (with JWT interceptor) =====================
   // Registered after AuthRepository to avoid circular dependency

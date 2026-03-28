@@ -23,6 +23,7 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
         // Repositories
+<<<<<<< HEAD
         services.AddScoped<IUserRepository , UserRepository>();
         services.AddScoped<ITrackCacheRepository , TrackCacheRepository>();
         services.AddScoped<IPlaylistRepository , PlaylistRepository>();
@@ -37,6 +38,17 @@ public static class DependencyInjection
         services.AddScoped<WaitlistService>();
         //  admin
         services.AddScoped<IAdminDashboardRepository , AdminDashboardRepository>();
+=======
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ITrackCacheRepository, TrackCacheRepository>();
+        services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+        services.AddScoped<IFavoriteRepository, FavoriteRepository>();
+        services.AddScoped<IHistoryRepository, HistoryRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        services.AddScoped<IArtistRepository, ArtistRepository>();
+        services.AddScoped<IAlbumRepository, AlbumRepository>();
+>>>>>>> quan
 
         // External API clients — 10 s timeout so slow providers fail fast
         services.AddHttpClient<IAudiusApiClient, AudiusApiClient>()

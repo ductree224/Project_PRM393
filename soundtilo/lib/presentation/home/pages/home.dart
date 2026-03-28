@@ -6,10 +6,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:soundtilo/common/helper/is_dark_mode.dart';
-import 'package:soundtilo/common/widgets/track/track_card.dart';
 import 'package:soundtilo/common/widgets/track/track_tile.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
+import 'package:soundtilo/data/models/album_model.dart';
+import 'package:soundtilo/data/models/track_model.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:soundtilo/presentation/home/bloc/home_bloc.dart';
@@ -17,14 +18,21 @@ import 'package:soundtilo/presentation/home/bloc/home_event.dart';
 import 'package:soundtilo/presentation/home/bloc/home_state.dart';
 import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
+import 'package:soundtilo/presentation/home/models/local_album.dart';
+import 'package:soundtilo/presentation/home/widgets/album_card.dart';
+import 'package:soundtilo/presentation/home/pages/album_detail.dart';
 import 'package:soundtilo/presentation/search/bloc/search_bloc.dart';
 import 'package:soundtilo/presentation/search/pages/search.dart';
 
 class HomePage extends StatelessWidget {
+<<<<<<< HEAD
   static const int _horizontalPreviewLimit = 8;
   final List<String> _tags = const [
     'pop', 'rock', 'hip-hop', 'electronic', 'jazz', 'classical', 'lofi', 'r&b'
   ];
+=======
+  static const int _verticalListLimit = 12;
+>>>>>>> quan
 
   const HomePage({super.key});
 
@@ -43,7 +51,25 @@ class HomePage extends StatelessWidget {
             }
 
             if (state is HomeLoaded) {
+<<<<<<< HEAD
               return _buildContent(context, state);
+=======
+              return _buildContent(context, state.trendingTracks, state.adminAlbums);
+            }
+
+            if (state is HomeRefreshing) {
+              return Stack(
+                children: [
+                  _buildContent(context, state.trendingTracks, state.adminAlbums),
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: LinearProgressIndicator(minHeight: 2),
+                  ),
+                ],
+              );
+>>>>>>> quan
             }
 
             return const SizedBox.shrink();
@@ -53,7 +79,33 @@ class HomePage extends StatelessWidget {
     );
   }
 
+<<<<<<< HEAD
   Widget _buildContent(BuildContext context, HomeLoaded state) {
+=======
+  Widget _buildContent(BuildContext context, List<TrackEntity> tracks, List<AlbumModel> adminAlbums) {
+    // Show only admin-managed albums
+    final List<LocalAlbum> displayedAlbums = adminAlbums.map((adminAlbum) {
+      return LocalAlbum(
+        id: adminAlbum.id,
+        title: adminAlbum.title,
+        artistName: adminAlbum.artist?.name ?? 'Unknown',
+        coverImageUrl: adminAlbum.coverImageUrl ?? '',
+        // These are just placeholders/previews; tracks will be fetched in detail page
+        tracks: adminAlbum.tracks.map((at) => at.track ?? TrackModel(
+          externalId: at.trackExternalId,
+          source: 'audius',
+          title: 'Loading...',
+          artistName: adminAlbum.artist?.name ?? 'Unknown',
+          durationSeconds: 0,
+        )).toList(),
+      );
+    }).toList();
+
+    final visibleTracks = tracks.length > _verticalListLimit
+        ? tracks.take(_verticalListLimit).toList(growable: false)
+        : tracks;
+
+>>>>>>> quan
     return RefreshIndicator(
       onRefresh: () async => context.read<HomeBloc>().add(HomeRefresh()),
       child: CustomScrollView(
@@ -63,9 +115,54 @@ class HomePage extends StatelessWidget {
           _buildSectionHeader(context, 'Thịnh hành'),
           _buildTrendingList(state.trendingTracks),
 
+<<<<<<< HEAD
           _buildSectionHeader(context, 'Khám phá theo thể loại'),
           _buildTagBar(context, state.selectedTag),
           _buildTagTracks(context, state),
+=======
+          // Section: Thịnh hành (horizontal scroll)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                'Album Thịnh hành',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: context.isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 210,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: displayedAlbums.length,
+                itemBuilder: (context, index) {
+                  final album = displayedAlbums[index];
+                  return AlbumCard(
+                    album: album,
+                    onTap: () {
+                      final libraryBloc = context.read<LibraryBloc>();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider.value(
+                            value: libraryBloc,
+                            child: AlbumDetailPage(album: album),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+>>>>>>> quan
 
           _buildSectionHeader(context, 'Dành cho bạn'),
           _buildInfiniteList(context, state),

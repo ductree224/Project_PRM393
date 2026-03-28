@@ -14,5 +14,6 @@ public class RefreshToken
     public bool IsActive => !IsRevoked && !IsExpired;
 
     // Navigation properties
+    [System.Text.Json.Serialization.JsonIgnore]
     public User User { get; set; } = null!;
 }
