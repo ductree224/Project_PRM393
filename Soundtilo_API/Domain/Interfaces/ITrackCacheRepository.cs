@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Enums;
 
 namespace Domain.Interfaces;
 
@@ -10,4 +11,6 @@ public interface ITrackCacheRepository
     Task<CachedTrack> UpsertAsync(CachedTrack track);
     Task UpsertManyAsync(IEnumerable<CachedTrack> tracks);
     Task CleanExpiredAsync();
+    Task<IEnumerable<CachedTrack>> ListAsync(TrackStatus? status = null, string? query = null, int limit = 50, int offset = 0);
+    Task UpdateStatusesAsync(IEnumerable<string> externalIds, TrackStatus status);
 }

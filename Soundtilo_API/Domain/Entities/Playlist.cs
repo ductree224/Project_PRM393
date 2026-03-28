@@ -12,6 +12,8 @@ public class Playlist
     public DateTime UpdatedAt { get; set; }
 
     // Navigation properties
+    [System.Text.Json.Serialization.JsonIgnore]
     public User User { get; set; } = null!;
+    [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<PlaylistTrack> PlaylistTracks { get; set; } = new List<PlaylistTrack>();
 }

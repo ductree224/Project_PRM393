@@ -23,20 +23,22 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
         // Repositories
-        services.AddScoped<IUserRepository , UserRepository>();
-        services.AddScoped<ITrackCacheRepository , TrackCacheRepository>();
-        services.AddScoped<IPlaylistRepository , PlaylistRepository>();
-        services.AddScoped<IFavoriteRepository , FavoriteRepository>();
-        services.AddScoped<IHistoryRepository , HistoryRepository>();
-        services.AddScoped<IRefreshTokenRepository , RefreshTokenRepository>();
-        services.AddScoped<IPasswordResetTokenRepository , PasswordResetTokenRepository>();
-        services.AddScoped<IAdminAuditLogRepository , AdminAuditLogRepository>();
-        services.AddScoped<IAdminAnalyticsRepository , AdminAnalyticsRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ITrackCacheRepository, TrackCacheRepository>();
+        services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+        services.AddScoped<IFavoriteRepository, FavoriteRepository>();
+        services.AddScoped<IHistoryRepository, HistoryRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        services.AddScoped<IArtistRepository, ArtistRepository>();
+        services.AddScoped<IAlbumRepository, AlbumRepository>();
+        services.AddScoped<IAdminAuditLogRepository, AdminAuditLogRepository>();
+        services.AddScoped<IAdminAnalyticsRepository, AdminAnalyticsRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<IWaitlistRepository, WaitlistRepository>();
         services.AddScoped<WaitlistService>();
-        //  admin
-        services.AddScoped<IAdminDashboardRepository , AdminDashboardRepository>();
+        // admin
+        services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
 
         // External API clients — 10 s timeout so slow providers fail fast
         services.AddHttpClient<IAudiusApiClient, AudiusApiClient>()
