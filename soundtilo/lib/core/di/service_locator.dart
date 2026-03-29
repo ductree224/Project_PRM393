@@ -69,6 +69,7 @@ import 'package:soundtilo/domain/usecases/admin_user_usecases.dart';
 // BỔ SUNG: UseCases cho Waitlist
 import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/user_usecases.dart';
+import 'package:soundtilo/domain/usecases/history_usecases.dart';
 
 final sl = GetIt.instance;
 
@@ -282,4 +283,9 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => RemoveTrackFromWaitlistUseCase(sl<WaitlistRepository>()));
   sl.registerLazySingleton(() => ReorderWaitlistUseCase(sl<WaitlistRepository>()));
   sl.registerLazySingleton(() => ClearWaitlistUseCase(sl<WaitlistRepository>()));
+
+  // History
+  sl.registerLazySingleton(() => GetHistoryUseCase(sl<HistoryRepository>()));
+  sl.registerLazySingleton(() => RecordListenUseCase(sl<HistoryRepository>()));
+  sl.registerLazySingleton(() => DeleteHistoryUseCase(sl<HistoryRepository>()));
 }

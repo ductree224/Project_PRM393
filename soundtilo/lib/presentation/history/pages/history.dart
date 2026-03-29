@@ -4,7 +4,7 @@ import 'package:soundtilo/common/selection/multi_select_controller.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
-import 'package:soundtilo/domain/repository/history_repository.dart';
+import 'package:soundtilo/domain/usecases/history_usecases.dart';
 import 'package:soundtilo/domain/usecases/track_usecases.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
 
@@ -50,8 +50,8 @@ class _HistoryPageState extends State<HistoryPage> {
       _errorMessage = null;
     });
 
-    final repo = sl<HistoryRepository>();
-    final result = await repo.getHistory();
+    final repo = sl<GetHistoryUseCase>();
+    final result = await repo();
 
     if (!mounted) {
       return;
@@ -159,8 +159,8 @@ class _HistoryPageState extends State<HistoryPage> {
       return;
     }
 
-    final repo = sl<HistoryRepository>();
-    final result = await repo.deleteHistory(selectedIds);
+    final repo = sl<DeleteHistoryUseCase>();
+    final result = await repo(selectedIds);
 
     if (!mounted) {
       return;

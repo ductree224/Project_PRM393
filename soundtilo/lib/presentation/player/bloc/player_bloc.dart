@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart' hide PlayerState;
 import 'package:soundtilo/core/debug/perf_trace.dart';
 import 'package:soundtilo/domain/repository/track_repository.dart';
-import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
+import 'package:soundtilo/domain/usecases/history_usecases.dart';
 import 'package:soundtilo/presentation/player/bloc/player_event.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 
@@ -16,7 +16,7 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   final TrackRepository _trackRepository;
   final ToggleFavoriteUseCase _toggleFavoriteUseCase;
   final IsFavoriteUseCase _isFavoriteUseCase;
-  final HistoryRepository _historyRepository;
+  final RecordListenUseCase _recordListenUseCase;
   StreamSubscription? _positionSub;
   StreamSubscription? _durationSub;
   StreamSubscription? _playerStateSub;
@@ -27,12 +27,12 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     required TrackRepository trackRepository,
     required ToggleFavoriteUseCase toggleFavoriteUseCase,
     required IsFavoriteUseCase isFavoriteUseCase,
-    required HistoryRepository historyRepository,
+    required RecordListenUseCase recordListenUseCase,
   }) : _audioPlayer = audioPlayer,
        _trackRepository = trackRepository,
        _toggleFavoriteUseCase = toggleFavoriteUseCase,
        _isFavoriteUseCase = isFavoriteUseCase,
-       _historyRepository = historyRepository,
+       _recordListenUseCase = recordListenUseCase,
        super(const PlayerState()) {
     on<PlayerPlay>(_onPlay, transformer: restartable());
     on<PlayerResume>(_onResume);
@@ -71,6 +71,23 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   }
 
   Future<void> _onPlay(PlayerPlay event, Emitter<PlayerState> emit) async {
+    // Record listening history immediately on click (fire-and-forget)
+    unawaited(
+      _recordListenUseCase(
+        trackExternalId: event.track.externalId,
+        durationListened: 0,
+        completed: false,
+      ),
+    );
+
+    // If same track is already playing/paused, just resume if paused
+    if (state.currentTrack?.externalId == event.track.externalId) {
+      if (state.status == PlayerStatus.paused) {
+        add(PlayerResume());
+      }
+      return;
+    }
+
     final stopwatch = Stopwatch()..start();
     int streamLookupMs = 0;
     int setSourceMs = 0;
@@ -156,14 +173,6 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         }
       });
 
-      // Record listening history (fire-and-forget)
-      unawaited(
-        _historyRepository.recordListen(
-          trackExternalId: event.track.externalId,
-          durationListened: 0,
-          completed: false,
-        ),
-      );
     } catch (e) {
       emit(
         state.copyWith(
@@ -284,15 +293,6 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     PlayerCompleted event,
     Emitter<PlayerState> emit,
   ) async {
-    // Record completed listen
-    if (state.currentTrack != null) {
-      _historyRepository.recordListen(
-        trackExternalId: state.currentTrack!.externalId,
-        durationListened: state.duration.inSeconds,
-        completed: true,
-      );
-    }
-
     // Auto-play next
     if (state.hasNext) {
       add(PlayerNext());

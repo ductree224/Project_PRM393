@@ -20,6 +20,7 @@ import 'package:soundtilo/domain/entities/track_entity.dart';
 // BỔ SUNG: Import các UseCase và Bloc của Waitlist
 import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/user_usecases.dart';
+import 'package:soundtilo/domain/usecases/history_usecases.dart';
 import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_bloc.dart';
 import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_event.dart';
 
@@ -131,7 +132,7 @@ class MyApp extends StatelessWidget {
             trackRepository: sl<TrackRepository>(),
             toggleFavoriteUseCase: sl<ToggleFavoriteUseCase>(),
             isFavoriteUseCase: sl<IsFavoriteUseCase>(),
-            historyRepository: sl<HistoryRepository>(),
+            recordListenUseCase: sl<RecordListenUseCase>(),
           ),
         ),
         BlocProvider(

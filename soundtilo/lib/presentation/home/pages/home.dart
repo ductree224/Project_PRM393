@@ -61,7 +61,14 @@ class HomePage extends StatelessWidget {
             if (state is HomeRefreshing) {
               return Stack(
                 children: [
-                  _buildContentFromState(context, state.trendingTracks, state.adminAlbums, state.currentOffset, state.hasMore),
+                  _buildContentFromState(
+                    context, 
+                    state.trendingTracks, 
+                    state.adminAlbums, 
+                    state.currentOffset, 
+                    state.hasMore,
+                    recentTracks: state.recentTracks, // Pass from Refreshing
+                  ),
                   const Positioned(
                     top: 0,
                     left: 0,
@@ -86,6 +93,7 @@ class HomePage extends StatelessWidget {
       state.adminAlbums, 
       state.currentOffset, 
       state.hasMore,
+      recentTracks: state.recentTracks,
       selectedTag: state.selectedTag,
       tagTracks: state.tagTracks,
       isTagLoading: state.isTagLoading,
@@ -100,6 +108,7 @@ class HomePage extends StatelessWidget {
     int currentOffset,
     bool hasMore,
     {
+      List<TrackEntity> recentTracks = const [],
       String selectedTag = 'pop',
       List<TrackEntity> tagTracks = const [],
       bool isTagLoading = false,
@@ -142,6 +151,11 @@ class HomePage extends StatelessWidget {
 
             _buildSectionHeader(context, 'Thịnh hành'),
             _buildTrendingList(trendingTracks),
+
+            if (recentTracks.isNotEmpty) ...[
+              _buildSectionHeader(context, 'Mới phát gần đây'),
+              _buildRecentlyPlayedList(recentTracks),
+            ],
 
           _buildSectionHeader(context, 'Khám phá theo thể loại'),
           _buildTagBar(context, selectedTag),
@@ -458,6 +472,81 @@ class HomePage extends StatelessWidget {
             track: tracks[index],
             onTap: () => _openPlayer(context, tracks[index], tracks),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentlyPlayedList(List<TrackEntity> tracks) {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 200,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: tracks.length,
+          itemBuilder: (context, index) {
+            final track = tracks[index];
+            return GestureDetector(
+              onTap: () => _openPlayer(context, track, tracks),
+              child: Container(
+                width: 130,
+                margin: const EdgeInsets.only(right: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: track.artworkUrl ?? '',
+                        width: 130,
+                        height: 130,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          width: 130,
+                          height: 130,
+                          color: context.isDarkMode
+                              ? Colors.white10
+                              : Colors.grey.shade200,
+                          child: const Icon(Icons.music_note, color: AppColors.grey),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 130,
+                          height: 130,
+                          color: context.isDarkMode
+                              ? Colors.white10
+                              : Colors.grey.shade200,
+                          child: const Icon(Icons.music_note, color: AppColors.grey),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      track.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            context.isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      track.artistName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: AppColors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
