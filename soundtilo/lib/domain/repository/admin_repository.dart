@@ -8,6 +8,7 @@ abstract class AdminRepository {
     String? search,
     String? role,
     bool? isBanned,
+    String? subscriptionTier,
   });
 
   Future<Either<String, void>> banUser(String userId, {String? reason});
@@ -17,6 +18,13 @@ abstract class AdminRepository {
   Future<Either<String, void>> changeUserRole(String userId, String role);
 
   Future<Either<String, void>> deleteUser(String userId);
+
+  Future<Either<String, void>> grantPremium(
+    String userId, {
+    DateTime? expiresAt,
+  });
+
+  Future<Either<String, void>> revokePremium(String userId);
 
   Future<Either<String, AdminUserHistoryListEntity>> getUserHistory(
     String userId, {

@@ -36,6 +36,8 @@ public static class DependencyInjection
         services.AddScoped<IAdminAnalyticsRepository, AdminAnalyticsRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<IWaitlistRepository, WaitlistRepository>();
+        services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+        services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
         services.AddScoped<WaitlistService>();
         // admin
         services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();

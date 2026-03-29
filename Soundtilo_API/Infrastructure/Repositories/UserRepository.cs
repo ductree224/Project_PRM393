@@ -60,7 +60,8 @@ public class UserRepository : IUserRepository
         int pageSize = 20,
         string? search = null,
         string? role = null,
-        bool? isBanned = null)
+        bool? isBanned = null,
+        string? subscriptionTier = null)
     {
         var safePage = Math.Max(page, 1);
         var safePageSize = Math.Clamp(pageSize, 1, 100);
@@ -81,6 +82,9 @@ public class UserRepository : IUserRepository
 
         if (isBanned.HasValue)
             query = query.Where(u => u.IsBanned == isBanned.Value);
+
+        if (!string.IsNullOrWhiteSpace(subscriptionTier))
+            query = query.Where(u => u.SubscriptionTier == subscriptionTier);
 
         var total = await query.CountAsync();
         var users = await query

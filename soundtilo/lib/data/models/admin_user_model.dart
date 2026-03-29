@@ -12,6 +12,8 @@ class AdminUserModel extends AdminUserEntity {
     super.bannedAt,
     super.bannedReason,
     required super.createdAt,
+    super.subscriptionTier = 'free',
+    super.premiumExpiresAt,
   });
 
   factory AdminUserModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,8 @@ class AdminUserModel extends AdminUserEntity {
       bannedAt: _tryParseDateTime(json['bannedAt']),
       bannedReason: json['bannedReason']?.toString(),
       createdAt: _tryParseDateTime(json['createdAt']) ?? DateTime.now(),
+      subscriptionTier: (json['subscriptionTier'] ?? 'free').toString(),
+      premiumExpiresAt: _tryParseDateTime(json['premiumExpiresAt']),
     );
   }
 

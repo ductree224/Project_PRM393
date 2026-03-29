@@ -19,6 +19,8 @@ import 'package:soundtilo/data/sources/admin_remote_data_source.dart';
 import 'package:soundtilo/data/sources/waitlist_remote_data_source.dart';
 import 'package:soundtilo/data/sources/artist_remote_data_source.dart';
 import 'package:soundtilo/data/sources/album_remote_data_source.dart';
+import 'package:soundtilo/data/sources/subscription_remote_data_source.dart';
+import 'package:soundtilo/data/sources/user_remote_data_source.dart';
 
 // Repository Implementations
 import 'package:soundtilo/data/repository/auth_repository_impl.dart';
@@ -33,6 +35,8 @@ import 'package:soundtilo/data/repository/admin_repository_impl.dart';
 import 'package:soundtilo/data/repository/waitlist_repository_impl.dart';
 import 'package:soundtilo/data/repository/artist_repository_impl.dart';
 import 'package:soundtilo/data/repository/album_repository_impl.dart';
+import 'package:soundtilo/data/repository/subscription_repository_impl.dart';
+import 'package:soundtilo/data/repository/user_repository_impl.dart';
 
 // Domain Repositories (abstract)
 import 'package:soundtilo/domain/repository/auth_repository.dart';
@@ -52,6 +56,8 @@ import 'package:soundtilo/data/repository/track_admin_repository_impl.dart';
 import 'package:soundtilo/presentation/admin/bloc/track_admin_bloc.dart';
 import 'package:soundtilo/presentation/admin/bloc/album_admin_bloc.dart';
 import 'package:soundtilo/presentation/admin/bloc/artist_admin_bloc.dart';
+import 'package:soundtilo/domain/repository/subscription_repository.dart';
+import 'package:soundtilo/domain/repository/user_repository.dart';
 
 // Use Cases
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
@@ -62,6 +68,7 @@ import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
 import 'package:soundtilo/domain/usecases/admin_user_usecases.dart';
 // BỔ SUNG: UseCases cho Waitlist
 import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
+import 'package:soundtilo/domain/usecases/user_usecases.dart';
 
 final sl = GetIt.instance;
 
@@ -125,6 +132,13 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<AlbumRemoteDataSource>(
     () => AlbumRemoteDataSourceImpl(sl<ApiClient>().dio),
   );
+  // Subscription uses plain Dio (public endpoint — no auth required)
+  sl.registerLazySingleton<SubscriptionRemoteDataSource>(
+    () => SubscriptionRemoteDataSource(sl<Dio>(instanceName: 'plainDio')),
+  );
+  sl.registerLazySingleton<UserRemoteDataSource>(
+    () => UserRemoteDataSource(sl<ApiClient>().dio),
+  );
 
   // ===================== Repositories =====================
   sl.registerLazySingleton<AuthRepository>(
@@ -164,6 +178,12 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton<TrackAdminRepository>(
     () => TrackAdminRepositoryImpl(sl<ApiClient>().dio),
+  );
+  sl.registerLazySingleton<SubscriptionRepository>(
+    () => SubscriptionRepositoryImpl(sl<SubscriptionRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<UserRepository>(
+    () => UserRepositoryImpl(sl<UserRemoteDataSource>()),
   );
   sl.registerFactory(() => TrackAdminBloc(repository: sl<TrackAdminRepository>()));
   sl.registerFactory(() => AlbumAdminBloc(repository: sl<AlbumRepository>()));
@@ -248,6 +268,13 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(
         () => GetAdminUserPlaylistsUseCase(sl<AdminRepository>()),
   );
+  sl.registerLazySingleton(() => GrantPremiumUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => RevokePremiumUseCase(sl<AdminRepository>()));
+
+  // User & Subscription
+  sl.registerLazySingleton(() => GetProfileUseCase(sl<UserRepository>()));
+  sl.registerLazySingleton(
+      () => GetSubscriptionPlansUseCase(sl<SubscriptionRepository>()));
 
   // BỔ SUNG: Đăng ký Waitlist UseCases
   sl.registerLazySingleton(() => GetWaitlistUseCase(sl<WaitlistRepository>()));

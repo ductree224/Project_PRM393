@@ -10,6 +10,8 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
   final UnbanAdminUserUseCase _unbanAdminUserUseCase;
   final ChangeAdminUserRoleUseCase _changeAdminUserRoleUseCase;
   final DeleteAdminUserUseCase _deleteAdminUserUseCase;
+  final GrantPremiumUseCase _grantPremiumUseCase;
+  final RevokePremiumUseCase _revokePremiumUseCase;
 
   AdminUsersBloc({
     required GetAdminUsersUseCase getAdminUsersUseCase,
@@ -17,11 +19,15 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
     required UnbanAdminUserUseCase unbanAdminUserUseCase,
     required ChangeAdminUserRoleUseCase changeAdminUserRoleUseCase,
     required DeleteAdminUserUseCase deleteAdminUserUseCase,
+    required GrantPremiumUseCase grantPremiumUseCase,
+    required RevokePremiumUseCase revokePremiumUseCase,
   }) : _getAdminUsersUseCase = getAdminUsersUseCase,
        _banAdminUserUseCase = banAdminUserUseCase,
        _unbanAdminUserUseCase = unbanAdminUserUseCase,
        _changeAdminUserRoleUseCase = changeAdminUserRoleUseCase,
        _deleteAdminUserUseCase = deleteAdminUserUseCase,
+       _grantPremiumUseCase = grantPremiumUseCase,
+       _revokePremiumUseCase = revokePremiumUseCase,
        super(const AdminUsersState()) {
     on<AdminUsersStarted>(_onStarted, transformer: droppable());
     on<AdminUsersSearchChanged>(_onSearchChanged, transformer: restartable());
@@ -33,11 +39,17 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
       _onBanFilterChanged,
       transformer: restartable(),
     );
+    on<AdminUsersSubscriptionTierFilterChanged>(
+      _onSubscriptionTierFilterChanged,
+      transformer: restartable(),
+    );
     on<AdminUsersLoadMore>(_onLoadMore, transformer: droppable());
     on<AdminUsersRefresh>(_onRefresh, transformer: droppable());
     on<AdminUsersBanToggleRequested>(_onBanToggleRequested);
     on<AdminUsersRoleChangeRequested>(_onRoleChangeRequested);
     on<AdminUsersDeleteRequested>(_onDeleteRequested);
+    on<AdminUsersGrantPremiumRequested>(_onGrantPremiumRequested);
+    on<AdminUsersRevokePremiumRequested>(_onRevokePremiumRequested);
   }
 
   Future<void> _onStarted(
@@ -71,6 +83,14 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
     await _loadUsers(emit, reset: true);
   }
 
+  Future<void> _onSubscriptionTierFilterChanged(
+    AdminUsersSubscriptionTierFilterChanged event,
+    Emitter<AdminUsersState> emit,
+  ) async {
+    emit(state.copyWith(subscriptionTier: event.subscriptionTier));
+    await _loadUsers(emit, reset: true);
+  }
+
   Future<void> _onLoadMore(
     AdminUsersLoadMore event,
     Emitter<AdminUsersState> emit,
@@ -88,6 +108,7 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
       search: state.search,
       role: state.role,
       isBanned: state.isBanned,
+      subscriptionTier: state.subscriptionTier,
     );
 
     result.fold(
@@ -210,6 +231,67 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
     );
   }
 
+  Future<void> _onGrantPremiumRequested(
+    AdminUsersGrantPremiumRequested event,
+    Emitter<AdminUsersState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        isSubmitting: true,
+        actionMessage: null,
+        errorMessage: null,
+      ),
+    );
+
+    final result = await _grantPremiumUseCase(
+      event.userId,
+      expiresAt: event.expiresAt,
+    );
+
+    await result.fold(
+      (error) async =>
+          emit(state.copyWith(isSubmitting: false, errorMessage: error)),
+      (_) async {
+        emit(
+          state.copyWith(
+            isSubmitting: false,
+            actionMessage: 'Đã cấp quyền premium.',
+          ),
+        );
+        await _loadUsers(emit, reset: false, silent: true);
+      },
+    );
+  }
+
+  Future<void> _onRevokePremiumRequested(
+    AdminUsersRevokePremiumRequested event,
+    Emitter<AdminUsersState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        isSubmitting: true,
+        actionMessage: null,
+        errorMessage: null,
+      ),
+    );
+
+    final result = await _revokePremiumUseCase(event.userId);
+
+    await result.fold(
+      (error) async =>
+          emit(state.copyWith(isSubmitting: false, errorMessage: error)),
+      (_) async {
+        emit(
+          state.copyWith(
+            isSubmitting: false,
+            actionMessage: 'Đã thu hồi quyền premium.',
+          ),
+        );
+        await _loadUsers(emit, reset: false, silent: true);
+      },
+    );
+  }
+
   Future<void> _loadUsers(
     Emitter<AdminUsersState> emit, {
     required bool reset,
@@ -239,6 +321,7 @@ class AdminUsersBloc extends Bloc<AdminUsersEvent, AdminUsersState> {
       search: state.search,
       role: state.role,
       isBanned: state.isBanned,
+      subscriptionTier: state.subscriptionTier,
     );
 
     result.fold(

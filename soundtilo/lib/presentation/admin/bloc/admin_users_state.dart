@@ -13,6 +13,7 @@ class AdminUsersState extends Equatable {
   final String search;
   final String? role;
   final bool? isBanned;
+  final String? subscriptionTier;
   final bool isLoadingMore;
   final bool isSubmitting;
   final String? errorMessage;
@@ -28,6 +29,7 @@ class AdminUsersState extends Equatable {
     this.search = '',
     this.role,
     this.isBanned,
+    this.subscriptionTier,
     this.isLoadingMore = false,
     this.isSubmitting = false,
     this.errorMessage,
@@ -46,6 +48,7 @@ class AdminUsersState extends Equatable {
     String? search,
     Object? role = _sentinel,
     Object? isBanned = _sentinel,
+    Object? subscriptionTier = _sentinel,
     bool? isLoadingMore,
     bool? isSubmitting,
     Object? errorMessage = _sentinel,
@@ -61,6 +64,9 @@ class AdminUsersState extends Equatable {
       search: search ?? this.search,
       role: role == _sentinel ? this.role : role as String?,
       isBanned: isBanned == _sentinel ? this.isBanned : isBanned as bool?,
+      subscriptionTier: subscriptionTier == _sentinel
+          ? this.subscriptionTier
+          : subscriptionTier as String?,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       errorMessage: errorMessage == _sentinel
@@ -83,6 +89,7 @@ class AdminUsersState extends Equatable {
     search,
     role,
     isBanned,
+    subscriptionTier,
     isLoadingMore,
     isSubmitting,
     errorMessage,

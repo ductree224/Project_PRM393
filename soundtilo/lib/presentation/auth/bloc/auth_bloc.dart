@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soundtilo/domain/entities/user_entity.dart';
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
+import 'package:soundtilo/domain/usecases/user_usecases.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 
@@ -13,9 +14,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GoogleSignInUseCase _googleSignInUseCase;
   final ForgotPasswordUseCase _forgotPasswordUseCase;
   final ResetPasswordUseCase _resetPasswordUseCase;
+  final GetProfileUseCase _getProfileUseCase;
   final SharedPreferences _prefs;
   static const _rememberMeKey = 'remember_me';
   static const _rememberedEmailKey = 'remembered_email';
+  static const _subscriptionTierKey = 'subscription_tier';
+  static const _premiumExpiresAtKey = 'premium_expires_at';
 
   AuthBloc({
     required SignUpUseCase signUpUseCase,
@@ -25,6 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required GoogleSignInUseCase googleSignInUseCase,
     required ForgotPasswordUseCase forgotPasswordUseCase,
     required ResetPasswordUseCase resetPasswordUseCase,
+    required GetProfileUseCase getProfileUseCase,
     required SharedPreferences prefs,
   }) : _signUpUseCase = signUpUseCase,
        _signInUseCase = signInUseCase,
@@ -33,6 +38,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
        _googleSignInUseCase = googleSignInUseCase,
        _forgotPasswordUseCase = forgotPasswordUseCase,
        _resetPasswordUseCase = resetPasswordUseCase,
+       _getProfileUseCase = getProfileUseCase,
        _prefs = prefs,
        super(AuthInitial()) {
     on<AuthCheckStatus>(_onCheckStatus);
@@ -42,6 +48,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLogoutRequested>(_onLogout);
     on<AuthForgotPasswordRequested>(_onForgotPassword);
     on<AuthResetPasswordRequested>(_onResetPassword);
+    on<AuthProfileRefreshRequested>(_onProfileRefresh);
   }
 
   Future<void> _onCheckStatus(
@@ -51,6 +58,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final isLoggedIn = await _isLoggedInUseCase();
     if (isLoggedIn) {
+      final expiresAtRaw = _prefs.getString(_premiumExpiresAtKey);
       final user = UserEntity(
         id: _prefs.getString('user_id') ?? '',
         username: _prefs.getString('username') ?? '',
@@ -59,6 +67,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         avatarUrl: _prefs.getString('avatar_url'),
         role: _prefs.getString('role'),
         createdAt: DateTime.now(),
+        subscriptionTier: _prefs.getString(_subscriptionTierKey) ?? 'free',
+        premiumExpiresAt: expiresAtRaw != null
+            ? DateTime.tryParse(expiresAtRaw)?.toLocal()
+            : null,
       );
       emit(AuthAuthenticated(user));
     } else {
@@ -158,5 +170,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       return;
     }
     await _prefs.remove(_rememberedEmailKey);
+  }
+
+  /// Fetches the user profile from the API and updates the Auth state +
+  /// SharedPreferences with the latest subscription tier. Call this from
+  /// Profile page on init so subscription status stays in sync.
+  Future<void> _onProfileRefresh(
+    AuthProfileRefreshRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final result = await _getProfileUseCase();
+    result.fold(
+      (_) => null, // silently ignore errors — stale cached state is acceptable
+      (user) async {
+        await _prefs.setString(_subscriptionTierKey, user.subscriptionTier);
+        if (user.premiumExpiresAt != null) {
+          await _prefs.setString(
+              _premiumExpiresAtKey, user.premiumExpiresAt!.toIso8601String());
+        } else {
+          await _prefs.remove(_premiumExpiresAtKey);
+        }
+        emit(AuthAuthenticated(user));
+      },
+    );
   }
 }

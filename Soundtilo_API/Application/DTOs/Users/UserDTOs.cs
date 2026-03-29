@@ -10,7 +10,9 @@ public record UserProfileDto(
     int TotalListens,
     int TotalListeningTimeSeconds,
     int TotalFavorites,
-    int TotalPlaylists
+    int TotalPlaylists,
+    string SubscriptionTier,
+    DateTime? PremiumExpiresAt
 );
 
 public record UpdateProfileRequest(

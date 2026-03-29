@@ -66,3 +66,7 @@ class AuthResetPasswordRequested extends AuthEvent {
   @override
   List<Object?> get props => [token, newPassword];
 }
+
+/// Dispatched by ProfilePage on init to fetch the latest profile from the API
+/// and sync the subscription tier into AuthBloc state + SharedPreferences.
+class AuthProfileRefreshRequested extends AuthEvent {}

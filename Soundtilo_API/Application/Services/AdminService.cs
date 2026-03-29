@@ -1,4 +1,5 @@
 using Application.DTOs.Admin;
+using Application.DTOs.Subscriptions;
 using Domain.Entities;
 using Domain.Interfaces;
 using System.Linq;
@@ -13,6 +14,8 @@ public class AdminService
     private readonly IHistoryRepository _historyRepository;
     private readonly IFavoriteRepository _favoriteRepository;
     private readonly IPlaylistRepository _playlistRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IPaymentTransactionRepository _paymentTransactionRepository;
 
     public AdminService(
         IUserRepository userRepository,
@@ -20,7 +23,9 @@ public class AdminService
         IAdminAnalyticsRepository analyticsRepository,
         IHistoryRepository historyRepository,
         IFavoriteRepository favoriteRepository,
-        IPlaylistRepository playlistRepository)
+        IPlaylistRepository playlistRepository,
+        ISubscriptionRepository subscriptionRepository,
+        IPaymentTransactionRepository paymentTransactionRepository)
     {
         _userRepository = userRepository;
         _auditLogRepository = auditLogRepository;
@@ -28,6 +33,8 @@ public class AdminService
         _historyRepository = historyRepository;
         _favoriteRepository = favoriteRepository;
         _playlistRepository = playlistRepository;
+        _subscriptionRepository = subscriptionRepository;
+        _paymentTransactionRepository = paymentTransactionRepository;
     }
 
     // ─── User Management ──────────────────────────────────────────────────────
@@ -37,12 +44,13 @@ public class AdminService
         int pageSize = 20,
         string? search = null,
         string? role = null,
-        bool? isBanned = null)
+        bool? isBanned = null,
+        string? subscriptionTier = null)
     {
         var safePage = Math.Max(page, 1);
         var safePageSize = Math.Clamp(pageSize, 1, 100);
 
-        var (users, total) = await _userRepository.GetAllAsync(safePage, safePageSize, search, role, isBanned);
+        var (users, total) = await _userRepository.GetAllAsync(safePage, safePageSize, search, role, isBanned, subscriptionTier);
         var totalPages = (int)Math.Ceiling((double)total / safePageSize);
         var dtos = users.Select(MapToAdminUserDto);
 
@@ -73,7 +81,9 @@ public class AdminService
             totalListens,
             totalTime,
             totalFavorites,
-            playlists.Count()
+            playlists.Count(),
+            user.SubscriptionTier,
+            user.PremiumExpiresAt
         );
     }
 
@@ -256,6 +266,102 @@ public class AdminService
         });
     }
 
+    // ─── Premium Management ───────────────────────────────────────────────────
+
+    public async Task GrantPremiumAsync(Guid adminId, Guid targetUserId, DateTime? expiresAt)
+    {
+        var user = await _userRepository.GetByIdAsync(targetUserId)
+            ?? throw new KeyNotFoundException($"User {targetUserId} not found.");
+
+        var premiumEnd = expiresAt ?? DateTime.UtcNow.AddMonths(1);
+        user.SubscriptionTier = "premium";
+        user.PremiumExpiresAt = premiumEnd;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _userRepository.UpdateAsync(user);
+
+        // Upsert subscription record
+        var existingSub = await _subscriptionRepository.GetByUserIdAsync(targetUserId);
+        if (existingSub is not null)
+        {
+            existingSub.Status = "manually_granted";
+            existingSub.CurrentPeriodEnd = premiumEnd;
+            await _subscriptionRepository.UpdateAsync(existingSub);
+        }
+        else
+        {
+            await _subscriptionRepository.CreateAsync(new Subscription
+            {
+                Id = Guid.NewGuid(),
+                UserId = targetUserId,
+                PlanId = Guid.Empty, // no Stripe plan for manual grants
+                Status = "manually_granted",
+                CurrentPeriodStart = DateTime.UtcNow,
+                CurrentPeriodEnd = premiumEnd,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        await _auditLogRepository.AddAsync(new AdminAuditLog
+        {
+            Id = Guid.NewGuid(),
+            AdminId = adminId,
+            Action = "GRANT_PREMIUM",
+            TargetType = "User",
+            TargetId = targetUserId.ToString(),
+            Details = $"{{\"expiresAt\":\"{premiumEnd:O}\"}}",
+            CreatedAt = DateTime.UtcNow
+        });
+    }
+
+    public async Task RevokePremiumAsync(Guid adminId, Guid targetUserId)
+    {
+        var user = await _userRepository.GetByIdAsync(targetUserId)
+            ?? throw new KeyNotFoundException($"User {targetUserId} not found.");
+
+        if (user.SubscriptionTier == "free")
+            throw new InvalidOperationException("User is already on the free tier.");
+
+        user.SubscriptionTier = "free";
+        user.PremiumExpiresAt = null;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _userRepository.UpdateAsync(user);
+
+        var existingSub = await _subscriptionRepository.GetByUserIdAsync(targetUserId);
+        if (existingSub is not null)
+        {
+            existingSub.Status = "cancelled";
+            existingSub.CancelledAt = DateTime.UtcNow;
+            await _subscriptionRepository.UpdateAsync(existingSub);
+        }
+
+        await _auditLogRepository.AddAsync(new AdminAuditLog
+        {
+            Id = Guid.NewGuid(),
+            AdminId = adminId,
+            Action = "REVOKE_PREMIUM",
+            TargetType = "User",
+            TargetId = targetUserId.ToString(),
+            CreatedAt = DateTime.UtcNow
+        });
+    }
+
+    public async Task<AdminSubscriptionStatsDto> GetSubscriptionStatsAsync()
+    {
+        var totalPremium = await _subscriptionRepository.CountPremiumUsersAsync();
+        var totalUsers = await _userRepository.CountAsync();
+        var totalFree = totalUsers - totalPremium;
+        var (subs, activeCount) = await _subscriptionRepository.GetAllAsync(1, 1, "active");
+        var (manualSubs, manualCount) = await _subscriptionRepository.GetAllAsync(1, 1, "manually_granted");
+        var totalRevenue = await _paymentTransactionRepository.GetTotalRevenueAsync();
+
+        return new AdminSubscriptionStatsDto(
+            totalPremium,
+            totalFree,
+            activeCount + manualCount,
+            totalRevenue
+        );
+    }
+
     // ─── Analytics ────────────────────────────────────────────────────────────
 
     public async Task<AdminAnalyticsOverviewDto> GetAnalyticsOverviewAsync()
@@ -314,7 +420,9 @@ public class AdminService
         user.IsBanned,
         user.BannedAt,
         user.BannedReason,
-        user.CreatedAt
+        user.CreatedAt,
+        user.SubscriptionTier,
+        user.PremiumExpiresAt
     );
 
     private async Task EnsureUserExistsAsync(Guid userId)

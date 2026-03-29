@@ -59,6 +59,9 @@ class ApiUrls {
   // Users
   static const String userProfile = '/api/users/profile';
 
+  // Subscriptions (public — no auth required)
+  static const String subscriptionPlans = '/api/subscriptions/plans';
+
   // Admin - Users
   static const String adminUsers = '/api/admin/users';
   static String adminUserById(String userId) => '/api/admin/users/$userId';
@@ -67,12 +70,22 @@ class ApiUrls {
       '/api/admin/users/$userId/unban';
   static String adminChangeUserRole(String userId) =>
       '/api/admin/users/$userId/role';
+  static String adminGrantPremium(String userId) =>
+      '/api/admin/users/$userId/premium';
+  static String adminRevokePremium(String userId) =>
+      '/api/admin/users/$userId/premium';
   static String adminUserHistory(String userId) =>
       '/api/admin/users/$userId/history';
   static String adminUserFavorites(String userId) =>
       '/api/admin/users/$userId/favorites';
   static String adminUserPlaylists(String userId) =>
       '/api/admin/users/$userId/playlists';
+
+  // Admin - Subscriptions
+  static const String adminSubscriptions = '/api/admin/subscriptions';
+  static const String adminSubscriptionStats = '/api/admin/subscriptions/stats';
+  static const String adminSubscriptionTransactions =
+      '/api/admin/subscriptions/transactions';
 
   // Artists
   static const String artists = '/api/artists';

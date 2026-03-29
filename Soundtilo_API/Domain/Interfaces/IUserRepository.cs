@@ -16,6 +16,7 @@ public interface IUserRepository
         int pageSize = 20,
         string? search = null,
         string? role = null,
-        bool? isBanned = null);
+        bool? isBanned = null,
+        string? subscriptionTier = null);
     Task<int> CountAsync();
 }
