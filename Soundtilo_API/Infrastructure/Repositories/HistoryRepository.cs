@@ -31,6 +31,37 @@ public class HistoryRepository : IHistoryRepository
         return history;
     }
 
+    public async Task<ListeningHistory> UpsertAsync(ListeningHistory history)
+    {
+        // Find all existing records for this user and track
+        var existingRecords = await _context.ListeningHistories
+            .Where(h => h.UserId == history.UserId && h.TrackExternalId == history.TrackExternalId)
+            .OrderByDescending(h => h.ListenedAt)
+            .ToListAsync();
+
+        if (existingRecords.Any())
+        {
+            // Update the most recent one
+            var latest = existingRecords.First();
+            latest.ListenedAt = history.ListenedAt;
+            latest.DurationListened = history.DurationListened;
+            latest.Completed = history.Completed;
+
+            // Remove any other duplicates (legacy data)
+            if (existingRecords.Count > 1)
+            {
+                _context.ListeningHistories.RemoveRange(existingRecords.Skip(1));
+            }
+
+            await _context.SaveChangesAsync();
+            return latest;
+        }
+
+        _context.ListeningHistories.Add(history);
+        await _context.SaveChangesAsync();
+        return history;
+    }
+
     public async Task<int> DeleteByIdsAsync(Guid userId, IReadOnlyCollection<Guid> historyIds)
     {
         if (historyIds.Count == 0)
