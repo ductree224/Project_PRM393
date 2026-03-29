@@ -26,15 +26,15 @@ class NotificationEntity {
   String get typeLabel {
     switch (type) {
       case 1:
-        return 'Tin nhan';
+        return 'Tin nhắn';
       case 2:
-        return 'Canh bao vi pham';
+        return 'Cảnh báo vi phạm';
       case 3:
-        return 'Cap nhat bai hat';
+        return 'Cập nhật bài hát';
       case 4:
-        return 'Thong bao he thong';
+        return 'Thông báo hệ thống';
       default:
-        return 'Thong bao';
+        return 'Thông báo';
     }
   }
 }
