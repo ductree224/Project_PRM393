@@ -45,6 +45,8 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     on<PlayerDurationChanged>(_onDurationChanged);
     on<PlayerCompleted>(_onCompleted);
     on<PlayerToggleFavorite>(_onToggleFavorite);
+    on<PlayerHideMiniPlayer>(_onHideMiniPlayer);
+    on<PlayerShowMiniPlayer>(_onShowMiniPlayer);
 
     _positionSub = _audioPlayer.positionStream.listen((pos) {
       if (isClosed) return;
@@ -82,6 +84,7 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         currentIndex: event.startIndex,
         position: Duration.zero,
         duration: Duration.zero,
+        isMiniPlayerHidden: false,
       ),
     );
 
@@ -307,6 +310,14 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     if (state.currentTrack == null) return;
     final result = await _toggleFavoriteUseCase(state.currentTrack!.externalId);
     result.fold((_) {}, (isFav) => emit(state.copyWith(isFavorite: isFav)));
+  }
+
+  void _onHideMiniPlayer(PlayerHideMiniPlayer event, Emitter<PlayerState> emit) {
+    emit(state.copyWith(isMiniPlayerHidden: true));
+  }
+
+  void _onShowMiniPlayer(PlayerShowMiniPlayer event, Emitter<PlayerState> emit) {
+    emit(state.copyWith(isMiniPlayerHidden: false));
   }
 
   @override

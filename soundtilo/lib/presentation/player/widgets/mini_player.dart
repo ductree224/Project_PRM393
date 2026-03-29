@@ -17,15 +17,17 @@ class MiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<PlayerBloc, PlayerState, (TrackEntity?, PlayerStatus)>(
-      selector: (state) => (state.currentTrack, state.status),
+    return BlocSelector<PlayerBloc, PlayerState, (TrackEntity?, PlayerStatus, bool)>(
+      selector: (state) => (state.currentTrack, state.status, state.isMiniPlayerHidden),
       builder: (context, data) {
         final track = data.$1;
         final status = data.$2;
+        final isHidden = data.$3;
         final shouldShow =
             track != null &&
             status != PlayerStatus.idle &&
-            status != PlayerStatus.error;
+            status != PlayerStatus.error &&
+            !isHidden;
 
         if (!shouldShow) {
           return const SizedBox.shrink();
@@ -86,6 +88,7 @@ class MiniPlayer extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(child: _MiniPlayerText(track: track)),
                         const _MiniPlayerControls(),
+                        const _MiniPlayerCloseButton(),
                         const SizedBox(width: 4),
                       ],
                     ),
@@ -96,6 +99,23 @@ class MiniPlayer extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _MiniPlayerCloseButton extends StatelessWidget {
+  const _MiniPlayerCloseButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      iconSize: 20,
+      splashRadius: 18,
+      color: AppColors.grey,
+      onPressed: () {
+        context.read<PlayerBloc>().add(PlayerHideMiniPlayer());
+      },
+      icon: const Icon(Icons.close),
     );
   }
 }
