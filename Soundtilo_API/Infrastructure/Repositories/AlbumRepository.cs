@@ -99,7 +99,15 @@ public class AlbumRepository : IAlbumRepository
     {
         return await _context.AlbumTracks
             .Where(at => at.AlbumId == albumId)
-            .OrderBy(at => at.Position)
+            .Join(
+                _context.CachedTracks,
+                at => at.TrackExternalId,
+                t => t.ExternalId,
+                (at, t) => new { AlbumTrack = at, Track = t }
+            )
+            .Where(x => x.Track.Status == Domain.Enums.TrackStatus.Active)
+            .OrderBy(x => x.AlbumTrack.Position)
+            .Select(x => x.AlbumTrack)
             .ToListAsync();
     }
 }

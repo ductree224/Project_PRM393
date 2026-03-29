@@ -18,7 +18,21 @@ public class HistoryRepository : IHistoryRepository
     {
         return await _context.ListeningHistories
             .Where(h => h.UserId == userId)
-            .OrderByDescending(h => h.ListenedAt)
+            // Join with CachedTracks to check status
+            .GroupJoin(
+                _context.CachedTracks,
+                h => h.TrackExternalId,
+                t => t.ExternalId,
+                (h, tracks) => new { History = h, Tracks = tracks }
+            )
+            .SelectMany(
+                x => x.Tracks.DefaultIfEmpty(),
+                (x, t) => new { x.History, Track = t }
+            )
+            // Filter: Hide if we have a cache record and it's not Active
+            .Where(x => x.Track == null || x.Track.Status == Domain.Enums.TrackStatus.Active)
+            .OrderByDescending(x => x.History.ListenedAt)
+            .Select(x => x.History)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
