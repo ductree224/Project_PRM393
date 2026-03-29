@@ -80,8 +80,9 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
       ),
     );
 
-    // If same track is already playing/paused, just resume if paused
+    // If same track is already playing/paused, just resume if paused and ensure unhidden
     if (state.currentTrack?.externalId == event.track.externalId) {
+      emit(state.copyWith(isMiniPlayerHidden: false));
       if (state.status == PlayerStatus.paused) {
         add(PlayerResume());
       }

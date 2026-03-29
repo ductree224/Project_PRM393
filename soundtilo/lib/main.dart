@@ -10,7 +10,6 @@ import 'package:soundtilo/core/configs/theme/app_theme.dart';
 import 'package:soundtilo/core/debug/perf_trace.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/core/navigation/app_navigator.dart';
-import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/repository/track_repository.dart';
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
@@ -34,7 +33,6 @@ import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
 import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/library/bloc/library_event.dart';
-import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/intro/pages/get_started.dart';
 import 'package:soundtilo/presentation/splash/pages/splash.dart';
 
@@ -209,46 +207,6 @@ class MyApp extends StatelessWidget {
             themeMode: mode,
             debugShowCheckedModeBanner: false,
             navigatorObservers: [_miniPlayerVisibilityObserver],
-            builder: (context, child) {
-              final content = child ?? const SizedBox.shrink();
-              final bottomInset =
-                  MediaQuery.viewPaddingOf(context).bottom +
-                      kBottomNavigationBarHeight +
-                      8;
-
-              return Stack(
-                children: [
-                  Positioned.fill(child: content),
-                  Positioned(
-                    left: 8,
-                    right: 8,
-                    bottom: bottomInset,
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _isPlayerRouteActive,
-                      builder: (context, isPlayerRouteActive, _) {
-                        if (isPlayerRouteActive) {
-                          return const SizedBox.shrink();
-                        }
-                        return const MiniPlayer();
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    right: 16,
-                    bottom: bottomInset,
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _isPlayerRouteActive,
-                      builder: (context, isPlayerRouteActive, _) {
-                        if (isPlayerRouteActive) {
-                          return const SizedBox.shrink();
-                        }
-                        return const MiniPlayerShowButton();
-                      },
-                    ),
-                  ),
-                ],
-              );
-            },
             home: const SplashPage(),
           ),
         ),
