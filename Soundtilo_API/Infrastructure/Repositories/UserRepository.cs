@@ -1,3 +1,4 @@
+using System;
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data;
@@ -37,6 +38,13 @@ public class UserRepository : IUserRepository
 
     public async Task<User> CreateAsync(User user)
     {
+        // Ensure timestamps are UTC
+        user.CreatedAt = EnsureUtc(user.CreatedAt == default ? DateTime.UtcNow : user.CreatedAt);
+        user.UpdatedAt = EnsureUtc(user.UpdatedAt == default ? DateTime.UtcNow : user.UpdatedAt);
+        user.BannedAt = EnsureUtcNullable(user.BannedAt);
+        user.PremiumExpiresAt = EnsureUtcNullable(user.PremiumExpiresAt);
+        user.Birthday = EnsureUtcNullable(user.Birthday);
+
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         return user;
@@ -44,9 +52,29 @@ public class UserRepository : IUserRepository
 
     public async Task UpdateAsync(User user)
     {
+        // Update timestamp and normalize all DateTime kinds to UTC to satisfy Npgsql
         user.UpdatedAt = DateTime.UtcNow;
+        user.CreatedAt = EnsureUtc(user.CreatedAt);
+        user.BannedAt = EnsureUtcNullable(user.BannedAt);
+        user.PremiumExpiresAt = EnsureUtcNullable(user.PremiumExpiresAt);
+        user.Birthday = EnsureUtcNullable(user.Birthday);
+
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
+    }
+
+    private static DateTime EnsureUtc(DateTime value)
+    {
+        if (value.Kind == DateTimeKind.Utc) return value;
+        if (value.Kind == DateTimeKind.Local) return value.ToUniversalTime();
+        // Unspecified -> treat as UTC
+        return DateTime.SpecifyKind(value, DateTimeKind.Utc);
+    }
+
+    private static DateTime? EnsureUtcNullable(DateTime? value)
+    {
+        if (!value.HasValue) return null;
+        return EnsureUtc(value.Value);
     }
 
     public async Task DeleteAsync(User user)

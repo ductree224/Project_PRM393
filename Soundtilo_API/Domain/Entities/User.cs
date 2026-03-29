@@ -17,6 +17,15 @@ public class User
     public string SubscriptionTier { get; set; } = "free"; // free | premium
     public DateTime? PremiumExpiresAt { get; set; }
     public string? StripeCustomerId { get; set; }
+    public string? Bio { get; set; }
+    public DateTime? Birthday { get; set; }
+    public string? Gender { get; set; }
+    public string? Pronouns { get; set; }
+    public bool IsProfilePublic { get; set; } = true;
+    public string? StatusMessage { get; set; }
+    public bool AllowComments { get; set; } = true;
+    public bool AllowMessages { get; set; } = true;
+    public string FollowerPrivacyMode { get; set; } = "everyone";
 
     // Navigation properties
     [System.Text.Json.Serialization.JsonIgnore]
@@ -46,4 +55,12 @@ public class User
     public Subscription? Subscription { get; set; }
     [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<UserBlock> BlocksInitiated { get; set; } = new List<UserBlock>();
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<UserBlock> BlocksReceived { get; set; } = new List<UserBlock>();
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<UserBadge> UserBadges { get; set; } = new List<UserBadge>();
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<UserBadge> BadgesAssigned { get; set; } = new List<UserBadge>();
 }

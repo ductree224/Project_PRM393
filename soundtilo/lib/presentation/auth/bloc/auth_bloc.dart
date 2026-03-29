@@ -104,13 +104,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       usernameOrEmail: event.usernameOrEmail,
       password: event.password,
     );
-    await result.fold((error) async => emit(AuthError(error)), (data) async {
+    
+    // Convert fold to a standard if/else to avoid async closure issues with Emitter
+    if (result.isLeft()) {
+      final error = result.asLeft();
+      emit(AuthError(error));
+    } else {
+      final user = result.asRight().$1;
       await _persistRememberMe(
         rememberMe: event.rememberMe,
         email: event.usernameOrEmail,
       );
-      emit(AuthAuthenticated(data.$1));
-    });
+      emit(AuthAuthenticated(user));
+    }
   }
 
   Future<void> _onGoogleSignIn(
@@ -180,18 +186,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     final result = await _getProfileUseCase();
+    
+    UserEntity? updatedUser;
     result.fold(
-      (_) => null, // silently ignore errors — stale cached state is acceptable
-      (user) async {
-        await _prefs.setString(_subscriptionTierKey, user.subscriptionTier);
-        if (user.premiumExpiresAt != null) {
-          await _prefs.setString(
-              _premiumExpiresAtKey, user.premiumExpiresAt!.toIso8601String());
-        } else {
-          await _prefs.remove(_premiumExpiresAtKey);
-        }
-        emit(AuthAuthenticated(user));
-      },
+      (_) => null, 
+      (user) => updatedUser = user,
     );
+
+    if (updatedUser != null) {
+      await _prefs.setString(_subscriptionTierKey, updatedUser!.subscriptionTier);
+      if (updatedUser!.premiumExpiresAt != null) {
+        await _prefs.setString(
+            _premiumExpiresAtKey, updatedUser!.premiumExpiresAt!.toIso8601String());
+      } else {
+        await _prefs.remove(_premiumExpiresAtKey);
+      }
+      emit(AuthAuthenticated(updatedUser!));
+    }
   }
+}
+
+extension EitherExt<L, R> on dynamic {
+  bool isLeft() => this.isLeft();
+  L asLeft() => (this as dynamic).fold((l) => l, (r) => throw Exception('Not Left'));
+  R asRight() => (this as dynamic).fold((l) => throw Exception('Not Right'), (r) => r);
 }

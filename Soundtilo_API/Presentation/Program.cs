@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.IO;
 using Application;
 using Application.Interfaces;
 using Infrastructure;
@@ -119,6 +120,7 @@ if (app.Environment.IsDevelopment())
 
 // app.UseHttpsRedirection();
 
+
 app.UseCors("AllowFlutterApp");
 
 app.UseAuthentication();
@@ -126,5 +128,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+// Ensure wwwroot/avatars exists and enable static file serving
+var wwwroot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(Path.Combine(wwwroot, "avatars"));
+
+app.UseStaticFiles();
 
 app.Run();

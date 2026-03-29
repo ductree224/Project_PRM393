@@ -41,8 +41,19 @@ public class CommentsController : ControllerBase
             return BadRequest(new { message = "Bình luận không được vượt quá 500 ký tự." });
 
         var userId = GetUserId();
-        var comment = await _commentService.AddCommentAsync(userId, trackExternalId, request);
-        return CreatedAtAction(nameof(GetComments), new { trackExternalId }, comment);
+        try
+        {
+            var comment = await _commentService.AddCommentAsync(userId, trackExternalId, request);
+            return CreatedAtAction(nameof(GetComments), new { trackExternalId }, comment);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{commentId:guid}")]

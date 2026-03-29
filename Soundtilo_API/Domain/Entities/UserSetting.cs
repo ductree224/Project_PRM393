@@ -6,6 +6,11 @@ public class UserSetting
     public Guid UserId { get; set; }
     public string ThemeMode { get; set; } = "system";
     public string AudioQuality { get; set; } = "medium";
+    public bool ShowTotalListens { get; set; } = true;
+    public bool ShowTotalFavorites { get; set; } = true;
+    public bool ShowTotalPlaylists { get; set; } = true;
+    public bool ShowListeningTime { get; set; } = true;
+    public bool ShowRecentlyPlayed { get; set; } = true;
     public DateTime UpdatedAt { get; set; }
 
     // Navigation properties

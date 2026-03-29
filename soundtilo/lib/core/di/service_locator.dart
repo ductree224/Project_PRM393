@@ -138,6 +138,8 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSource(sl<ApiClient>().dio),
+  );
+
   // Subscription uses plain Dio (public endpoint — no auth required)
   sl.registerLazySingleton<SubscriptionRemoteDataSource>(
     () => SubscriptionRemoteDataSource(sl<Dio>(instanceName: 'plainDio')),
@@ -191,16 +193,15 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<NotificationRealtimeService>(
     () => NotificationRealtimeService(sl<AuthRepository>()),
   );
-  sl.registerFactory(
-    () => TrackAdminBloc(repository: sl<TrackAdminRepository>()),
-  );
   sl.registerLazySingleton<SubscriptionRepository>(
     () => SubscriptionRepositoryImpl(sl<SubscriptionRemoteDataSource>()),
   );
   sl.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(sl<UserRemoteDataSource>()),
   );
-  sl.registerFactory(() => TrackAdminBloc(repository: sl<TrackAdminRepository>()));
+  sl.registerFactory(
+    () => TrackAdminBloc(repository: sl<TrackAdminRepository>()),
+  );
   sl.registerFactory(() => AlbumAdminBloc(repository: sl<AlbumRepository>()));
   sl.registerFactory(() => ArtistAdminBloc(repository: sl<ArtistRepository>()));
 
@@ -282,8 +283,11 @@ Future<void> initServiceLocator() async {
 
   // User & Subscription
   sl.registerLazySingleton(() => GetProfileUseCase(sl<UserRepository>()));
+  sl.registerLazySingleton(() => UpdateProfileUseCase(sl<UserRepository>()));
+  sl.registerLazySingleton(() => UploadAvatarUseCase(sl<UserRepository>()));
   sl.registerLazySingleton(
-      () => GetSubscriptionPlansUseCase(sl<SubscriptionRepository>()));
+    () => GetSubscriptionPlansUseCase(sl<SubscriptionRepository>()),
+  );
 
   // BỔ SUNG: Đăng ký Waitlist UseCases
   sl.registerLazySingleton(() => GetWaitlistUseCase(sl<WaitlistRepository>()));

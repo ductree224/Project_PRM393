@@ -27,3 +27,49 @@ class GetProfileUseCase {
     return _repository.getProfile();
   }
 }
+
+/// Updates the current user's profile with the provided optional fields.
+class UpdateProfileUseCase {
+  final UserRepository _repository;
+
+  UpdateProfileUseCase(this._repository);
+
+  Future<Either<String, UserEntity>> call({
+    String? displayName,
+    String? avatarUrl,
+    String? bio,
+    DateTime? birthday,
+    String? gender,
+    String? pronouns,
+    bool? isProfilePublic,
+    String? statusMessage,
+    bool? allowComments,
+    bool? allowMessages,
+    String? followerPrivacyMode,
+  }) {
+    return _repository.updateProfile(
+      displayName: displayName,
+      avatarUrl: avatarUrl,
+      bio: bio,
+      birthday: birthday,
+      gender: gender,
+      pronouns: pronouns,
+      isProfilePublic: isProfilePublic,
+      statusMessage: statusMessage,
+      allowComments: allowComments,
+      allowMessages: allowMessages,
+      followerPrivacyMode: followerPrivacyMode,
+    );
+  }
+}
+
+/// Uploads an avatar image file and returns the hosted URL.
+class UploadAvatarUseCase {
+  final UserRepository _repository;
+
+  UploadAvatarUseCase(this._repository);
+
+  Future<Either<String, String>> call(Object file) {
+    return _repository.uploadAvatar(file);
+  }
+}

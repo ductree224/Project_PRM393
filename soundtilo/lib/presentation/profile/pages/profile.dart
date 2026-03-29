@@ -19,6 +19,7 @@ import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/premium/pages/premium_paywall_page.dart';
+import 'package:soundtilo/presentation/profile/pages/edit_profile.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -144,8 +145,7 @@ class _ProfilePageState extends State<ProfilePage> {
             avatarUrl = state.user.avatarUrl;
           }
 
-          final isPremium =
-              state is AuthAuthenticated && state.user.isPremium;
+          final isPremium = state is AuthAuthenticated && state.user.isPremium;
 
           return Scaffold(
             appBar: AppBar(
@@ -210,89 +210,96 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ],
 
-                // Premium / Free tier badge
-                const SizedBox(height: 10),
-                if (isPremium)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFFB300), Color(0xFFFF6F00)],
+                  // Premium / Free tier badge
+                  const SizedBox(height: 10),
+                  if (isPremium)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 5,
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star_rounded, color: Colors.white, size: 16),
-                        SizedBox(width: 5),
-                        Text(
-                          'PREMIUM',
-                          style: TextStyle(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFB300), Color(0xFFFF6F00)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.star_rounded,
                             color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
+                            size: 16,
                           ),
+                          SizedBox(width: 5),
+                          Text(
+                            'PREMIUM',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.grey.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'Miễn phí',
+                        style: TextStyle(
+                          color: AppColors.grey,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
-                      ],
+                      ),
                     ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.grey.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'Miễn phí',
-                      style: TextStyle(
-                        color: AppColors.grey,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+
+                  const SizedBox(height: 36),
+
+                  // Menu items
+                  _ProfileMenuCard(
+                    icon: isPremium
+                        ? Icons.star_rounded
+                        : Icons.workspace_premium_rounded,
+                    title: isPremium
+                        ? 'Gói Premium của bạn'
+                        : 'Nâng cấp Premium',
+                    subtitleWidget: isPremium
+                        ? null
+                        : Text(
+                            '10.000đ/tháng',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: const Color(0xFFFFB300),
+                                  fontSize: 12,
+                                ),
+                          ),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PremiumPaywallPage(),
                       ),
                     ),
                   ),
-
-                const SizedBox(height: 36),
-
-                // Menu items
-                _ProfileMenuCard(
-                  icon: isPremium
-                      ? Icons.star_rounded
-                      : Icons.workspace_premium_rounded,
-                  title: isPremium ? 'Gói Premium của bạn' : 'Nâng cấp Premium',
-                  subtitleWidget: isPremium
-                      ? null
-                      : Text(
-                          '10.000đ/tháng',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: const Color(0xFFFFB300),
-                                fontSize: 12,
-                              ),
-                        ),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PremiumPaywallPage(),
+                  const SizedBox(height: 12),
+                  _ProfileMenuCard(
+                    icon: Icons.history_rounded,
+                    title: 'Lịch sử nghe',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HistoryPage()),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _ProfileMenuCard(
-                  icon: Icons.history_rounded,
-                  title: 'Lịch sử nghe',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HistoryPage()),
                   ),
                   const SizedBox(height: 12),
                   _ProfileMenuCard(
@@ -427,56 +434,68 @@ class _ProfileAvatar extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Container(
-          width: 116,
-          height: 116,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.primary, width: 2.5),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.45),
-                blurRadius: 18,
-                spreadRadius: 2,
-              ),
-            ],
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const EditProfilePage()),
           ),
-          child: ClipOval(
-            child: avatarUrl != null && avatarUrl!.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: avatarUrl!,
-                    fit: BoxFit.cover,
-                    width: 116,
-                    height: 116,
-                    memCacheWidth: 232,
-                    memCacheHeight: 232,
-                    errorWidget: (context, url, error) =>
-                        _AvatarFallbackLarge(username: username),
-                    placeholder: (context, url) => const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+          child: Container(
+            width: 116,
+            height: 116,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primary, width: 2.5),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.45),
+                  blurRadius: 18,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: avatarUrl != null && avatarUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: avatarUrl!,
+                      fit: BoxFit.cover,
+                      width: 116,
+                      height: 116,
+                      memCacheWidth: 232,
+                      memCacheHeight: 232,
+                      errorWidget: (context, url, error) =>
+                          _AvatarFallbackLarge(username: username),
+                      placeholder: (context, url) => const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       ),
-                    ),
-                  )
-                : _AvatarFallbackLarge(username: username),
+                    )
+                  : _AvatarFallbackLarge(username: username),
+            ),
           ),
         ),
         Positioned(
           bottom: 0,
           right: 0,
-          child: Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
+          child: GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const EditProfilePage()),
             ),
-            child: Icon(
-              Icons.edit,
-              size: 16,
-              color: Theme.of(context).colorScheme.onPrimary,
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.edit,
+                size: 16,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
           ),
         ),

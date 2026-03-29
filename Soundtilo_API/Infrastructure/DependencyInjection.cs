@@ -42,6 +42,10 @@ public static class DependencyInjection
         services.AddScoped<IWaitlistRepository, WaitlistRepository>();
         services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
         services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
+        services.AddScoped<IUserSettingRepository, UserSettingRepository>();
+        services.AddScoped<IUserBlockRepository, UserBlockRepository>();
+        services.AddScoped<IProfileBadgeRepository, ProfileBadgeRepository>();
+        services.AddScoped<IUserBadgeRepository, UserBadgeRepository>();
         services.AddScoped<WaitlistService>();
         // admin
         services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();

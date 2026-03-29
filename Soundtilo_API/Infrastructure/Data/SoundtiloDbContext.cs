@@ -31,6 +31,9 @@ public class SoundtiloDbContext : DbContext
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
+    public DbSet<UserBlock> UserBlocks => Set<UserBlock>();
+    public DbSet<ProfileBadge> ProfileBadges => Set<ProfileBadge>();
+    public DbSet<UserBadge> UserBadges => Set<UserBadge>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,6 +62,15 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.SubscriptionTier).HasColumnName("subscription_tier").HasMaxLength(20).HasDefaultValue("free");
             entity.Property(e => e.PremiumExpiresAt).HasColumnName("premium_expires_at");
             entity.Property(e => e.StripeCustomerId).HasColumnName("stripe_customer_id").HasMaxLength(255);
+            entity.Property(e => e.Bio).HasColumnName("bio").HasMaxLength(500);
+            entity.Property(e => e.Birthday).HasColumnName("birthday");
+            entity.Property(e => e.Gender).HasColumnName("gender").HasMaxLength(30);
+            entity.Property(e => e.Pronouns).HasColumnName("pronouns").HasMaxLength(30);
+            entity.Property(e => e.IsProfilePublic).HasColumnName("is_profile_public").HasDefaultValue(true);
+            entity.Property(e => e.StatusMessage).HasColumnName("status_message").HasMaxLength(160);
+            entity.Property(e => e.AllowComments).HasColumnName("allow_comments").HasDefaultValue(true);
+            entity.Property(e => e.AllowMessages).HasColumnName("allow_messages").HasDefaultValue(true);
+            entity.Property(e => e.FollowerPrivacyMode).HasColumnName("follower_privacy_mode").HasMaxLength(30).HasDefaultValue("everyone");
             entity.HasIndex(e => e.SubscriptionTier);
         });
 
@@ -141,6 +153,25 @@ public class SoundtiloDbContext : DbContext
             entity.HasOne(e => e.User).WithMany(u => u.Playlists).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
+        // PlaylistTrack
+        modelBuilder.Entity<PlaylistTrack>(entity =>
+        {
+            entity.ToTable("playlist_tracks");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.PlaylistId).HasColumnName("playlist_id");
+            entity.Property(e => e.TrackExternalId).HasColumnName("track_external_id").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Position).HasColumnName("position");
+            entity.Property(e => e.AddedAt).HasColumnName("added_at");
+
+            entity.HasOne(e => e.Playlist)
+                .WithMany(p => p.PlaylistTracks)
+                .HasForeignKey(e => e.PlaylistId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.PlaylistId, e.TrackExternalId }).IsUnique();
+        });
+
         // AlbumTrack
         modelBuilder.Entity<AlbumTrack>(entity =>
         {
@@ -194,9 +225,84 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.ThemeMode).HasColumnName("theme_mode").HasMaxLength(20);
             entity.Property(e => e.AudioQuality).HasColumnName("audio_quality").HasMaxLength(20);
+            entity.Property(e => e.ShowTotalListens).HasColumnName("show_total_listens").HasDefaultValue(true);
+            entity.Property(e => e.ShowTotalFavorites).HasColumnName("show_total_favorites").HasDefaultValue(true);
+            entity.Property(e => e.ShowTotalPlaylists).HasColumnName("show_total_playlists").HasDefaultValue(true);
+            entity.Property(e => e.ShowListeningTime).HasColumnName("show_listening_time").HasDefaultValue(true);
+            entity.Property(e => e.ShowRecentlyPlayed).HasColumnName("show_recently_played").HasDefaultValue(true);
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.HasOne(e => e.User).WithOne(u => u.UserSetting).HasForeignKey<UserSetting>(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => e.UserId).IsUnique();
+        });
+
+        // UserBlock
+        modelBuilder.Entity<UserBlock>(entity =>
+        {
+            entity.ToTable("user_blocks");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.BlockerId).HasColumnName("blocker_id");
+            entity.Property(e => e.BlockedId).HasColumnName("blocked_id");
+            entity.Property(e => e.Reason).HasColumnName("reason").HasMaxLength(250);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasOne(e => e.Blocker)
+                .WithMany(u => u.BlocksInitiated)
+                .HasForeignKey(e => e.BlockerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Blocked)
+                .WithMany(u => u.BlocksReceived)
+                .HasForeignKey(e => e.BlockedId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.BlockerId, e.BlockedId }).IsUnique();
+            entity.HasIndex(e => e.BlockedId);
+        });
+
+        // ProfileBadge
+        modelBuilder.Entity<ProfileBadge>(entity =>
+        {
+            entity.ToTable("profile_badges");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(80).IsRequired();
+            entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(250);
+            entity.Property(e => e.IconUrl).HasColumnName("icon_url");
+            entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.HasIndex(e => e.Code).IsUnique();
+        });
+
+        // UserBadge
+        modelBuilder.Entity<UserBadge>(entity =>
+        {
+            entity.ToTable("user_badges");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.BadgeId).HasColumnName("badge_id");
+            entity.Property(e => e.AssignedByAdminId).HasColumnName("assigned_by_admin_id");
+            entity.Property(e => e.AssignedAt).HasColumnName("assigned_at");
+            entity.Property(e => e.Note).HasColumnName("note").HasMaxLength(250);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.UserBadges)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Badge)
+                .WithMany(b => b.UserBadges)
+                .HasForeignKey(e => e.BadgeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.AssignedByAdmin)
+                .WithMany(u => u.BadgesAssigned)
+                .HasForeignKey(e => e.AssignedByAdminId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => new { e.UserId, e.BadgeId }).IsUnique();
         });
 
         // RefreshToken

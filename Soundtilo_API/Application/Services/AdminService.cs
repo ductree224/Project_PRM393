@@ -25,7 +25,7 @@ public class AdminService
         IHistoryRepository historyRepository,
         IFavoriteRepository favoriteRepository,
         IPlaylistRepository playlistRepository,
-        NotificationService notificationService)
+        NotificationService notificationService,
         ISubscriptionRepository subscriptionRepository,
         IPaymentTransactionRepository paymentTransactionRepository)
     {

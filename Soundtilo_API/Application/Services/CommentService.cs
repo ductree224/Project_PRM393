@@ -7,10 +7,12 @@ namespace Application.Services;
 public class CommentService
 {
     private readonly ICommentRepository _commentRepository;
+    private readonly IUserRepository _userRepository;
 
-    public CommentService(ICommentRepository commentRepository)
+    public CommentService(ICommentRepository commentRepository, IUserRepository userRepository)
     {
         _commentRepository = commentRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<CommentListResponse> GetCommentsAsync(string trackExternalId, int page = 1, int pageSize = 20)
@@ -32,6 +34,13 @@ public class CommentService
 
     public async Task<CommentDto> AddCommentAsync(Guid userId, string trackExternalId, CreateCommentRequest request)
     {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new KeyNotFoundException("Người dùng không tồn tại.");
+
+        if (!user.AllowComments)
+            throw new InvalidOperationException("Tính năng bình luận đang bị tắt trong cài đặt hồ sơ của bạn.");
+
         var comment = new Comment
         {
             Id = Guid.NewGuid(),
