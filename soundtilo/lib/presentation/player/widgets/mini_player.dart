@@ -143,6 +143,46 @@ class _MiniPlayerProgressBar extends StatelessWidget {
   }
 }
 
+class MiniPlayerShowButton extends StatelessWidget {
+  const MiniPlayerShowButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<PlayerBloc, PlayerState, (TrackEntity?, bool)>(
+      selector: (state) => (state.currentTrack, state.isMiniPlayerHidden),
+      builder: (context, data) {
+        final track = data.$1;
+        final isHidden = data.$2;
+        if (track == null || !isHidden) return const SizedBox.shrink();
+
+        return GestureDetector(
+          onTap: () => context.read<PlayerBloc>().add(PlayerShowMiniPlayer()),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.music_note,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _MiniPlayerArtwork extends StatelessWidget {
   final TrackEntity track;
 
