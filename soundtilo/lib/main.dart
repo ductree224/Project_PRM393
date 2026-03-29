@@ -35,6 +35,7 @@ import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/library/bloc/library_event.dart';
 import 'package:soundtilo/presentation/intro/pages/get_started.dart';
 import 'package:soundtilo/presentation/splash/pages/splash.dart';
+import 'package:soundtilo/common/widgets/inactivity_tracker.dart';
 
 final ValueNotifier<bool> _isPlayerRouteActive = ValueNotifier<bool>(false);
 
@@ -207,6 +208,18 @@ class MyApp extends StatelessWidget {
             themeMode: mode,
             debugShowCheckedModeBanner: false,
             navigatorObservers: [_miniPlayerVisibilityObserver],
+            builder: (context, child) {
+              return InactivityTracker(
+                timeout: const Duration(seconds: 10), // 10 seconds for testing as requested
+                onTimeout: () {
+                  final playerBloc = context.read<PlayerBloc>();
+                  if (playerBloc.state.status == PlayerStatus.playing) {
+                    playerBloc.add(PlayerPause());
+                  }
+                },
+                child: child!,
+              );
+            },
             home: const SplashPage(),
           ),
         ),
