@@ -12,6 +12,6 @@ public interface ITrackService
     Task<string?> GetStreamUrlAsync(string trackId);
     Task<TrackSearchResponse> GetByTagAsync(string tag, int limit = 20);
     Task<IEnumerable<TrackAdminDto>> GetTracksAsync(TrackStatus? status = null, string? query = null, int limit = 50, int offset = 0);
-    Task UpdateStatusesAsync(UpdateTrackStatusDto payload);
+    Task UpdateStatusesAsync(UpdateTrackStatusDto payload, Guid actorAdminId);
     Task BulkAddTracksToAlbumAsync(BulkAddTracksToAlbumDto payload);
 }

@@ -14,10 +14,13 @@ class ApiUrls {
       return 'http://localhost:5196';
     } else if (Platform.isAndroid) {
       return 'http://10.0.2.2:5196'; // Emulator Android
-    } else if (Platform.isIOS || Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+    } else if (Platform.isIOS ||
+        Platform.isMacOS ||
+        Platform.isWindows ||
+        Platform.isLinux) {
       return 'http://localhost:5196';
     }
-    
+
     return 'http://localhost:5196';
   }
 
@@ -83,5 +86,26 @@ class ApiUrls {
   // Admin Tracks
   static const String adminTracks = '/api/admin/tracks';
   static const String updateAdminTrackStatus = '/api/admin/tracks/status';
-  static const String addTracksToAlbumToAdmin = '/api/admin/tracks/add-to-album';
+  static const String addTracksToAlbumToAdmin =
+      '/api/admin/tracks/add-to-album';
+
+  // Notifications
+  static const String notificationsInbox = '/api/notifications/inbox';
+  static const String notificationsUnreadCount =
+      '/api/notifications/unread-count';
+  static String notificationMarkRead(String id) =>
+      '/api/notifications/$id/read';
+  static const String notificationsMarkAllRead = '/api/notifications/read-all';
+  static const String adminNotificationTemplates =
+      '/api/notifications/admin/templates';
+  static String adminNotificationTemplateById(String id) =>
+      '/api/notifications/admin/templates/$id';
+  static const String adminNotificationSchedules =
+      '/api/notifications/admin/schedules';
+  static String adminNotificationScheduleById(String id) =>
+      '/api/notifications/admin/schedules/$id';
+  static const String adminNotificationSendBroadcast =
+      '/api/notifications/admin/send/broadcast';
+  static String adminNotificationSendUser(String userId) =>
+      '/api/notifications/admin/send/user/$userId';
 }

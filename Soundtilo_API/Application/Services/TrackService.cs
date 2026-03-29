@@ -14,19 +14,22 @@ public class TrackService : ITrackService
     private readonly IJamendoApiClient _jamendoApi;
     private readonly ITrackCacheRepository _trackCache;
     private readonly IAlbumService _albumService;
+    private readonly NotificationService _notificationService;
 
     public TrackService(
         IAudiusApiClient audiusApi,
         IDeezerApiClient deezerApi,
         IJamendoApiClient jamendoApi,
         ITrackCacheRepository trackCache,
-        IAlbumService albumService)
+        IAlbumService albumService,
+        NotificationService notificationService)
     {
         _audiusApi = audiusApi;
         _deezerApi = deezerApi;
         _jamendoApi = jamendoApi;
         _trackCache = trackCache;
         _albumService = albumService;
+        _notificationService = notificationService;
     }
 
     public async Task<TrackSearchResponse> SearchAsync(
@@ -356,9 +359,16 @@ public class TrackService : ITrackService
         });
     }
 
-    public async Task UpdateStatusesAsync(UpdateTrackStatusDto payload)
+    public async Task UpdateStatusesAsync(UpdateTrackStatusDto payload, Guid actorAdminId)
     {
         await _trackCache.UpdateStatusesAsync(payload.ExternalIds, payload.Status);
+
+        var message = $"{payload.ExternalIds.Count()} track(s) đã được cập nhật sang trạng thái {payload.Status}.";
+        await _notificationService.SendTrackUpdateBroadcastAsync(
+            actorAdminId,
+            "Cập nhật thư viện nhạc",
+            message,
+            $"{{\"status\":\"{payload.Status}\",\"count\":{payload.ExternalIds.Count()}}}");
     }
 
     public async Task BulkAddTracksToAlbumAsync(BulkAddTracksToAlbumDto payload)

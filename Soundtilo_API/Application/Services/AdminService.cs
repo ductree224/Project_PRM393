@@ -13,6 +13,7 @@ public class AdminService
     private readonly IHistoryRepository _historyRepository;
     private readonly IFavoriteRepository _favoriteRepository;
     private readonly IPlaylistRepository _playlistRepository;
+    private readonly NotificationService _notificationService;
 
     public AdminService(
         IUserRepository userRepository,
@@ -20,7 +21,8 @@ public class AdminService
         IAdminAnalyticsRepository analyticsRepository,
         IHistoryRepository historyRepository,
         IFavoriteRepository favoriteRepository,
-        IPlaylistRepository playlistRepository)
+        IPlaylistRepository playlistRepository,
+        NotificationService notificationService)
     {
         _userRepository = userRepository;
         _auditLogRepository = auditLogRepository;
@@ -28,6 +30,7 @@ public class AdminService
         _historyRepository = historyRepository;
         _favoriteRepository = favoriteRepository;
         _playlistRepository = playlistRepository;
+        _notificationService = notificationService;
     }
 
     // ─── User Management ──────────────────────────────────────────────────────
@@ -186,6 +189,11 @@ public class AdminService
             Details = reason != null ? $"{{\"reason\":\"{reason}\"}}" : null,
             CreatedAt = DateTime.UtcNow
         });
+
+        var message = reason is { Length: > 0 }
+            ? $"Tài khoản của bạn đã bị khóa do vi phạm. Lý do: {reason}"
+            : "Tài khoản của bạn đã bị khóa do vi phạm chính sách cộng đồng.";
+        await _notificationService.SendViolationWarningAsync(adminId, targetUserId, "Cảnh báo vi phạm", message);
     }
 
     public async Task UnbanUserAsync(Guid adminId, Guid targetUserId)
@@ -207,6 +215,16 @@ public class AdminService
             TargetId = targetUserId.ToString(),
             CreatedAt = DateTime.UtcNow
         });
+
+        await _notificationService.SendToUserAsync(
+            adminId,
+            targetUserId,
+            Domain.Enums.NotificationType.UserMessage,
+            Domain.Enums.NotificationSource.Automatic,
+            "Khôi phục tài khoản",
+            "Tài khoản của bạn đã được mở khóa. Vui lòng tuân thủ chính sách để tránh bị xử lý lại.",
+            null,
+            null);
     }
 
     public async Task ChangeRoleAsync(Guid adminId, Guid targetUserId, string newRole)
