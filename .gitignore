@@ -92,3 +92,9 @@ app.*.map.json
 
 # Secrets
 .env
+soundtilo/.flutter-plugins-dependencies
+soundtilo/macos/Flutter/GeneratedPluginRegistrant.swift
+soundtilo/macos/Flutter/GeneratedPluginRegistrant.swift
+/Database
+/docs
+/docs

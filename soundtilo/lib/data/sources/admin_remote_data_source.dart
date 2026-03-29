@@ -12,9 +12,11 @@ class AdminRemoteDataSource {
     String? search,
     String? role,
     bool? isBanned,
+    String? subscriptionTier,
   }) async {
     final normalizedSearch = search?.trim();
     final normalizedRole = role?.trim();
+    final normalizedTier = subscriptionTier?.trim();
 
     final queryParameters = <String, dynamic>{
       'page': page,
@@ -26,6 +28,9 @@ class AdminRemoteDataSource {
           ? normalizedRole
           : null,
       'isBanned': isBanned,
+      'subscriptionTier': (normalizedTier != null && normalizedTier.isNotEmpty)
+          ? normalizedTier
+          : null,
     };
 
     queryParameters.removeWhere((_, value) => value == null);
@@ -51,6 +56,17 @@ class AdminRemoteDataSource {
 
   Future<void> deleteUser(String userId) async {
     await _dio.delete(ApiUrls.adminUserById(userId));
+  }
+
+  Future<void> grantPremium(String userId, {DateTime? expiresAt}) async {
+    await _dio.post(
+      ApiUrls.adminGrantPremium(userId),
+      data: {'expiresAt': expiresAt?.toUtc().toIso8601String()},
+    );
+  }
+
+  Future<void> revokePremium(String userId) async {
+    await _dio.delete(ApiUrls.adminRevokePremium(userId));
   }
 
   Future<Map<String, dynamic>> getUserHistory(

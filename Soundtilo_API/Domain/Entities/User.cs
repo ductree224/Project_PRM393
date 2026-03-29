@@ -14,7 +14,9 @@ public class User
     public string? BannedReason { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-
+    public string SubscriptionTier { get; set; } = "free"; // free | premium
+    public DateTime? PremiumExpiresAt { get; set; }
+    public string? StripeCustomerId { get; set; }
 
     // Navigation properties
     [System.Text.Json.Serialization.JsonIgnore]
@@ -41,4 +43,7 @@ public class User
     public ICollection<NotificationSchedule> NotificationSchedulesTargeted { get; set; } = new List<NotificationSchedule>();
     [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<NotificationDeliveryLog> NotificationDeliveryLogs { get; set; } = new List<NotificationDeliveryLog>();
+    public Subscription? Subscription { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 }

@@ -8,6 +8,8 @@ class UserEntity extends Equatable {
   final String? avatarUrl;
   final String? role;
   final DateTime createdAt;
+  final String subscriptionTier;
+  final DateTime? premiumExpiresAt;
 
   const UserEntity({
     required this.id,
@@ -17,7 +19,15 @@ class UserEntity extends Equatable {
     this.avatarUrl,
     this.role,
     required this.createdAt,
+    this.subscriptionTier = 'free',
+    this.premiumExpiresAt,
   });
+
+  /// True when the user holds an active premium subscription.
+  /// Checks both the tier value and that the expiry (if set) has not passed.
+  bool get isPremium =>
+      subscriptionTier == 'premium' &&
+      (premiumExpiresAt == null || premiumExpiresAt!.isAfter(DateTime.now()));
 
   @override
   List<Object?> get props => [
@@ -28,5 +38,7 @@ class UserEntity extends Equatable {
         avatarUrl,
         role,
         createdAt,
+        subscriptionTier,
+        premiumExpiresAt,
       ];
 }

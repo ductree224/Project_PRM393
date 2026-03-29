@@ -21,6 +21,7 @@ public static class DependencyInjection
 
         services.AddScoped<AdminService>();
         services.AddScoped<CommentService>();
+        services.AddScoped<SubscriptionService>();
 
         services.AddScoped<Interfaces.IArtistService, ArtistService>();
         services.AddScoped<Interfaces.IAlbumService, AlbumService>();

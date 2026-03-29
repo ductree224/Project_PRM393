@@ -13,6 +13,7 @@ class GetAdminUsersUseCase {
     String? search,
     String? role,
     bool? isBanned,
+    String? subscriptionTier,
   }) {
     return repository.getUsers(
       page: page,
@@ -20,6 +21,7 @@ class GetAdminUsersUseCase {
       search: search,
       role: role,
       isBanned: isBanned,
+      subscriptionTier: subscriptionTier,
     );
   }
 }
@@ -103,5 +105,28 @@ class GetAdminUserPlaylistsUseCase {
     int pageSize = 20,
   }) {
     return repository.getUserPlaylists(userId, page: page, pageSize: pageSize);
+  }
+}
+
+class GrantPremiumUseCase {
+  final AdminRepository repository;
+
+  GrantPremiumUseCase(this.repository);
+
+  Future<Either<String, void>> call(
+    String userId, {
+    DateTime? expiresAt,
+  }) {
+    return repository.grantPremium(userId, expiresAt: expiresAt);
+  }
+}
+
+class RevokePremiumUseCase {
+  final AdminRepository repository;
+
+  RevokePremiumUseCase(this.repository);
+
+  Future<Either<String, void>> call(String userId) {
+    return repository.revokePremium(userId);
   }
 }

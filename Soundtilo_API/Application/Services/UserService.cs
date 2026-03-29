@@ -42,7 +42,9 @@ public class UserService
             TotalListens: totalListens,
             TotalListeningTimeSeconds: totalTime,
             TotalFavorites: totalFavorites,
-            TotalPlaylists: playlists.Count()
+            TotalPlaylists: playlists.Count(),
+            SubscriptionTier: user.SubscriptionTier,
+            PremiumExpiresAt: user.PremiumExpiresAt
         );
     }
 

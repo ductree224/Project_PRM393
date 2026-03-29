@@ -40,6 +40,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationScheduleRepository, NotificationScheduleRepository>();
         services.AddScoped<INotificationDeliveryLogRepository, NotificationDeliveryLogRepository>();
         services.AddScoped<IWaitlistRepository, WaitlistRepository>();
+        services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+        services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
         services.AddScoped<WaitlistService>();
         // admin
         services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();

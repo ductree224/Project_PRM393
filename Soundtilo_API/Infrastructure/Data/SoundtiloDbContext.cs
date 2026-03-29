@@ -28,6 +28,9 @@ public class SoundtiloDbContext : DbContext
     public DbSet<WaitlistTrack> WaitlistTracks { get; set; }
     public DbSet<Artist> Artists => Set<Artist>();
     public DbSet<Album> Albums => Set<Album>();
+    public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,6 +56,10 @@ public class SoundtiloDbContext : DbContext
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Role);
+            entity.Property(e => e.SubscriptionTier).HasColumnName("subscription_tier").HasMaxLength(20).HasDefaultValue("free");
+            entity.Property(e => e.PremiumExpiresAt).HasColumnName("premium_expires_at");
+            entity.Property(e => e.StripeCustomerId).HasColumnName("stripe_customer_id").HasMaxLength(255);
+            entity.HasIndex(e => e.SubscriptionTier);
         });
 
         // Artist
@@ -424,6 +431,61 @@ public class SoundtiloDbContext : DbContext
                   .WithMany(w => w.Tracks)
                   .HasForeignKey(e => e.WaitlistId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // SubscriptionPlan
+        modelBuilder.Entity<SubscriptionPlan>(entity =>
+        {
+            entity.ToTable("subscription_plans");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Price).HasColumnName("price").HasColumnType("decimal(10,2)");
+            entity.Property(e => e.Interval).HasColumnName("interval").HasMaxLength(20).IsRequired();
+            entity.Property(e => e.StripePriceId).HasColumnName("stripe_price_id").HasMaxLength(255);
+            entity.Property(e => e.Currency).HasColumnName("currency").HasMaxLength(10).HasDefaultValue("vnd");
+            entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+        });
+
+        // Subscription
+        modelBuilder.Entity<Subscription>(entity =>
+        {
+            entity.ToTable("subscriptions");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.PlanId).HasColumnName("plan_id");
+            entity.Property(e => e.StripeSubscriptionId).HasColumnName("stripe_subscription_id").HasMaxLength(255);
+            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(30).HasDefaultValue("active");
+            entity.Property(e => e.CurrentPeriodStart).HasColumnName("current_period_start");
+            entity.Property(e => e.CurrentPeriodEnd).HasColumnName("current_period_end");
+            entity.Property(e => e.CancelledAt).HasColumnName("cancelled_at");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.HasOne(e => e.User).WithOne(u => u.Subscription).HasForeignKey<Subscription>(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Plan).WithMany(p => p.Subscriptions).HasForeignKey(e => e.PlanId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.HasIndex(e => e.StripeSubscriptionId);
+        });
+
+        // PaymentTransaction
+        modelBuilder.Entity<PaymentTransaction>(entity =>
+        {
+            entity.ToTable("payment_transactions");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.SubscriptionId).HasColumnName("subscription_id");
+            entity.Property(e => e.StripePaymentIntentId).HasColumnName("stripe_payment_intent_id").HasMaxLength(255);
+            entity.Property(e => e.StripeInvoiceId).HasColumnName("stripe_invoice_id").HasMaxLength(255);
+            entity.Property(e => e.Amount).HasColumnName("amount").HasColumnType("decimal(10,2)");
+            entity.Property(e => e.Currency).HasColumnName("currency").HasMaxLength(10).HasDefaultValue("vnd");
+            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(20).IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.HasOne(e => e.User).WithMany(u => u.PaymentTransactions).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Subscription).WithMany(s => s.PaymentTransactions).HasForeignKey(e => e.SubscriptionId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

@@ -18,9 +18,27 @@ import 'package:soundtilo/presentation/notifications/pages/notifications_page.da
 import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
+import 'package:soundtilo/presentation/premium/pages/premium_paywall_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Refresh subscription tier from API on page load so badge stays current.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (context.read<AuthBloc>().state is AuthAuthenticated) {
+        context.read<AuthBloc>().add(AuthProfileRefreshRequested());
+      }
+    });
+  }
 
   void _showThemeDialog(BuildContext context) {
     final themeCubit = context.read<ThemeCubit>();
@@ -126,6 +144,9 @@ class ProfilePage extends StatelessWidget {
             avatarUrl = state.user.avatarUrl;
           }
 
+          final isPremium =
+              state is AuthAuthenticated && state.user.isPremium;
+
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.transparent,
@@ -189,16 +210,89 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ],
 
-                  const SizedBox(height: 36),
-
-                  // Menu items
-                  _ProfileMenuCard(
-                    icon: Icons.history_rounded,
-                    title: 'Lịch sử nghe',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HistoryPage()),
+                // Premium / Free tier badge
+                const SizedBox(height: 10),
+                if (isPremium)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 5,
                     ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFFB300), Color(0xFFFF6F00)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star_rounded, color: Colors.white, size: 16),
+                        SizedBox(width: 5),
+                        Text(
+                          'PREMIUM',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.grey.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'Miễn phí',
+                      style: TextStyle(
+                        color: AppColors.grey,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 36),
+
+                // Menu items
+                _ProfileMenuCard(
+                  icon: isPremium
+                      ? Icons.star_rounded
+                      : Icons.workspace_premium_rounded,
+                  title: isPremium ? 'Gói Premium của bạn' : 'Nâng cấp Premium',
+                  subtitleWidget: isPremium
+                      ? null
+                      : Text(
+                          '10.000đ/tháng',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: const Color(0xFFFFB300),
+                                fontSize: 12,
+                              ),
+                        ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PremiumPaywallPage(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _ProfileMenuCard(
+                  icon: Icons.history_rounded,
+                  title: 'Lịch sử nghe',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HistoryPage()),
                   ),
                   const SizedBox(height: 12),
                   _ProfileMenuCard(

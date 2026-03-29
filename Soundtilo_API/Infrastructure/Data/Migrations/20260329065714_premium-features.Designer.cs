@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SoundtiloDbContext))]
-    partial class SoundtiloDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260329065714_premium-features")]
+    partial class premiumfeatures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -407,303 +410,6 @@ namespace Infrastructure.Data.Migrations
                     b.HasIndex("UserId", "ListenedAt");
 
                     b.ToTable("listening_history", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedByAdminId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by_admin_id");
-
-                    b.Property<DateTime?>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_at");
-
-                    b.Property<bool>("IsRead")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_read");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("message");
-
-                    b.Property<string>("MetadataJson")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("metadata_json");
-
-                    b.Property<DateTime?>("ReadAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("read_at");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("source");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("title");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("type");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedByAdminId");
-
-                    b.HasIndex("ExpiresAt");
-
-                    b.HasIndex("UserId", "IsRead", "CreatedAt");
-
-                    b.ToTable("notifications", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.NotificationDeliveryLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Channel")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("channel");
-
-                    b.Property<DateTime>("DeliveredAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("delivered_at");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasMaxLength(1500)
-                        .HasColumnType("character varying(1500)")
-                        .HasColumnName("error_message");
-
-                    b.Property<Guid?>("NotificationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("notification_id");
-
-                    b.Property<Guid?>("ScheduleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("schedule_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("status");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeliveredAt");
-
-                    b.HasIndex("NotificationId");
-
-                    b.HasIndex("ScheduleId");
-
-                    b.HasIndex("UserId", "DeliveredAt");
-
-                    b.ToTable("notification_delivery_logs", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.NotificationSchedule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int>("Attempts")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("attempts");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid>("CreatedByAdminId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by_admin_id");
-
-                    b.Property<string>("LastError")
-                        .HasMaxLength(1500)
-                        .HasColumnType("character varying(1500)")
-                        .HasColumnName("last_error");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("message");
-
-                    b.Property<string>("MetadataJson")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("metadata_json");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processed_at");
-
-                    b.Property<string>("Recurrence")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("OneTime")
-                        .HasColumnName("recurrence");
-
-                    b.Property<DateTime>("ScheduledFor")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("scheduled_for");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("source");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("status");
-
-                    b.Property<string>("TargetScope")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("target_scope");
-
-                    b.Property<Guid?>("TargetUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("target_user_id");
-
-                    b.Property<Guid?>("TemplateId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("template_id");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("title");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("type");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedByAdminId");
-
-                    b.HasIndex("TargetUserId");
-
-                    b.HasIndex("TemplateId");
-
-                    b.HasIndex("Status", "ScheduledFor");
-
-                    b.ToTable("notification_schedules", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.NotificationTemplate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedByAdminId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by_admin_id");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("MessageTemplate")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("message_template");
-
-                    b.Property<string>("MetadataTemplateJson")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("metadata_template_json");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("TitleTemplate")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("title_template");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("type");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedByAdminId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.HasIndex("IsActive", "UpdatedAt");
-
-                    b.ToTable("notification_templates", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.PasswordResetToken", b =>
@@ -1266,84 +972,6 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Notification", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "CreatedByAdmin")
-                        .WithMany()
-                        .HasForeignKey("CreatedByAdminId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedByAdmin");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.NotificationDeliveryLog", b =>
-                {
-                    b.HasOne("Domain.Entities.Notification", "Notification")
-                        .WithMany("DeliveryLogs")
-                        .HasForeignKey("NotificationId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.NotificationSchedule", "Schedule")
-                        .WithMany("DeliveryLogs")
-                        .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("NotificationDeliveryLogs")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Notification");
-
-                    b.Navigation("Schedule");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.NotificationSchedule", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "CreatedByAdmin")
-                        .WithMany("NotificationSchedulesCreated")
-                        .HasForeignKey("CreatedByAdminId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.User", "TargetUser")
-                        .WithMany("NotificationSchedulesTargeted")
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Domain.Entities.NotificationTemplate", "Template")
-                        .WithMany("Schedules")
-                        .HasForeignKey("TemplateId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("CreatedByAdmin");
-
-                    b.Navigation("TargetUser");
-
-                    b.Navigation("Template");
-                });
-
-            modelBuilder.Entity("Domain.Entities.NotificationTemplate", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "CreatedByAdmin")
-                        .WithMany("NotificationTemplatesCreated")
-                        .HasForeignKey("CreatedByAdminId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("CreatedByAdmin");
-                });
-
             modelBuilder.Entity("Domain.Entities.PasswordResetToken", b =>
                 {
                     b.HasOne("Domain.Entities.User", "User")
@@ -1468,21 +1096,6 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Albums");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Notification", b =>
-                {
-                    b.Navigation("DeliveryLogs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.NotificationSchedule", b =>
-                {
-                    b.Navigation("DeliveryLogs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.NotificationTemplate", b =>
-                {
-                    b.Navigation("Schedules");
-                });
-
             modelBuilder.Entity("Domain.Entities.Playlist", b =>
                 {
                     b.Navigation("PlaylistTracks");
@@ -1507,16 +1120,6 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Favorites");
 
                     b.Navigation("ListeningHistories");
-
-                    b.Navigation("NotificationDeliveryLogs");
-
-                    b.Navigation("NotificationSchedulesCreated");
-
-                    b.Navigation("NotificationSchedulesTargeted");
-
-                    b.Navigation("NotificationTemplatesCreated");
-
-                    b.Navigation("Notifications");
 
                     b.Navigation("PasswordResetTokens");
 
