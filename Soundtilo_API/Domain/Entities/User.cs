@@ -34,6 +34,15 @@ public class User
     public ICollection<AdminAuditLog> AdminAuditLogs { get; set; } = new List<AdminAuditLog>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<NotificationTemplate> NotificationTemplatesCreated { get; set; } = new List<NotificationTemplate>();
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<NotificationSchedule> NotificationSchedulesCreated { get; set; } = new List<NotificationSchedule>();
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<NotificationSchedule> NotificationSchedulesTargeted { get; set; } = new List<NotificationSchedule>();
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ICollection<NotificationDeliveryLog> NotificationDeliveryLogs { get; set; } = new List<NotificationDeliveryLog>();
     public Subscription? Subscription { get; set; }
     [System.Text.Json.Serialization.JsonIgnore]
     public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();

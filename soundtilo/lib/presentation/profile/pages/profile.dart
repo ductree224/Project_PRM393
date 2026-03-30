@@ -12,6 +12,9 @@ import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:soundtilo/presentation/history/pages/history.dart';
 import 'package:soundtilo/presentation/intro/pages/get_started.dart';
+import 'package:soundtilo/presentation/notifications/bloc/notification_cubit.dart';
+import 'package:soundtilo/presentation/notifications/bloc/notification_state.dart';
+import 'package:soundtilo/presentation/notifications/pages/notifications_page.dart';
 import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
@@ -174,38 +177,38 @@ class _ProfilePageState extends State<ProfilePage> {
                       ? MiniPlayer.shellReservedHeight
                       : 24,
                 ),
-              children: [
-                const SizedBox(height: 20),
+                children: [
+                  const SizedBox(height: 20),
 
-                // Avatar with glow ring + edit overlay
-                Center(
-                  child: _ProfileAvatar(
-                    avatarUrl: avatarUrl,
-                    username: username,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Name
-                Text(
-                  username,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                  ),
-                ),
-                if (email.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    email,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.grey,
+                  // Avatar with glow ring + edit overlay
+                  Center(
+                    child: _ProfileAvatar(
+                      avatarUrl: avatarUrl,
+                      username: username,
                     ),
                   ),
-                ],
+
+                  const SizedBox(height: 16),
+
+                  // Name
+                  Text(
+                    username,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
+                  ),
+                  if (email.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      email,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: AppColors.grey),
+                    ),
+                  ],
 
                 // Premium / Free tier badge
                 const SizedBox(height: 10),
@@ -291,60 +294,84 @@ class _ProfilePageState extends State<ProfilePage> {
                     context,
                     MaterialPageRoute(builder: (_) => const HistoryPage()),
                   ),
-                ),
-                if (isAdmin) ...[
                   const SizedBox(height: 12),
                   _ProfileMenuCard(
-                    icon: Icons.manage_accounts_rounded,
-                    title: 'Admin Users',
+                    icon: Icons.notifications_none_rounded,
+                    title: 'Thông báo',
+                    subtitleWidget:
+                        BlocBuilder<NotificationCubit, NotificationState>(
+                          builder: (context, notificationState) {
+                            final unread = notificationState.unreadCount;
+                            return Text(
+                              unread > 0 ? '$unread chưa đọc' : 'Không có mới',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: unread > 0
+                                        ? AppColors.primary
+                                        : AppColors.grey,
+                                    fontSize: 12,
+                                  ),
+                            );
+                          },
+                        ),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const AdminUsersPage(),
+                        builder: (_) => const NotificationsPage(),
                       ),
                     ),
                   ),
-                ],
-                const SizedBox(height: 12),
-                _ProfileMenuCard(
-                  icon: Icons.dark_mode_rounded,
-                  title: 'Giao diện',
-                  subtitleWidget: BlocBuilder<ThemeCubit, ThemeMode>(
-                    builder: (context, themeMode) {
-                      final label = switch (themeMode) {
-                        ThemeMode.dark => 'TỐI',
-                        ThemeMode.light => 'SÁNG',
-                        ThemeMode.system => 'HỆ THỐNG',
-                      };
-                      return Text(
-                        label,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.grey,
-                          fontSize: 12,
+                  if (isAdmin) ...[
+                    const SizedBox(height: 12),
+                    _ProfileMenuCard(
+                      icon: Icons.manage_accounts_rounded,
+                      title: 'Admin Users',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AdminUsersPage(),
                         ),
-                      );
-                    },
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  _ProfileMenuCard(
+                    icon: Icons.dark_mode_rounded,
+                    title: 'Giao diện',
+                    subtitleWidget: BlocBuilder<ThemeCubit, ThemeMode>(
+                      builder: (context, themeMode) {
+                        final label = switch (themeMode) {
+                          ThemeMode.dark => 'TỐI',
+                          ThemeMode.light => 'SÁNG',
+                          ThemeMode.system => 'HỆ THỐNG',
+                        };
+                        return Text(
+                          label,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.grey, fontSize: 12),
+                        );
+                      },
+                    ),
+                    onTap: () => _showThemeDialog(context),
                   ),
-                  onTap: () => _showThemeDialog(context),
-                ),
-                const SizedBox(height: 12),
-                _ProfileMenuCard(
-                  icon: Icons.info_outline_rounded,
-                  title: 'Thông tin ứng dụng',
-                  onTap: () => showAboutDialog(
-                    context: context,
-                    applicationName: 'Soundtilo',
-                    applicationVersion: '1.0.0',
-                    applicationLegalese: '© 2025 Soundtilo',
+                  const SizedBox(height: 12),
+                  _ProfileMenuCard(
+                    icon: Icons.info_outline_rounded,
+                    title: 'Thông tin ứng dụng',
+                    onTap: () => showAboutDialog(
+                      context: context,
+                      applicationName: 'Soundtilo',
+                      applicationVersion: '1.0.0',
+                      applicationLegalese: '© 2025 Soundtilo',
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 28),
+                  const SizedBox(height: 28),
 
-                // Logout button
-                _LogoutButton(onTap: () => _showLogoutDialog(context)),
-              ],
-            ),
+                  // Logout button
+                  _LogoutButton(onTap: () => _showLogoutDialog(context)),
+                ],
+              ),
             ),
           );
         },
@@ -375,8 +402,9 @@ class _AppBarAvatar extends StatelessWidget {
                 height: 36,
                 memCacheWidth: 72,
                 memCacheHeight: 72,
-                errorWidget: (_, __, ___) => _AvatarFallback(username: username, fontSize: 14),
-                placeholder: (_, __) => const SizedBox(
+                errorWidget: (context, url, error) =>
+                    _AvatarFallback(username: username, fontSize: 14),
+                placeholder: (context, url) => const SizedBox(
                   width: 14,
                   height: 14,
                   child: CircularProgressIndicator(strokeWidth: 1.5),
@@ -422,9 +450,9 @@ class _ProfileAvatar extends StatelessWidget {
                     height: 116,
                     memCacheWidth: 232,
                     memCacheHeight: 232,
-                    errorWidget: (_, __, ___) =>
+                    errorWidget: (context, url, error) =>
                         _AvatarFallbackLarge(username: username),
-                    placeholder: (_, __) => const Center(
+                    placeholder: (context, url) => const Center(
                       child: SizedBox(
                         width: 20,
                         height: 20,

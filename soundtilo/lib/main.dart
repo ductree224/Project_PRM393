@@ -33,6 +33,10 @@ import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
 import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/library/bloc/library_event.dart';
+import 'package:soundtilo/presentation/notifications/bloc/notification_cubit.dart';
+import 'package:soundtilo/presentation/notifications/bloc/notification_state.dart';
+import 'package:soundtilo/presentation/notifications/notification_view_tracker.dart';
+import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/intro/pages/get_started.dart';
 import 'package:soundtilo/presentation/splash/pages/splash.dart';
 import 'package:soundtilo/common/widgets/inactivity_tracker.dart';
@@ -85,10 +89,9 @@ Future<void> main() async {
   };
   WidgetsFlutterBinding.ensureInitialized();
   PerfTrace.initFrameTimingTrace();
-  try{
+  try {
     await dotenv.load(fileName: '.env');
-  }
-  catch(e){
+  } catch (e) {
     if (kDebugMode) {
       print("Warning: .env file not found");
     }
@@ -96,7 +99,9 @@ Future<void> main() async {
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorageDirectory.web
-        : HydratedStorageDirectory((await getApplicationDocumentsDirectory()).path),
+        : HydratedStorageDirectory(
+            (await getApplicationDocumentsDirectory()).path,
+          ),
   );
 
   // Initialize DI
@@ -141,7 +146,8 @@ class MyApp extends StatelessWidget {
             updatePlaylistUseCase: sl<UpdatePlaylistUseCase>(),
             deletePlaylistUseCase: sl<DeletePlaylistUseCase>(),
             addTrackToPlaylistUseCase: sl<AddTrackToPlaylistUseCase>(),
-            removeTrackFromPlaylistUseCase: sl<RemoveTrackFromPlaylistUseCase>(),
+            removeTrackFromPlaylistUseCase:
+                sl<RemoveTrackFromPlaylistUseCase>(),
             toggleFavoriteUseCase: sl<ToggleFavoriteUseCase>(),
             getFavoritesUseCase: sl<GetFavoritesUseCase>(),
           ),
@@ -151,19 +157,28 @@ class MyApp extends StatelessWidget {
           create: (_) => WaitlistBloc(
             getWaitlistUseCase: sl<GetWaitlistUseCase>(),
             addTrackToWaitlistUseCase: sl<AddTrackToWaitlistUseCase>(),
-            removeTrackFromWaitlistUseCase: sl<RemoveTrackFromWaitlistUseCase>(),
+            removeTrackFromWaitlistUseCase:
+                sl<RemoveTrackFromWaitlistUseCase>(),
             reorderWaitlistUseCase: sl<ReorderWaitlistUseCase>(),
           ),
         ),
+        BlocProvider(create: (_) => NotificationCubit(sl(), sl())),
       ],
       child: MultiBlocListener(
         listeners: [
           BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
+              final notifications = context.read<NotificationCubit>();
+              if (state is AuthAuthenticated) {
+                notifications.onAuthenticated();
+              }
               if (state is AuthUnauthenticated) {
+                notifications.onUnauthenticated();
                 context.read<PlayerBloc>().add(PlayerStop());
                 AppNavigator.key.currentState?.pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const GetStartedPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const GetStartedPage(),
+                  ),
                   (route) => false,
                 );
               }
@@ -171,8 +186,7 @@ class MyApp extends StatelessWidget {
           ),
           BlocListener<PlayerBloc, PlayerState>(
             listenWhen: (prev, curr) =>
-            prev.isFavorite != curr.isFavorite &&
-                curr.currentTrack != null,
+                prev.isFavorite != curr.isFavorite && curr.currentTrack != null,
             listener: (context, state) {
               context.read<LibraryBloc>().add(
                 LibraryFavoriteSync(
@@ -188,15 +202,43 @@ class MyApp extends StatelessWidget {
               // 1. Kiểm tra nếu có bài cũ và bài mới khác bài cũ -> Bài cũ đã nghe xong!
               if (_lastTrackForWaitlist != null &&
                   state.currentTrack != null &&
-                  _lastTrackForWaitlist!.externalId != state.currentTrack!.externalId) {
+                  _lastTrackForWaitlist!.externalId !=
+                      state.currentTrack!.externalId) {
                 // Báo cho Waitlist làm mờ bài CŨ đi
-                context.read<WaitlistBloc>().add(WaitlistMarkTrackAsPlayed(_lastTrackForWaitlist!.externalId));
+                context.read<WaitlistBloc>().add(
+                  WaitlistMarkTrackAsPlayed(_lastTrackForWaitlist!.externalId),
+                );
               }
 
               // 2. Cập nhật lại bộ nhớ bài hát hiện tại
               if (state.currentTrack != null) {
                 _lastTrackForWaitlist = state.currentTrack;
               }
+            },
+          ),
+          BlocListener<NotificationCubit, NotificationState>(
+            listenWhen: (previous, current) =>
+                previous.realtimeArrivalVersion !=
+                current.realtimeArrivalVersion,
+            listener: (context, state) {
+              final latest = state.latestRealtimeNotification;
+              if (latest == null) {
+                return;
+              }
+
+              if (NotificationViewTracker.isNotificationViewOpen.value) {
+                return;
+              }
+
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text('${latest.title}: ${latest.message}'),
+                    duration: const Duration(seconds: 3),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
             },
           ),
         ],
@@ -209,6 +251,30 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             navigatorObservers: [_miniPlayerVisibilityObserver],
             builder: (context, child) {
+              final content = child ?? const SizedBox.shrink();
+              final bottomInset =
+                  MediaQuery.viewPaddingOf(context).bottom +
+                  kBottomNavigationBarHeight +
+                  8;
+
+              return Stack(
+                children: [
+                  Positioned.fill(child: content),
+                  Positioned(
+                    left: 8,
+                    right: 8,
+                    bottom: bottomInset,
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _isPlayerRouteActive,
+                      builder: (context, isPlayerRouteActive, _) {
+                        if (isPlayerRouteActive) {
+                          return const SizedBox.shrink();
+                        }
+                        return const MiniPlayer();
+                      },
+                    ),
+                  ),
+                ],
               return InactivityTracker(
                 timeout: const Duration(seconds: 10), // 10 seconds for testing as requested
                 onTimeout: () {

@@ -16,7 +16,7 @@ namespace Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services , IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // Database
         services.AddDbContext<SoundtiloDbContext>(options =>
@@ -35,6 +35,10 @@ public static class DependencyInjection
         services.AddScoped<IAdminAuditLogRepository, AdminAuditLogRepository>();
         services.AddScoped<IAdminAnalyticsRepository, AdminAnalyticsRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
+        services.AddScoped<INotificationScheduleRepository, NotificationScheduleRepository>();
+        services.AddScoped<INotificationDeliveryLogRepository, NotificationDeliveryLogRepository>();
         services.AddScoped<IWaitlistRepository, WaitlistRepository>();
         services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
         services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
@@ -52,11 +56,13 @@ public static class DependencyInjection
         services.AddHttpClient<ILyricsApiClient, LyricsApiClient>();
 
         // Services
-        services.AddScoped<IJwtService , JwtService>();
-        services.AddScoped<IPasswordHasher , BcryptPasswordHasher>();
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         //  admin
-        services.AddScoped<IAdminDashboardService , AdminDashboardService>();
-        services.AddScoped<IAdminDashboardDateRangeService , AdminDashboardDateRangeService>();
+        services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+        services.AddScoped<IAdminDashboardDateRangeService, AdminDashboardDateRangeService>();
+
+        services.AddHostedService<NotificationDispatchBackgroundService>();
 
         return services;
     }

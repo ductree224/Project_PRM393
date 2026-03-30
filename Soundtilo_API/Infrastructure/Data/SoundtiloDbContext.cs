@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
@@ -19,6 +20,10 @@ public class SoundtiloDbContext : DbContext
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
+    public DbSet<NotificationSchedule> NotificationSchedules => Set<NotificationSchedule>();
+    public DbSet<NotificationDeliveryLog> NotificationDeliveryLogs => Set<NotificationDeliveryLog>();
     public DbSet<Waitlist> Waitlists { get; set; }
     public DbSet<WaitlistTrack> WaitlistTracks { get; set; }
     public DbSet<Artist> Artists => Set<Artist>();
@@ -94,7 +99,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.IsOverride).HasColumnName("is_override").HasDefaultValue(false);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            
+
             entity.HasOne(e => e.Artist).WithMany(a => a.Albums).HasForeignKey(e => e.ArtistId).OnDelete(DeleteBehavior.SetNull);
             entity.HasIndex(e => e.ExternalId);
         });
@@ -269,6 +274,139 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.HasOne(e => e.User).WithMany(u => u.Comments).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.TrackExternalId, e.CreatedAt });
+        });
+
+        // Notification
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("notifications");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.CreatedByAdminId).HasColumnName("created_by_admin_id");
+            entity.Property(e => e.Type).HasColumnName("type").HasConversion<string>().HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Source).HasColumnName("source").HasConversion<string>().HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Message).HasColumnName("message").HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.MetadataJson).HasColumnName("metadata_json").HasColumnType("jsonb");
+            entity.Property(e => e.IsRead).HasColumnName("is_read").HasDefaultValue(false);
+            entity.Property(e => e.ReadAt).HasColumnName("read_at");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.CreatedByAdmin)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByAdminId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => new { e.UserId, e.IsRead, e.CreatedAt });
+            entity.HasIndex(e => e.ExpiresAt);
+        });
+
+        // NotificationTemplate
+        modelBuilder.Entity<NotificationTemplate>(entity =>
+        {
+            entity.ToTable("notification_templates");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(120).IsRequired();
+            entity.Property(e => e.Type).HasColumnName("type").HasConversion<string>().HasMaxLength(50).IsRequired();
+            entity.Property(e => e.TitleTemplate).HasColumnName("title_template").HasMaxLength(200).IsRequired();
+            entity.Property(e => e.MessageTemplate).HasColumnName("message_template").HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.MetadataTemplateJson).HasColumnName("metadata_template_json").HasColumnType("jsonb");
+            entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            entity.Property(e => e.CreatedByAdminId).HasColumnName("created_by_admin_id");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+
+            entity.HasOne(e => e.CreatedByAdmin)
+                .WithMany(u => u.NotificationTemplatesCreated)
+                .HasForeignKey(e => e.CreatedByAdminId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasIndex(e => new { e.IsActive, e.UpdatedAt });
+        });
+
+        // NotificationSchedule
+        modelBuilder.Entity<NotificationSchedule>(entity =>
+        {
+            entity.ToTable("notification_schedules");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.TemplateId).HasColumnName("template_id");
+            entity.Property(e => e.TargetUserId).HasColumnName("target_user_id");
+            entity.Property(e => e.CreatedByAdminId).HasColumnName("created_by_admin_id");
+            entity.Property(e => e.Type).HasColumnName("type").HasConversion<string>().HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Source).HasColumnName("source").HasConversion<string>().HasMaxLength(50).IsRequired();
+            entity.Property(e => e.TargetScope).HasColumnName("target_scope").HasConversion<string>().HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Recurrence).HasColumnName("recurrence").HasConversion<string>().HasMaxLength(50).IsRequired().HasDefaultValue(NotificationRecurrence.OneTime);
+            entity.Property(e => e.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Message).HasColumnName("message").HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.MetadataJson).HasColumnName("metadata_json").HasColumnType("jsonb");
+            entity.Property(e => e.ScheduledFor).HasColumnName("scheduled_for");
+            entity.Property(e => e.ProcessedAt).HasColumnName("processed_at");
+            entity.Property(e => e.Attempts).HasColumnName("attempts").HasDefaultValue(0);
+            entity.Property(e => e.LastError).HasColumnName("last_error").HasMaxLength(1500);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+
+            entity.HasOne(e => e.Template)
+                .WithMany(t => t.Schedules)
+                .HasForeignKey(e => e.TemplateId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.TargetUser)
+                .WithMany(u => u.NotificationSchedulesTargeted)
+                .HasForeignKey(e => e.TargetUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.CreatedByAdmin)
+                .WithMany(u => u.NotificationSchedulesCreated)
+                .HasForeignKey(e => e.CreatedByAdminId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.Status, e.ScheduledFor });
+            entity.HasIndex(e => e.TargetUserId);
+        });
+
+        // NotificationDeliveryLog
+        modelBuilder.Entity<NotificationDeliveryLog>(entity =>
+        {
+            entity.ToTable("notification_delivery_logs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.NotificationId).HasColumnName("notification_id");
+            entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Channel).HasColumnName("channel").HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ErrorMessage).HasColumnName("error_message").HasMaxLength(1500);
+            entity.Property(e => e.DeliveredAt).HasColumnName("delivered_at");
+
+            entity.HasOne(e => e.Notification)
+                .WithMany(n => n.DeliveryLogs)
+                .HasForeignKey(e => e.NotificationId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Schedule)
+                .WithMany(s => s.DeliveryLogs)
+                .HasForeignKey(e => e.ScheduleId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.NotificationDeliveryLogs)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.DeliveredAt);
+            entity.HasIndex(e => new { e.UserId, e.DeliveredAt });
         });
         // Cấu hình khóa chính kép cho WaitlistTrack
         // Waitlist
