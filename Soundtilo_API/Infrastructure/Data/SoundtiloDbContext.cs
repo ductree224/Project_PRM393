@@ -26,6 +26,9 @@ public class SoundtiloDbContext : DbContext
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
+    public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +54,10 @@ public class SoundtiloDbContext : DbContext
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Role);
+            entity.Property(e => e.SubscriptionTier).HasColumnName("subscription_tier").HasMaxLength(20).HasDefaultValue("free");
+            entity.Property(e => e.PremiumExpiresAt).HasColumnName("premium_expires_at");
+            entity.Property(e => e.StripeCustomerId).HasColumnName("stripe_customer_id").HasMaxLength(255);
+            entity.HasIndex(e => e.SubscriptionTier);
             entity.Property(e => e.SubscriptionTier).HasColumnName("subscription_tier").HasMaxLength(20).HasDefaultValue("free");
             entity.Property(e => e.PremiumExpiresAt).HasColumnName("premium_expires_at");
             entity.Property(e => e.StripeCustomerId).HasColumnName("stripe_customer_id").HasMaxLength(255);
