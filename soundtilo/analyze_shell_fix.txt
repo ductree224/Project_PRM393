@@ -1,8 +1,0 @@
-Analyzing 2 items...                                            
-
-warning - Unused import: 'package:soundtilo/domain/repository/history_repository.dart' - lib\main.dart:13:8 - unused_import
-warning - Unused import: 'package:soundtilo/presentation/player/widgets/mini_player.dart' - lib\main.dart:37:8 - unused_import
-warning - Unused import: 'package:soundtilo/presentation/player/bloc/player_bloc.dart' - lib\presentation\main_shell.dart:19:8 - unused_import
-warning - Unused import: 'package:soundtilo/presentation/player/bloc/player_state.dart' - lib\presentation\main_shell.dart:20:8 - unused_import
-
-4 issues found. (ran in 1.9s)
