@@ -92,9 +92,14 @@ app.*.map.json
 
 # Secrets
 .env
+<<<<<<< Updated upstream
 soundtilo/.flutter-plugins-dependencies
 soundtilo/macos/Flutter/GeneratedPluginRegistrant.swift
 soundtilo/macos/Flutter/GeneratedPluginRegistrant.swift
 /Database
 /docs
 /docs
+=======
+*.sql
+>>>>>>> Stashed changes
+*.txt
