@@ -257,33 +257,33 @@ class MyApp extends StatelessWidget {
                   kBottomNavigationBarHeight +
                   8;
 
-              return Stack(
-                children: [
-                  Positioned.fill(child: content),
-                  Positioned(
-                    left: 8,
-                    right: 8,
-                    bottom: bottomInset,
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _isPlayerRouteActive,
-                      builder: (context, isPlayerRouteActive, _) {
-                        if (isPlayerRouteActive) {
-                          return const SizedBox.shrink();
-                        }
-                        return const MiniPlayer();
-                      },
-                    ),
-                  ),
-                ],
               return InactivityTracker(
-                timeout: const Duration(seconds: 10), // 10 seconds for testing as requested
+                timeout: const Duration(seconds: 10),
                 onTimeout: () {
                   final playerBloc = context.read<PlayerBloc>();
                   if (playerBloc.state.status == PlayerStatus.playing) {
                     playerBloc.add(PlayerPause());
                   }
                 },
-                child: child!,
+                child: Stack(
+                  children: [
+                    Positioned.fill(child: content),
+                    Positioned(
+                      left: 8,
+                      right: 8,
+                      bottom: bottomInset,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _isPlayerRouteActive,
+                        builder: (context, isPlayerRouteActive, _) {
+                          if (isPlayerRouteActive) {
+                            return const SizedBox.shrink();
+                          }
+                          return const MiniPlayer();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
             home: const SplashPage(),

@@ -139,6 +139,7 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSource(sl<ApiClient>().dio),
+  );
   // Subscription uses plain Dio (public endpoint — no auth required)
   sl.registerLazySingleton<SubscriptionRemoteDataSource>(
     () => SubscriptionRemoteDataSource(sl<Dio>(instanceName: 'plainDio')),
@@ -191,9 +192,6 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton<NotificationRealtimeService>(
     () => NotificationRealtimeService(sl<AuthRepository>()),
-  );
-  sl.registerFactory(
-    () => TrackAdminBloc(repository: sl<TrackAdminRepository>()),
   );
   sl.registerLazySingleton<SubscriptionRepository>(
     () => SubscriptionRepositoryImpl(sl<SubscriptionRemoteDataSource>()),
@@ -255,6 +253,11 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton(() => GetFavoritesUseCase(sl<FavoriteRepository>()));
   sl.registerLazySingleton(() => IsFavoriteUseCase(sl<FavoriteRepository>()));
+
+  // History
+  sl.registerLazySingleton(() => GetHistoryUseCase(sl<HistoryRepository>()));
+  sl.registerLazySingleton(() => RecordListenUseCase(sl<HistoryRepository>()));
+  sl.registerLazySingleton(() => DeleteHistoryUseCase(sl<HistoryRepository>()));
 
   // Comments
   sl.registerLazySingleton(() => GetCommentsUseCase(sl<CommentRepository>()));

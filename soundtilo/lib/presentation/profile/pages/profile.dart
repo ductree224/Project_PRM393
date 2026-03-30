@@ -294,9 +294,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     context,
                     MaterialPageRoute(builder: (_) => const HistoryPage()),
                   ),
-                  const SizedBox(height: 12),
-                  _ProfileMenuCard(
-                    icon: Icons.notifications_none_rounded,
+                ),
+                const SizedBox(height: 12),
+                _ProfileMenuCard(
+                  icon: Icons.notifications_none_rounded,
                     title: 'Thông báo',
                     subtitleWidget:
                         BlocBuilder<NotificationCubit, NotificationState>(
