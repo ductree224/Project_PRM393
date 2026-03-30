@@ -14,6 +14,7 @@ public class SoundtiloDbContext : DbContext
     public DbSet<PlaylistTrack> PlaylistTracks => Set<PlaylistTrack>();
     public DbSet<AlbumTrack> AlbumTracks => Set<AlbumTrack>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
+    public DbSet<Feedback> Feedbacks => Set<Feedback>();
     public DbSet<ListeningHistory> ListeningHistories => Set<ListeningHistory>();
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
@@ -156,7 +157,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.Position).HasColumnName("position");
             entity.Property(e => e.AddedAt).HasColumnName("added_at");
             entity.HasOne(e => e.Album).WithMany(a => a.AlbumTracks).HasForeignKey(e => e.AlbumId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.AlbumId, e.TrackExternalId }).IsUnique();
+            entity.HasIndex(e => new { e.AlbumId , e.TrackExternalId }).IsUnique();
         });
 
         // PlaylistTrack
@@ -170,7 +171,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.Position).HasColumnName("position");
             entity.Property(e => e.AddedAt).HasColumnName("added_at");
             entity.HasOne(e => e.Playlist).WithMany(p => p.PlaylistTracks).HasForeignKey(e => e.PlaylistId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.PlaylistId, e.TrackExternalId }).IsUnique();
+            entity.HasIndex(e => new { e.PlaylistId , e.TrackExternalId }).IsUnique();
         });
 
         // Favorite
@@ -183,7 +184,56 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.TrackExternalId).HasColumnName("track_external_id").HasMaxLength(255).IsRequired();
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.HasOne(e => e.User).WithMany(u => u.Favorites).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.UserId, e.TrackExternalId }).IsUnique();
+            entity.HasIndex(e => new { e.UserId , e.TrackExternalId }).IsUnique();
+        });
+
+        //  feeedback
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.ToTable("feedbacks");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            //entity.Property(e => e.Type).HasColumnName("type").HasMaxLength(50);
+            entity.Property(e => e.Category).HasColumnName("category").HasMaxLength(50);
+            entity.Property(e => e.Priority).HasColumnName("priority").HasMaxLength(50);
+            entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(200);
+            entity.Property(e => e.Content).HasColumnName("content").HasMaxLength(2000);
+            entity.Property(e => e.Status)
+                  .HasColumnName("status")
+                  .HasMaxLength(50)
+                  .HasDefaultValue("pending");
+            entity.Property(e => e.AdminReply).HasColumnName("admin_reply");
+            entity.Property(e => e.HandledByAdminId).HasColumnName("handled_by_admin_id");
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnName("created_at")
+                  .HasDefaultValueSql("NOW()");
+            entity.Property(e => e.HandledAt).HasColumnName("handled_at");
+            entity.Property(e => e.DeviceInfo)
+                  .HasColumnName("device_info")
+                  .HasMaxLength(255);
+
+            entity.Property(e => e.AppVersion)
+                  .HasColumnName("app_version")
+                  .HasMaxLength(50);
+
+            entity.Property(e => e.Platform)
+                  .HasColumnName("platform")
+                  .HasMaxLength(50);
+
+            entity.Property(e => e.AttachmentUrl)
+                  .HasColumnName("attachment_url");
+
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.Status , e.CreatedAt });
+            entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.Priority);
+
         });
 
         // ListeningHistory
@@ -198,7 +248,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.DurationListened).HasColumnName("duration_listened");
             entity.Property(e => e.Completed).HasColumnName("completed");
             entity.HasOne(e => e.User).WithMany(u => u.ListeningHistories).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.UserId, e.ListenedAt });
+            entity.HasIndex(e => new { e.UserId , e.ListenedAt });
         });
 
         // UserSetting
@@ -273,7 +323,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.Content).HasColumnName("content").HasMaxLength(500).IsRequired();
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.HasOne(e => e.User).WithMany(u => u.Comments).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.TrackExternalId, e.CreatedAt });
+            entity.HasIndex(e => new { e.TrackExternalId , e.CreatedAt });
         });
 
         // Notification
@@ -304,7 +354,7 @@ public class SoundtiloDbContext : DbContext
                 .HasForeignKey(e => e.CreatedByAdminId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasIndex(e => new { e.UserId, e.IsRead, e.CreatedAt });
+            entity.HasIndex(e => new { e.UserId , e.IsRead , e.CreatedAt });
             entity.HasIndex(e => e.ExpiresAt);
         });
 
@@ -330,7 +380,7 @@ public class SoundtiloDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasIndex(e => e.Name).IsUnique();
-            entity.HasIndex(e => new { e.IsActive, e.UpdatedAt });
+            entity.HasIndex(e => new { e.IsActive , e.UpdatedAt });
         });
 
         // NotificationSchedule
@@ -372,7 +422,7 @@ public class SoundtiloDbContext : DbContext
                 .HasForeignKey(e => e.CreatedByAdminId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasIndex(e => new { e.Status, e.ScheduledFor });
+            entity.HasIndex(e => new { e.Status , e.ScheduledFor });
             entity.HasIndex(e => e.TargetUserId);
         });
 
@@ -406,7 +456,7 @@ public class SoundtiloDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => e.DeliveredAt);
-            entity.HasIndex(e => new { e.UserId, e.DeliveredAt });
+            entity.HasIndex(e => new { e.UserId , e.DeliveredAt });
         });
         // Cấu hình khóa chính kép cho WaitlistTrack
         // Waitlist
@@ -435,7 +485,7 @@ public class SoundtiloDbContext : DbContext
         {
             entity.ToTable("WaitlistTracks");
             // Cấu hình khóa chính kép
-            entity.HasKey(e => new { e.WaitlistId, e.TrackExternalId });
+            entity.HasKey(e => new { e.WaitlistId , e.TrackExternalId });
 
             // SỬA Ở ĐÂY: Viết hoa y hệt trên Supabase
             entity.Property(e => e.WaitlistId).HasColumnName("WaitlistId");
