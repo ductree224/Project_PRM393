@@ -151,6 +151,18 @@ public class SoundtiloDbContext : DbContext
         });
 
         // PlaylistTrack
+        modelBuilder.Entity<PlaylistTrack>(entity =>
+        {
+            entity.ToTable("playlist_tracks");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.PlaylistId).HasColumnName("playlist_id");
+            entity.Property(e => e.TrackExternalId).HasColumnName("track_external_id").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Position).HasColumnName("position");
+            entity.Property(e => e.AddedAt).HasColumnName("added_at");
+            entity.HasOne(e => e.Playlist).WithMany(p => p.PlaylistTracks).HasForeignKey(e => e.PlaylistId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.PlaylistId, e.TrackExternalId }).IsUnique();
+        });
 
         // Favorite
         modelBuilder.Entity<Favorite>(entity =>
