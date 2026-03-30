@@ -58,6 +58,7 @@ class ApiUrls {
 
   // Users
   static const String userProfile = '/api/users/profile';
+  static const String changePassword = '/api/users/change-password';
 
   // Admin - Users
   static const String adminUsers = '/api/admin/users';

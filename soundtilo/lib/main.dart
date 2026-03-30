@@ -119,6 +119,8 @@ class MyApp extends StatelessWidget {
             googleSignInUseCase: sl<GoogleSignInUseCase>(),
             forgotPasswordUseCase: sl<ForgotPasswordUseCase>(),
             resetPasswordUseCase: sl<ResetPasswordUseCase>(),
+            updateProfileUseCase: sl<UpdateProfileUseCase>(),
+            changePasswordUseCase: sl<ChangePasswordUseCase>(),
             prefs: sl<SharedPreferences>(),
           )..add(AuthCheckStatus()),
         ),

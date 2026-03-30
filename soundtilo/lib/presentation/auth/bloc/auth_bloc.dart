@@ -13,6 +13,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GoogleSignInUseCase _googleSignInUseCase;
   final ForgotPasswordUseCase _forgotPasswordUseCase;
   final ResetPasswordUseCase _resetPasswordUseCase;
+
+  // 1. KHAI BÁO THÊM 2 USECASE MỚI
+  final UpdateProfileUseCase _updateProfileUseCase;
+  final ChangePasswordUseCase _changePasswordUseCase;
+
   final SharedPreferences _prefs;
   static const _rememberMeKey = 'remember_me';
   static const _rememberedEmailKey = 'remembered_email';
@@ -25,16 +30,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required GoogleSignInUseCase googleSignInUseCase,
     required ForgotPasswordUseCase forgotPasswordUseCase,
     required ResetPasswordUseCase resetPasswordUseCase,
+    // 2. NHẬN 2 USECASE TỪ CONSTRUCTOR
+    required UpdateProfileUseCase updateProfileUseCase,
+    required ChangePasswordUseCase changePasswordUseCase,
     required SharedPreferences prefs,
   }) : _signUpUseCase = signUpUseCase,
-       _signInUseCase = signInUseCase,
-       _isLoggedInUseCase = isLoggedInUseCase,
-       _logoutUseCase = logoutUseCase,
-       _googleSignInUseCase = googleSignInUseCase,
-       _forgotPasswordUseCase = forgotPasswordUseCase,
-       _resetPasswordUseCase = resetPasswordUseCase,
-       _prefs = prefs,
-       super(AuthInitial()) {
+        _signInUseCase = signInUseCase,
+        _isLoggedInUseCase = isLoggedInUseCase,
+        _logoutUseCase = logoutUseCase,
+        _googleSignInUseCase = googleSignInUseCase,
+        _forgotPasswordUseCase = forgotPasswordUseCase,
+        _resetPasswordUseCase = resetPasswordUseCase,
+  // 3. GÁN VÀO BIẾN PRIVATE
+        _updateProfileUseCase = updateProfileUseCase,
+        _changePasswordUseCase = changePasswordUseCase,
+        _prefs = prefs,
+        super(AuthInitial()) {
+
     on<AuthCheckStatus>(_onCheckStatus);
     on<AuthSignUpRequested>(_onSignUp);
     on<AuthSignInRequested>(_onSignIn);
@@ -42,7 +54,53 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLogoutRequested>(_onLogout);
     on<AuthForgotPasswordRequested>(_onForgotPassword);
     on<AuthResetPasswordRequested>(_onResetPassword);
+
+    on<AuthUpdateProfileRequested>((event, emit) async {
+      if (state is AuthAuthenticated) {
+        final currentState = state as AuthAuthenticated;
+
+        // GỌI BẰNG BIẾN PRIVATE _updateProfileUseCase
+        final result = await _updateProfileUseCase(
+          displayName: event.displayName,
+          avatarUrl: event.avatarUrl,
+        );
+
+        result.fold(
+              (error) {
+            print('Lỗi cập nhật: $error');
+            throw Exception(error);
+          },
+              (_) {
+            final updatedUser = currentState.user.copyWith(
+              displayName: event.displayName,
+              avatarUrl: event.avatarUrl ?? currentState.user.avatarUrl,
+            );
+            // SỬA LẠI CÚ PHÁP EMIT CHUẨN (KHÔNG CÓ chữ user:)
+            emit(AuthAuthenticated(updatedUser));
+          },
+        );
+      }
+    });
+
+    on<AuthChangePasswordRequested>((event, emit) async {
+      // GỌI BẰNG BIẾN PRIVATE _changePasswordUseCase
+      final result = await _changePasswordUseCase(
+        oldPassword: event.oldPassword,
+        newPassword: event.newPassword,
+      );
+
+      result.fold(
+            (error) {
+          throw Exception(error);
+        },
+            (_) {
+          // Thành công
+        },
+      );
+    });
   }
+
+  // ... (GIỮ NGUYÊN TOÀN BỘ CÁC HÀM BÊN DƯỚI NHƯ _onCheckStatus, _onSignUp... KHÔNG CẦN ĐỘNG VÀO)
 
   Future<void> _onCheckStatus(
     AuthCheckStatus event,
