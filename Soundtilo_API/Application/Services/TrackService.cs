@@ -81,9 +81,22 @@ public class TrackService : ITrackService
             externalTracks.AddRange(jamendoTracks);
         }
 
+        var externalTrackIds = externalTracks.Select(t => t.ExternalId).ToList();
+        var existingRecords = (await _trackCache.GetManyByExternalIdsAsync(externalTrackIds))
+            .ToDictionary(r => r.ExternalId, r => r, StringComparer.OrdinalIgnoreCase);
+
         var seenExternalIds = new HashSet<string>(tracks.Select(t => t.ExternalId), StringComparer.OrdinalIgnoreCase);
         foreach (var externalTrack in externalTracks)
         {
+            // NEW: Check if this track is hidden/inactive in our cache
+            if (existingRecords.TryGetValue(externalTrack.ExternalId, out var cacheRecord))
+            {
+                if (cacheRecord.Status != TrackStatus.Active)
+                {
+                    continue;
+                }
+            }
+
             if (seenExternalIds.Add(externalTrack.ExternalId))
             {
                 tracks.Add(externalTrack);
@@ -165,13 +178,21 @@ public class TrackService : ITrackService
         tracks.AddRange(deezerTask.Result);
         tracks.AddRange(jamendoTask.Result);
 
-        // Deduplicate by ExternalId
+        // Deduplicate by ExternalId and filter by status
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var uniqueTracks = new List<TrackDto>();
         foreach (var t in tracks)
         {
-            if (seen.Add(t.ExternalId))
-                uniqueTracks.Add(t);
+            if (!seen.Add(t.ExternalId)) continue;
+            
+            // NEW: Check if this track is hidden/inactive in our cache
+            var cacheRecord = await _trackCache.GetByExternalIdAsync(t.ExternalId);
+            if (cacheRecord != null && cacheRecord.Status != TrackStatus.Active)
+            {
+                continue;
+            }
+
+            uniqueTracks.Add(t);
         }
 
         // Cache all unique tracks

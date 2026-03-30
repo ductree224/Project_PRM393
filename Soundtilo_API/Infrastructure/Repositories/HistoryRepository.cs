@@ -18,7 +18,21 @@ public class HistoryRepository : IHistoryRepository
     {
         return await _context.ListeningHistories
             .Where(h => h.UserId == userId)
-            .OrderByDescending(h => h.ListenedAt)
+            // Join with CachedTracks to check status
+            .GroupJoin(
+                _context.CachedTracks,
+                h => h.TrackExternalId,
+                t => t.ExternalId,
+                (h, tracks) => new { History = h, Tracks = tracks }
+            )
+            .SelectMany(
+                x => x.Tracks.DefaultIfEmpty(),
+                (x, t) => new { x.History, Track = t }
+            )
+            // Filter: Hide if we have a cache record and it's not Active
+            .Where(x => x.Track == null || x.Track.Status == Domain.Enums.TrackStatus.Active)
+            .OrderByDescending(x => x.History.ListenedAt)
+            .Select(x => x.History)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -26,6 +40,37 @@ public class HistoryRepository : IHistoryRepository
 
     public async Task<ListeningHistory> AddAsync(ListeningHistory history)
     {
+        _context.ListeningHistories.Add(history);
+        await _context.SaveChangesAsync();
+        return history;
+    }
+
+    public async Task<ListeningHistory> UpsertAsync(ListeningHistory history)
+    {
+        // Find all existing records for this user and track
+        var existingRecords = await _context.ListeningHistories
+            .Where(h => h.UserId == history.UserId && h.TrackExternalId == history.TrackExternalId)
+            .OrderByDescending(h => h.ListenedAt)
+            .ToListAsync();
+
+        if (existingRecords.Any())
+        {
+            // Update the most recent one
+            var latest = existingRecords.First();
+            latest.ListenedAt = history.ListenedAt;
+            latest.DurationListened = history.DurationListened;
+            latest.Completed = history.Completed;
+
+            // Remove any other duplicates (legacy data)
+            if (existingRecords.Count > 1)
+            {
+                _context.ListeningHistories.RemoveRange(existingRecords.Skip(1));
+            }
+
+            await _context.SaveChangesAsync();
+            return latest;
+        }
+
         _context.ListeningHistories.Add(history);
         await _context.SaveChangesAsync();
         return history;

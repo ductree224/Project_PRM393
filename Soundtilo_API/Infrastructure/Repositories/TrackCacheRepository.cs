@@ -17,7 +17,14 @@ public class TrackCacheRepository : ITrackCacheRepository
 
     public async Task<CachedTrack?> GetByExternalIdAsync(string externalId)
     {
-        return await _context.CachedTracks.FirstOrDefaultAsync(t => t.ExternalId == externalId);
+        return await _context.CachedTracks.FirstOrDefaultAsync(t => EF.Functions.ILike(t.ExternalId, externalId));
+    }
+
+    public async Task<IEnumerable<CachedTrack>> GetManyByExternalIdsAsync(IEnumerable<string> externalIds)
+    {
+        return await _context.CachedTracks
+            .Where(t => externalIds.Contains(t.ExternalId))
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<CachedTrack>> SearchAsync(string query, string? source = null, int limit = 20, int offset = 0)
@@ -30,7 +37,7 @@ public class TrackCacheRepository : ITrackCacheRepository
         var safeOffset = Math.Max(offset, 0);
 
         var tracksQuery = _context.CachedTracks
-            .Where(t => t.ExpiresAt > DateTime.UtcNow)
+            .Where(t => t.ExpiresAt > DateTime.UtcNow && t.Status == TrackStatus.Active)
             .Where(t => EF.Functions.ILike(t.Title, $"%{normalizedQuery}%") || EF.Functions.ILike(t.ArtistName, $"%{normalizedQuery}%"));
 
         if (!string.IsNullOrWhiteSpace(source))
@@ -54,7 +61,7 @@ public class TrackCacheRepository : ITrackCacheRepository
         var safeOffset = Math.Max(offset, 0);
 
         var query = _context.CachedTracks
-            .Where(t => t.ExpiresAt > DateTime.UtcNow);
+            .Where(t => t.ExpiresAt > DateTime.UtcNow && t.Status == TrackStatus.Active);
 
         if (!string.IsNullOrWhiteSpace(genre))
         {

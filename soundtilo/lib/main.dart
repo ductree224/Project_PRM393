@@ -10,7 +10,6 @@ import 'package:soundtilo/core/configs/theme/app_theme.dart';
 import 'package:soundtilo/core/debug/perf_trace.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/core/navigation/app_navigator.dart';
-import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/repository/track_repository.dart';
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
@@ -20,6 +19,7 @@ import 'package:soundtilo/domain/entities/track_entity.dart';
 // BỔ SUNG: Import các UseCase và Bloc của Waitlist
 import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/user_usecases.dart';
+import 'package:soundtilo/domain/usecases/history_usecases.dart';
 import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_bloc.dart';
 import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_event.dart';
 
@@ -39,6 +39,7 @@ import 'package:soundtilo/presentation/notifications/notification_view_tracker.d
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/intro/pages/get_started.dart';
 import 'package:soundtilo/presentation/splash/pages/splash.dart';
+import 'package:soundtilo/common/widgets/inactivity_tracker.dart';
 
 final ValueNotifier<bool> _isPlayerRouteActive = ValueNotifier<bool>(false);
 
@@ -135,7 +136,7 @@ class MyApp extends StatelessWidget {
             trackRepository: sl<TrackRepository>(),
             toggleFavoriteUseCase: sl<ToggleFavoriteUseCase>(),
             isFavoriteUseCase: sl<IsFavoriteUseCase>(),
-            historyRepository: sl<HistoryRepository>(),
+            recordListenUseCase: sl<RecordListenUseCase>(),
           ),
         ),
         BlocProvider(
@@ -274,6 +275,15 @@ class MyApp extends StatelessWidget {
                     ),
                   ),
                 ],
+              return InactivityTracker(
+                timeout: const Duration(seconds: 10), // 10 seconds for testing as requested
+                onTimeout: () {
+                  final playerBloc = context.read<PlayerBloc>();
+                  if (playerBloc.state.status == PlayerStatus.playing) {
+                    playerBloc.add(PlayerPause());
+                  }
+                },
+                child: child!,
               );
             },
             home: const SplashPage(),

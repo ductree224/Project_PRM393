@@ -4,8 +4,9 @@ import 'package:soundtilo/common/helper/is_dark_mode.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/presentation/home/models/local_album.dart';
-import 'package:soundtilo/presentation/player/pages/player.dart';
 import 'package:soundtilo/data/models/track_model.dart';
+import 'package:soundtilo/presentation/player/pages/player.dart';
+import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../domain/repositories/album_repository.dart';
 
@@ -81,50 +82,65 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            if (_isLoading)
-              SizedBox(
-                height: 300,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const CircularProgressIndicator(color: AppColors.primary),
-                      const SizedBox(height: 16),
-                      Text('Đang tải danh sách bài hát...', style: TextStyle(color: context.isDarkMode ? Colors.grey : Colors.black54)),
-                    ],
-                  ),
-                ),
-              )
-            else if (_error != null)
-              SizedBox(
-                height: 300,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-                        const SizedBox(height: 16),
-                        Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
-                        const SizedBox(height: 16),
-                        ElevatedButton(onPressed: _fetchFullDetails, child: const Text('Thử lại')),
-                      ],
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                if (_isLoading)
+                  SizedBox(
+                    height: 300,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const CircularProgressIndicator(color: AppColors.primary),
+                          const SizedBox(height: 16),
+                          Text('Đang tải danh sách bài hát...', style: TextStyle(color: context.isDarkMode ? Colors.grey : Colors.black54)),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-              )
-            else ...[
-              _buildControls(context),
-              _buildTrackList(context),
-            ],
-          ],
-        ),
+                  )
+                else if (_error != null)
+                  SizedBox(
+                    height: 300,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+                            const SizedBox(height: 16),
+                            Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                            const SizedBox(height: 16),
+                            ElevatedButton(onPressed: _fetchFullDetails, child: const Text('Thử lại')),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else ...[
+                  _buildControls(context),
+                  _buildTrackList(context),
+                ],
+              ],
+            ),
+          ),
+          Positioned(
+            left: 8,
+            right: 8,
+            bottom: 8,
+            child: const MiniPlayer(),
+          ),
+          Positioned(
+            right: 16,
+            bottom: 8,
+            child: const MiniPlayerShowButton(),
+          ),
+        ],
       ),
     );
   }

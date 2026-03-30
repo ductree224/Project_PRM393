@@ -15,6 +15,10 @@
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\common\widgets\track\track_tile.dart:64:42 - deprecated_member_use
    info - Statements in an if should be enclosed in a block - lib\data\repository\track_admin_repository_impl.dart:60:33 - curly_braces_in_flow_control_structures
    info - Statements in an if should be enclosed in a block - lib\data\repository\track_admin_repository_impl.dart:61:36 - curly_braces_in_flow_control_structures
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\data\sources\user_remote_data_source.dart:22:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\data\sources\user_remote_data_source.dart:23:9 - use_null_aware_elements
+   info - Unnecessary braces in a string interpolation - lib\domain\entities\subscription_plan_entity.dart:43:13 - unnecessary_brace_in_string_interps
+   info - Unnecessary braces in a string interpolation - lib\domain\entities\subscription_plan_entity.dart:53:13 - unnecessary_brace_in_string_interps
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:102:85 - deprecated_member_use
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:106:48 - deprecated_member_use
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\admin\pages\admin_dashboard_page.dart:115:86 - deprecated_member_use
@@ -73,18 +77,15 @@ warning - Unused import: 'package:soundtilo/common/helper/is_dark_mode.dart' - l
    info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\presentation\choose_mode\pages\choose_mode.dart:347:40 - deprecated_member_use
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\history\pages\history.dart:289:37 - deprecated_member_use
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\history\pages\history.dart:403:29 - deprecated_member_use
-warning - Unused import: 'package:soundtilo/core/debug/perf_trace.dart' - lib\presentation\home\bloc\home_bloc.dart:4:8 - unused_import
-warning - The value of the local variable 'libraryBloc' isn't used - lib\presentation\home\pages\album_detail.dart:361:11 - unused_local_variable
-warning - The value of the field '_verticalListLimit' isn't used - lib\presentation\home\pages\home.dart:30:20 - unused_field
-   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:244:50 - deprecated_member_use
-   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:296:41 - deprecated_member_use
-   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:297:41 - deprecated_member_use
-   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:313:41 - deprecated_member_use
-   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:314:41 - deprecated_member_use
-   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:361:34 - unnecessary_underscores
-   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:361:38 - unnecessary_underscores
-   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:363:41 - deprecated_member_use
-   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:524:26 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:274:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:331:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:334:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:350:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:353:41 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:404:34 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:404:38 - unnecessary_underscores
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\home\pages\home.dart:407:41 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\presentation\home\pages\home.dart:580:26 - unnecessary_underscores
    info - The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\presentation\intro\pages\get_started.dart:1:8 - unnecessary_import
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\intro\pages\get_started.dart:31:32 - deprecated_member_use
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\intro\pages\get_started.dart:32:32 - deprecated_member_use
@@ -98,32 +99,27 @@ warning - The value of the local variable 'historyTracks' isn't used - lib\prese
    info - Unnecessary use of multiple underscores - lib\presentation\library\pages\waitlist_page.dart:185:148 - unnecessary_underscores
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\lyrics\pages\lyrics_sheet.dart:59:41 - deprecated_member_use
    info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\lyrics\pages\lyrics_sheet.dart:100:65 - deprecated_member_use
-  error - Target of URI doesn't exist: 'package:soundtilo/domain/repositories/track_repository.dart' - lib\presentation\main_shell.dart:7:8 - uri_does_not_exist
-  error - Target of URI doesn't exist: 'package:soundtilo/presentation/library/event/library_event.dart' - lib\presentation\main_shell.dart:12:8 - uri_does_not_exist
-  error - The named parameter 'getTrendingUseCase' is required, but there's no corresponding argument - lib\presentation\main_shell.dart:45:17 - missing_required_argument
-  error - The named parameter 'trackRepository' isn't defined - lib\presentation\main_shell.dart:46:7 - undefined_named_parameter
-  error - The name 'TrackRepository' isn't a type, so it can't be used as a type argument - lib\presentation\main_shell.dart:46:27 - non_type_as_type_argument
-  error - The method 'LibraryLoad' isn't defined for the type '_MainShellState' - lib\presentation\main_shell.dart:75:39 - undefined_method
-   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:270:34 - unnecessary_underscores
-   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:270:38 - unnecessary_underscores
-   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:271:34 - unnecessary_underscores
-   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:317:38 - unnecessary_underscores
-   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:317:42 - unnecessary_underscores
-   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:319:38 - unnecessary_underscores
+   info - Unnecessary braces in a string interpolation - lib\presentation\premium\pages\premium_paywall_page.dart:339:9 - unnecessary_brace_in_string_interps
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:378:34 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:378:38 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:379:34 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:425:38 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:425:42 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\profile\pages\profile.dart:427:38 - unnecessary_underscores
 
-flutter : 110 issues 
-found. (ran in 7.9s)
+flutter : 106 issues 
+found. (ran in 4.4s)
 At line:1 char:1
 + flutter analyze > flu
-tter_analyze_results_v4
+tter_analyze_results_v8
 .txt 2>&1
 + ~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~
     + CategoryInfo     
          : NotSpecifi  
-  ed: (110 issues fo   
- und. (ran in 7.9s)    
+  ed: (106 issues fo   
+ und. (ran in 4.4s)    
 :String) [], Remot    
 eException
     + FullyQualifiedEr 

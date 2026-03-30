@@ -73,6 +73,7 @@ import 'package:soundtilo/domain/usecases/admin_user_usecases.dart';
 // BỔ SUNG: UseCases cho Waitlist
 import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/user_usecases.dart';
+import 'package:soundtilo/domain/usecases/history_usecases.dart';
 
 final sl = GetIt.instance;
 
