@@ -180,18 +180,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     final result = await _getProfileUseCase();
-    result.fold(
-      (_) => null, // silently ignore errors — stale cached state is acceptable
-      (user) async {
-        await _prefs.setString(_subscriptionTierKey, user.subscriptionTier);
-        if (user.premiumExpiresAt != null) {
-          await _prefs.setString(
-              _premiumExpiresAtKey, user.premiumExpiresAt!.toIso8601String());
-        } else {
-          await _prefs.remove(_premiumExpiresAtKey);
-        }
-        emit(AuthAuthenticated(user));
-      },
-    );
+    // fold is synchronous — extract the value first, then do all async work outside
+    final user = result.fold((_) => null, (u) => u); // silently ignore errors — stale cached state is acceptable
+    if (user != null) {
+      await _prefs.setString(_subscriptionTierKey, user.subscriptionTier);
+      if (user.premiumExpiresAt != null) {
+        await _prefs.setString(
+            _premiumExpiresAtKey, user.premiumExpiresAt!.toIso8601String());
+      } else {
+        await _prefs.remove(_premiumExpiresAtKey);
+      }
+      if (!emit.isDone) emit(AuthAuthenticated(user));
+    }
   }
 }
