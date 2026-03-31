@@ -559,14 +559,6 @@ class _TemplateDialogState extends State<_TemplateDialog> {
                       : null,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _metadataCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Metadata JSON (optional)',
-                  ),
-                  minLines: 1,
-                  maxLines: 3,
-                ),
                 const SizedBox(height: 8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,

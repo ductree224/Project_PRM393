@@ -23,7 +23,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
       return Right(history);
     } on DioException catch (e) {
       return Left(
-        e.response?.data?['message'] ?? 'Không thể tải lịch sử nghe.',
+        (e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể tải lịch sử nghe.',
       );
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -45,7 +45,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
       return const Right(null);
     } on DioException catch (e) {
       return Left(
-        e.response?.data?['message'] ?? 'Không thể ghi nhận lịch sử.',
+        (e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể ghi nhận lịch sử.',
       );
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -59,7 +59,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
       return Right(deletedCount);
     } on DioException catch (e) {
       return Left(
-        e.response?.data?['message'] ?? 'Không thể xoá lịch sử nghe.',
+        (e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể xoá lịch sử nghe.',
       );
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');

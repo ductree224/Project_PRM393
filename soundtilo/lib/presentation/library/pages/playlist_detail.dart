@@ -12,7 +12,6 @@ import 'package:soundtilo/domain/usecases/track_usecases.dart';
 import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/library/bloc/library_event.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
-import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 
 class PlaylistDetailPage extends StatefulWidget {
   final String playlistId;
@@ -298,17 +297,6 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
               onRemove: () => _removeTrack(playlistTrack.trackExternalId),
             );
           },
-        ),
-        Positioned(
-          left: 8,
-          right: 8,
-          bottom: 8,
-          child: const MiniPlayer(),
-        ),
-        Positioned(
-          right: 16,
-          bottom: 8,
-          child: const MiniPlayerShowButton(),
         ),
         if (_isSavingOrder)
           const Positioned(

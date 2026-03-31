@@ -69,6 +69,7 @@ class ApiUrls {
   // Payment (VNPay)
   static const String createPaymentUrl = '/api/payment/create-payment-url';
   static const String subscriptionStatus = '/api/payment/subscription-status';
+  static const String cancelSubscription = '/api/payment/subscription';
   static String vnpayReturn = '/api/payment/vnpay-return';
 
   // Admin - Users
@@ -99,6 +100,22 @@ class ApiUrls {
       '/api/admin/subscriptions/expiring';
   static String adminSubscriptionById(String id) =>
       '/api/admin/subscriptions/$id';
+
+  // Admin - Dashboard
+  static const String adminDashboardSummary = '/api/admin/dashboard/summary';
+  static const String adminDashboardUserGrowth =
+      '/api/admin/dashboard/user-growth';
+  static const String adminDashboardPlayTrend =
+      '/api/admin/dashboard/play-trend';
+  static const String adminDashboardTopTracks =
+      '/api/admin/dashboard/top-tracks';
+
+  // Admin - Analytics (via AdminController /api/admin)
+  static const String adminAnalyticsOverview = '/api/admin/analytics/overview';
+  static const String adminAnalyticsTopTracks =
+      '/api/admin/analytics/top-tracks';
+  static const String adminAnalyticsDailyStats =
+      '/api/admin/analytics/daily-stats';
 
   // Artists
   static const String artists = '/api/artists';

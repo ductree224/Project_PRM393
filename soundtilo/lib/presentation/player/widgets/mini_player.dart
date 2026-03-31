@@ -270,27 +270,55 @@ class _MiniPlayerText extends StatelessWidget {
 class _MiniPlayerControls extends StatelessWidget {
   const _MiniPlayerControls();
 
+  // Hàm tiện ích dùng chung để chặn thao tác và hiển thị thông báo
+  void _handleAdBlock(BuildContext context) {
+    // Ép dừng nhạc nếu đang phát lén
+    final playerBloc = context.read<PlayerBloc>();
+    if (playerBloc.state.status == PlayerStatus.playing) {
+      playerBloc.add(PlayerPause());
+    }
+
+    // Hiển thị thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Vui lòng xem hết quảng cáo để tiếp tục nghe nhạc.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<PlayerBloc, PlayerState, (PlayerStatus, bool, bool)>(
-      selector: (state) => (state.status, state.hasPrevious, state.hasNext),
+    // BỔ SUNG: Lấy thêm cờ isShowingAd từ PlayerState
+    return BlocSelector<PlayerBloc, PlayerState, (PlayerStatus, bool, bool, bool)>(
+      selector: (state) => (state.status, state.hasPrevious, state.hasNext, state.isShowingAd),
       builder: (context, data) {
         final status = data.$1;
         final hasPrevious = data.$2;
         final hasNext = data.$3;
+        final isShowingAd = data.$4; // Cờ quảng cáo
 
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Nút PREVIOUS
             IconButton(
               iconSize: 20,
               splashRadius: 18,
               color: hasPrevious ? Colors.white : AppColors.grey,
               onPressed: hasPrevious
-                  ? () => context.read<PlayerBloc>().add(PlayerPrevious())
+                  ? () {
+                if (isShowingAd) {
+                  _handleAdBlock(context);
+                  return; // CHẶN LẠI
+                }
+                context.read<PlayerBloc>().add(PlayerPrevious());
+              }
                   : null,
               icon: const Icon(Icons.skip_previous),
             ),
+
+            // Vòng Loading hoặc nút PLAY/PAUSE
             if (status == PlayerStatus.loading)
               const SizedBox(
                 width: 24,
@@ -306,6 +334,11 @@ class _MiniPlayerControls extends StatelessWidget {
                 splashRadius: 18,
                 color: Colors.white,
                 onPressed: () {
+                  if (isShowingAd) {
+                    _handleAdBlock(context);
+                    return; // CHẶN LẠI
+                  }
+
                   if (status == PlayerStatus.playing) {
                     context.read<PlayerBloc>().add(PlayerPause());
                   } else {
@@ -318,12 +351,20 @@ class _MiniPlayerControls extends StatelessWidget {
                       : Icons.play_arrow,
                 ),
               ),
+
+            // Nút NEXT
             IconButton(
               iconSize: 20,
               splashRadius: 18,
               color: hasNext ? Colors.white : AppColors.grey,
               onPressed: hasNext
-                  ? () => context.read<PlayerBloc>().add(PlayerNext())
+                  ? () {
+                if (isShowingAd) {
+                  _handleAdBlock(context);
+                  return; // CHẶN LẠI
+                }
+                context.read<PlayerBloc>().add(PlayerNext());
+              }
                   : null,
               icon: const Icon(Icons.skip_next),
             ),

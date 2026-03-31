@@ -83,8 +83,8 @@ public class NotificationService : INotificationService
             UserId = feedback.UserId ,
             Type = NotificationType.UserMessage ,
             Source = NotificationSource.Automatic ,
-            Title = "Feedback updated" ,
-            Message = $"Your feedback '{feedback.Title}' has been {feedback.Status}" ,
+            Title = "Phản hồi đã được xử lý" ,
+            Message = $"Phản hồi \"{feedback.Title}\": đã được ghi nhận xử lý." ,
             CreatedAt = DateTime.UtcNow
         };
 

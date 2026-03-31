@@ -40,6 +40,8 @@ import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/intro/pages/get_started.dart';
 import 'package:soundtilo/presentation/splash/pages/splash.dart';
 import 'package:soundtilo/common/widgets/inactivity_tracker.dart';
+// BỔ SUNG: Import trang Video Quảng Cáo
+import 'package:soundtilo/presentation/ads/pages/video_ad_page.dart';
 
 final ValueNotifier<bool> _isPlayerRouteActive = ValueNotifier<bool>(false);
 
@@ -243,6 +245,28 @@ class MyApp extends StatelessWidget {
                 );
             },
           ),
+          // --- BẮT ĐẦU: LISTENER QUẢN LÝ QUẢNG CÁO VIDEO ---
+          BlocListener<PlayerBloc, PlayerState>(
+            listenWhen: (prev, curr) => prev.isShowingAd != curr.isShowingAd,
+            listener: (context, state) async {
+              if (state.isShowingAd) {
+                // Dùng AppNavigator (Global Key) để mở màn hình đè lên mọi thứ khác
+                await AppNavigator.key.currentState?.push(
+                  MaterialPageRoute(
+                    builder: (_) => const VideoAdPage(),
+                    fullscreenDialog: true, // Mở dạng popup chui từ dưới lên
+                  ),
+                );
+
+                // Sau khi người dùng ấn Skip hoặc video tự đóng xong:
+                // Bắn event báo cáo Quảng cáo đã xem xong để PlayerBloc phát nhạc tiếp!
+                if (context.mounted) {
+                  context.read<PlayerBloc>().add(PlayerAdFinished());
+                }
+              }
+            },
+          ),
+          // --- KẾT THÚC: LISTENER QUẢN LÝ QUẢNG CÁO ---
         ],
         child: BlocBuilder<ThemeCubit, ThemeMode>(
           builder: (context, mode) => MaterialApp(
@@ -281,6 +305,19 @@ class MyApp extends StatelessWidget {
                             return const SizedBox.shrink();
                           }
                           return const MiniPlayer();
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      right: 16,
+                      bottom: bottomInset,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _isPlayerRouteActive,
+                        builder: (context, isPlayerRouteActive, _) {
+                          if (isPlayerRouteActive) {
+                            return const SizedBox.shrink();
+                          }
+                          return const MiniPlayerShowButton();
                         },
                       ),
                     ),

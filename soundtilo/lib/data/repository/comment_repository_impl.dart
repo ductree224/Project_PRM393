@@ -38,7 +38,7 @@ class CommentRepositoryImpl implements CommentRepository {
       final totalCount = (data['totalCount'] as num?)?.toInt() ?? 0;
       return Right((comments, totalCount));
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể tải bình luận.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể tải bình luận.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -53,7 +53,7 @@ class CommentRepositoryImpl implements CommentRepository {
       final data = await _remoteDataSource.addComment(trackExternalId, content);
       return Right(_mapToEntity(data));
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể gửi bình luận.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể gửi bình luận.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -65,7 +65,7 @@ class CommentRepositoryImpl implements CommentRepository {
       await _remoteDataSource.deleteComment(commentId);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể xoá bình luận.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể xoá bình luận.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }

@@ -22,6 +22,7 @@ import 'package:soundtilo/data/sources/album_remote_data_source.dart';
 import 'package:soundtilo/data/sources/notification_remote_data_source.dart';
 import 'package:soundtilo/data/sources/subscription_remote_data_source.dart';
 import 'package:soundtilo/data/sources/user_remote_data_source.dart';
+import 'package:soundtilo/data/sources/feedback_remote_data_source.dart';
 
 // Repository Implementations
 import 'package:soundtilo/data/repository/auth_repository_impl.dart';
@@ -39,6 +40,7 @@ import 'package:soundtilo/data/repository/album_repository_impl.dart';
 import 'package:soundtilo/data/repository/notification_repository_impl.dart';
 import 'package:soundtilo/data/repository/subscription_repository_impl.dart';
 import 'package:soundtilo/data/repository/user_repository_impl.dart';
+import 'package:soundtilo/data/repository/feedback_repository_impl.dart';
 
 // Domain Repositories (abstract)
 import 'package:soundtilo/domain/repository/auth_repository.dart';
@@ -62,6 +64,7 @@ import 'package:soundtilo/presentation/admin/bloc/album_admin_bloc.dart';
 import 'package:soundtilo/presentation/admin/bloc/artist_admin_bloc.dart';
 import 'package:soundtilo/domain/repository/subscription_repository.dart';
 import 'package:soundtilo/domain/repository/user_repository.dart';
+import 'package:soundtilo/domain/repository/feedback_repository.dart';
 
 // Use Cases
 import 'package:soundtilo/domain/usecases/auth_usecases.dart';
@@ -74,6 +77,12 @@ import 'package:soundtilo/domain/usecases/admin_user_usecases.dart';
 import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/user_usecases.dart';
 import 'package:soundtilo/domain/usecases/history_usecases.dart';
+import 'package:soundtilo/domain/usecases/admin_dashboard_usecases.dart';
+import 'package:soundtilo/domain/usecases/admin_analytics_usecases.dart';
+import 'package:soundtilo/domain/usecases/feedback_usecases.dart';
+import 'package:soundtilo/presentation/admin/bloc/admin_feedback_bloc.dart';
+import 'package:soundtilo/presentation/admin/bloc/admin_dashboard_bloc.dart';
+import 'package:soundtilo/presentation/admin/bloc/admin_analytics_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -146,6 +155,9 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<UserRemoteDataSource>(
     () => UserRemoteDataSource(sl<ApiClient>().dio),
   );
+  sl.registerLazySingleton<FeedbackRemoteDataSource>(
+    () => FeedbackRemoteDataSource(sl<ApiClient>().dio),
+  );
 
 
   // ===================== Repositories =====================
@@ -198,6 +210,9 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(sl<UserRemoteDataSource>()),
+  );
+  sl.registerLazySingleton<FeedbackRepository>(
+    () => FeedbackRepositoryImpl(sl<FeedbackRemoteDataSource>()),
   );
   sl.registerFactory(() => TrackAdminBloc(repository: sl<TrackAdminRepository>()));
   sl.registerFactory(() => AlbumAdminBloc(repository: sl<AlbumRepository>()));
@@ -286,6 +301,32 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => GrantPremiumUseCase(sl<AdminRepository>()));
   sl.registerLazySingleton(() => RevokePremiumUseCase(sl<AdminRepository>()));
 
+  // Admin Dashboard
+  sl.registerLazySingleton(() => GetDashboardSummaryUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetDashboardUserGrowthUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetDashboardPlayTrendUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetDashboardTopTracksUseCase(sl<AdminRepository>()));
+
+  // Admin Analytics
+  sl.registerLazySingleton(() => GetAnalyticsOverviewUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetAnalyticsTopTracksUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetAnalyticsDailyStatsUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetAdminSubscriptionStatsUseCase(sl<AdminRepository>()));
+
+  // Admin BLoCs
+  sl.registerFactory(() => AdminDashboardBloc(
+    getSummary: sl<GetDashboardSummaryUseCase>(),
+    getPlayTrend: sl<GetDashboardPlayTrendUseCase>(),
+    getUserGrowth: sl<GetDashboardUserGrowthUseCase>(),
+    getTopTracks: sl<GetDashboardTopTracksUseCase>(),
+  ));
+  sl.registerFactory(() => AdminAnalyticsBloc(
+    getOverview: sl<GetAnalyticsOverviewUseCase>(),
+    getTopTracks: sl<GetAnalyticsTopTracksUseCase>(),
+    getDailyStats: sl<GetAnalyticsDailyStatsUseCase>(),
+    getSubscriptionStats: sl<GetAdminSubscriptionStatsUseCase>(),
+  ));
+
   // User & Subscription
   sl.registerLazySingleton(() => GetProfileUseCase(sl<UserRepository>()));
   sl.registerLazySingleton(
@@ -294,6 +335,8 @@ Future<void> initServiceLocator() async {
       () => CreatePaymentUrlUseCase(sl<SubscriptionRepository>()));
   sl.registerLazySingleton(
       () => GetSubscriptionStatusUseCase(sl<SubscriptionRepository>()));
+  sl.registerLazySingleton(
+      () => CancelSubscriptionUseCase(sl<SubscriptionRepository>()));
 
   // BỔ SUNG: Đăng ký Waitlist UseCases
   sl.registerLazySingleton(() => GetWaitlistUseCase(sl<WaitlistRepository>()));
@@ -309,4 +352,18 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(
     () => ClearWaitlistUseCase(sl<WaitlistRepository>()),
   );
+
+  // Feedback
+  sl.registerLazySingleton(() => CreateFeedbackUseCase(sl<FeedbackRepository>()));
+  sl.registerLazySingleton(() => GetMyFeedbacksUseCase(sl<FeedbackRepository>()));
+  sl.registerLazySingleton(() => AdminGetFeedbacksUseCase(sl<FeedbackRepository>()));
+  sl.registerLazySingleton(() => HandleFeedbackUseCase(sl<FeedbackRepository>()));
+  sl.registerLazySingleton(() => GetFeedbackAnalyticsUseCase(sl<FeedbackRepository>()));
+
+  // Admin Feedback BLoC
+  sl.registerFactory(() => AdminFeedbackBloc(
+    adminGetFeedbacksUseCase: sl<AdminGetFeedbacksUseCase>(),
+    handleFeedbackUseCase: sl<HandleFeedbackUseCase>(),
+    getFeedbackAnalyticsUseCase: sl<GetFeedbackAnalyticsUseCase>(),
+  ));
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/constants/api_urls.dart';
+import 'package:soundtilo/core/di/service_locator.dart';
+import 'package:soundtilo/core/network/api_client.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// Opens a VNPay payment URL in a WebView.
@@ -49,13 +51,24 @@ class _VnpayPaymentPageState extends State<VnpayPaymentPage> {
       ..loadRequest(Uri.parse(widget.paymentUrl));
   }
 
-  void _handleReturnUrl(String url) {
+  void _handleReturnUrl(String url) async {
     final uri = Uri.parse(url);
-    final responseCode = uri.queryParameters['vnp_ResponseCode'];
-    final success = responseCode == '00';
+    if (!mounted) return;
+    setState(() => _loading = true);
 
-    if (mounted) {
-      Navigator.of(context).pop(success);
+    try {
+      // Call backend with all VNPay params — verifies signature and activates subscription
+      final response = await sl<ApiClient>().dio.get(
+        ApiUrls.vnpayReturn,
+        queryParameters: Map<String, String>.from(uri.queryParameters),
+      );
+      final data = response.data as Map<String, dynamic>;
+      final success = data['success'] == true;
+      if (mounted) Navigator.of(context).pop(success);
+    } catch (_) {
+      // Fallback: trust vnp_ResponseCode if backend call fails
+      final responseCode = uri.queryParameters['vnp_ResponseCode'];
+      if (mounted) Navigator.of(context).pop(responseCode == '00');
     }
   }
 

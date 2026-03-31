@@ -7,7 +7,7 @@ abstract class PlayerEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
-
+class PlayerAdFinished extends PlayerEvent {}
 class PlayerPlay extends PlayerEvent {
   final TrackEntity track;
   final List<TrackEntity> queue;
@@ -57,6 +57,14 @@ class PlayerDurationChanged extends PlayerEvent {
 }
 
 class PlayerCompleted extends PlayerEvent {}
+
+class PlayerSourceError extends PlayerEvent {
+  final Object error;
+  const PlayerSourceError(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
 
 class PlayerToggleFavorite extends PlayerEvent {}
 

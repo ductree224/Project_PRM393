@@ -6,5 +6,6 @@ public enum NotificationType
     ViolationWarning = 2,
     TrackUpdate = 3,
     SystemAnnouncement = 4,
-    SubscriptionExpiry = 5
+    SubscriptionExpiry = 5,
+    SubscriptionActivated = 6
 }

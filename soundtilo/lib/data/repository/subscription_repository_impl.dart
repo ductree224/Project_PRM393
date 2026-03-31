@@ -58,6 +58,22 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   }
 
   @override
+  Future<Either<String, void>> cancelSubscription() async {
+    try {
+      await _dataSource.cancelSubscription();
+      return const Right(null);
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data is Map
+          ? data['message']?.toString() ?? 'Không thể hủy đăng ký.'
+          : 'Không thể hủy đăng ký.';
+      return Left(message);
+    } catch (e) {
+      return Left('Đã xảy ra lỗi: $e');
+    }
+  }
+
+  @override
   Future<Either<String, SubscriptionStatusEntity>>
       getSubscriptionStatus() async {
     try {

@@ -20,7 +20,11 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   StreamSubscription? _positionSub;
   StreamSubscription? _durationSub;
   StreamSubscription? _playerStateSub;
+  StreamSubscription? _playerErrorSub;
   int _lastPositionEventMs = -1;
+  int _songsPlayedCount = 0;
+  PlayerPlay? _pendingPlayEvent;
+  bool isPremiumUser = false;
 
   PlayerBloc({
     required AudioPlayer audioPlayer,
@@ -29,11 +33,11 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     required IsFavoriteUseCase isFavoriteUseCase,
     required RecordListenUseCase recordListenUseCase,
   }) : _audioPlayer = audioPlayer,
-       _trackRepository = trackRepository,
-       _toggleFavoriteUseCase = toggleFavoriteUseCase,
-       _isFavoriteUseCase = isFavoriteUseCase,
-       _recordListenUseCase = recordListenUseCase,
-       super(const PlayerState()) {
+        _trackRepository = trackRepository,
+        _toggleFavoriteUseCase = toggleFavoriteUseCase,
+        _isFavoriteUseCase = isFavoriteUseCase,
+        _recordListenUseCase = recordListenUseCase,
+        super(const PlayerState()) {
     on<PlayerPlay>(_onPlay, transformer: restartable());
     on<PlayerResume>(_onResume);
     on<PlayerPause>(_onPause);
@@ -47,6 +51,8 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     on<PlayerToggleFavorite>(_onToggleFavorite);
     on<PlayerHideMiniPlayer>(_onHideMiniPlayer);
     on<PlayerShowMiniPlayer>(_onShowMiniPlayer);
+    on<PlayerSourceError>(_onSourceError);
+    on<PlayerAdFinished>(_onAdFinished); // Đăng ký event quảng cáo
 
     _positionSub = _audioPlayer.positionStream.listen((pos) {
       if (isClosed) return;
@@ -68,9 +74,33 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         add(PlayerCompleted());
       }
     });
+
+    _playerErrorSub = _audioPlayer.playbackEventStream.listen(
+      (_) {},
+      onError: (Object error, StackTrace _) {
+        if (!isClosed) add(PlayerSourceError(error));
+      },
+    );
   }
 
+  // CHỈ CÓ 1 HÀM _onPlay DUY NHẤT Ở ĐÂY
   Future<void> _onPlay(PlayerPlay event, Emitter<PlayerState> emit) async {
+    // --- BẮT ĐẦU: LOGIC CHẶN QUẢNG CÁO ---
+    // Chỉ đếm khi phát một bài hát mới hoàn toàn
+    if (state.currentTrack?.externalId != event.track.externalId) {
+      _songsPlayedCount++;
+
+      // Nếu đã lướt qua bài thứ 5
+      if (!isPremiumUser && _songsPlayedCount > 5 ) {
+        _songsPlayedCount = 0; // Reset bộ đếm
+        _pendingPlayEvent = event; // Cất bài hát này vào hàng chờ tạm
+        await _audioPlayer.pause(); // Đảm bảo nhạc dừng hẳn
+        emit(state.copyWith(isShowingAd: true)); // Báo cho UI biết để bật Ads
+        return; // Dừng hàm _onPlay tại đây! Trả quyền về UI để bật Quảng cáo
+      }
+    }
+    // --- KẾT THÚC: LOGIC QUẢNG CÁO ---
+
     // Record listening history immediately on click (fire-and-forget)
     unawaited(
       _recordListenUseCase(
@@ -109,8 +139,9 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     try {
       String? url = event.track.playableUrl;
 
-      // If no URL, fetch stream URL from API
-      if (url == null || url.isEmpty) {
+      // Deezer preview URLs are time-limited CDN links. Always fetch a fresh
+      // URL via the API — never use the cached URL from the track entity.
+      if (url == null || url.isEmpty || event.track.source == 'deezer') {
         final streamLookupStopwatch = Stopwatch()..start();
         final result = await _trackRepository.getStreamUrl(
           event.track.externalId,
@@ -226,6 +257,7 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         currentIndex: 0,
         currentTrack: null,
         isFavorite: false,
+        isShowingAd: false, // Reset cờ quảng cáo khi stop
       ),
     );
   }
@@ -241,9 +273,9 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   }
 
   Future<void> _onPrevious(
-    PlayerPrevious event,
-    Emitter<PlayerState> emit,
-  ) async {
+      PlayerPrevious event,
+      Emitter<PlayerState> emit,
+      ) async {
     // If past 3 seconds, restart current track
     if (state.position.inSeconds > 3) {
       await _audioPlayer.seek(Duration.zero);
@@ -275,25 +307,25 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   }
 
   void _onPositionChanged(
-    PlayerPositionChanged event,
-    Emitter<PlayerState> emit,
-  ) {
+      PlayerPositionChanged event,
+      Emitter<PlayerState> emit,
+      ) {
     if (event.position == state.position) return;
     emit(state.copyWith(position: event.position));
   }
 
   void _onDurationChanged(
-    PlayerDurationChanged event,
-    Emitter<PlayerState> emit,
-  ) {
+      PlayerDurationChanged event,
+      Emitter<PlayerState> emit,
+      ) {
     if (event.duration == state.duration) return;
     emit(state.copyWith(duration: event.duration));
   }
 
   Future<void> _onCompleted(
-    PlayerCompleted event,
-    Emitter<PlayerState> emit,
-  ) async {
+      PlayerCompleted event,
+      Emitter<PlayerState> emit,
+      ) async {
     // Auto-play next
     if (state.hasNext) {
       add(PlayerNext());
@@ -305,9 +337,9 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   }
 
   Future<void> _onToggleFavorite(
-    PlayerToggleFavorite event,
-    Emitter<PlayerState> emit,
-  ) async {
+      PlayerToggleFavorite event,
+      Emitter<PlayerState> emit,
+      ) async {
     if (state.currentTrack == null) return;
     final result = await _toggleFavoriteUseCase(state.currentTrack!.externalId);
     result.fold((_) {}, (isFav) => emit(state.copyWith(isFavorite: isFav)));
@@ -321,11 +353,36 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     emit(state.copyWith(isMiniPlayerHidden: false));
   }
 
+  // --- HÀM XỬ LÝ SAU KHI XEM XONG QUẢNG CÁO ---
+  Future<void> _onAdFinished(PlayerAdFinished event, Emitter<PlayerState> emit) async {
+    emit(state.copyWith(isShowingAd: false)); // Tắt cờ quảng cáo
+    if (_pendingPlayEvent != null) {
+      add(_pendingPlayEvent!); // Bắn lại event phát bài hát đã bị cất tạm
+      _pendingPlayEvent = null;
+    }
+  }
+
+  void _onSourceError(
+    PlayerSourceError event,
+    Emitter<PlayerState> emit,
+  ) {
+    if (state.status == PlayerStatus.playing ||
+        state.status == PlayerStatus.loading) {
+      emit(
+        state.copyWith(
+          status: PlayerStatus.error,
+          errorMessage: 'Không thể phát bài hát này. Vui lòng thử lại.',
+        ),
+      );
+    }
+  }
+
   @override
   Future<void> close() {
     _positionSub?.cancel();
     _durationSub?.cancel();
     _playerStateSub?.cancel();
+    _playerErrorSub?.cancel();
     _audioPlayer.dispose();
     return super.close();
   }
