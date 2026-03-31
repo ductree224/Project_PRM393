@@ -1,0 +1,112 @@
+﻿@Host = http://localhost:5196
+@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0N2M3NmI5MS05MmY3LTRkMWMtOTk2Yi03MTA4NzQ1MGUxYmYiLCJ1bmlxdWVfbmFtZSI6ImphY2sxMjMiLCJlbWFpbCI6ImphY2sxMjNAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoidXNlciIsImp0aSI6IjkxYWM4ZmE1LTIxMmUtNDk3Mi05MGI0LWRmYzEyOWI5OGQ3OSIsImlhdCI6MTc3NDg5MDM0MiwiZXhwIjoxNzc0ODk3NTQyLCJpc3MiOiJTb3VuZHRpbG8iLCJhdWQiOiJTb3VuZHRpbG9BcHAifQ.IqFC7jZZHItQNnlKFtKrSPhCqdyKiqorpr6C65xmZ7g
+# @userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyNmEyZTgzMi0zYTdhLTQxNDItYWQ3OS01MzgwMmZiMTIyYjAiLCJ1bmlxdWVfbmFtZSI6ImphY2sxMjIzIiwiZW1haWwiOiJqYWNrMTIyM0BnbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJ1c2VyIiwianRpIjoiNGMyOGQ0YjItOTNlMi00OWMzLTgxMzctYTViMmMyZTg5NTYzIiwiaWF0IjoxNzc0ODkxNTAwLCJleHAiOjE3NzQ4OTg3MDAsImlzcyI6IlNvdW5kdGlsbyIsImF1ZCI6IlNvdW5kdGlsb0FwcCJ9._CAwrwz8US5wmOgb8OX-yQD9D9u6L9C7WAfnt7mO-_Y
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZGI4ZDEwNy1mZmZiLTQ3YTctOGMzYi0zYzk2OTM1NWNlMTkiLCJ1bmlxdWVfbmFtZSI6ImFkbWluIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJhZG1pbiIsImp0aSI6ImUyODkwMjk3LWY5YmYtNDY0MC1iYWJhLTdkMjQ3MzRkNWY1NCIsImlhdCI6MTc3NDg5MDM3MywiZXhwIjoxNzc0ODk3NTczLCJpc3MiOiJTb3VuZHRpbG8iLCJhdWQiOiJTb3VuZHRpbG9BcHAifQ.K94xgwBwhzKfX7Kq_UHy5SpF2V1rOj8atm5g9wJjY94
+@feedbackId = 6983da97-4f1f-4c46-94bf-c3178511ecc5
+
+##################################################
+### 1. USER CREATE FEEDBACK
+##################################################
+POST {{Host}}/api/feedbacks
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "category": "bug",
+  "priority": "high",
+  "title": "Crash khi play nhạc",
+  "content": "App crash khi play bài số 70",
+  "deviceInfo": "iPhone 174",
+  "platform": "ios",
+  "appVersion": "1.0.2",
+  "attachmentUrl": "https://example.com/image.png"
+}
+
+##################################################
+### 1. USER CREATE FEEDBACK - (2)
+##################################################
+POST {{Host}}/api/feedbacks
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "category": "bug",
+  "priority": "high",
+  "title": "Crash khi play nhạc",
+  "content": "App crash khi play bài số 821",
+  "deviceInfo": "iPhone 1221",
+  "platform": "ios",
+  "appVersion": "1.0.2",
+  "attachmentUrl": "https://example.com/image.png"
+}
+
+##################################################
+### 2. USER VIEW OWN FEEDBACK
+##################################################
+GET {{Host}}/api/feedbacks/me
+Authorization: Bearer {{userToken}}
+
+##################################################
+### 3. ADMIN GET ALL (FILTER + PAGINATION)
+##################################################
+GET {{Host}}/api/feedbacks?status=pending&category=bug&page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+##################################################
+### 4. ADMIN HANDLE FEEDBACK
+##################################################
+PUT {{Host}}/api/feedbacks/{{feedbackId}}/handle
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "reply": "Đã fix bug này rồi nhé",
+  "status": "resolved"
+}
+
+##################################################
+### 5. USER CHECK AGAIN (SEE REPLY)
+##################################################
+GET {{Host}}/api/feedbacks/me
+Authorization: Bearer {{userToken}}
+
+##################################################
+### 6. ANALYTICS DASHBOARD
+##################################################
+GET {{Host}}/api/feedbacks/analytics?days=7
+Authorization: Bearer {{adminToken}}
+
+##################################################
+### 7. ANALYTICS 30 DAYS
+##################################################
+GET {{Host}}/api/feedbacks/analytics?days=30
+Authorization: Bearer {{adminToken}}
+
+###
+GET {{Host}}/api/feedbacks/me?page=1&pageSize=5
+Authorization: Bearer {{userToken}}
+
+###
+GET {{Host}}/api/feedbacks/me?status=pending&page=1&pageSize=5
+Authorization: Bearer {{userToken}}
+
+###
+GET {{Host}}/api/feedbacks/me?status=resolved&page=1&pageSize=5
+Authorization: Bearer {{userToken}}
+
+###
+GET {{Host}}/api/feedbacks?status=pending&page=1&pageSize=5
+Authorization: Bearer {{adminToken}}
+
+###
+GET {{Host}}/api/feedbacks?status=pending&category=bug&page=1&pageSize=5
+Authorization: Bearer {{adminToken}}
+
+###
+GET {{Host}}/api/feedbacks?status=resolved&category=bug&page=1&pageSize=5
+Authorization: Bearer {{adminToken}}
+
+
+###
+GET {{Host}}/api/feedbacks?page=1&pageSize=5
+Authorization: Bearer {{adminToken}}

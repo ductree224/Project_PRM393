@@ -1,0 +1,58 @@
+﻿@Host = http://localhost:5196
+
+##################################################
+### 1. REGISTER
+##################################################
+POST {{Host}}/api/Auth/register
+Content-Type: application/json
+
+{
+  "username": "jack123",
+  "email": "jack123@gmail.com",
+  "password": "123456",
+  "displayName": "Jack Dev"
+}
+
+##################################################
+### 2. LOGIN (GET TOKEN)
+##################################################
+POST {{Host}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "jack123",
+  "password": "123456"
+}
+
+###
+admin@gmail.com
+# > {%
+#     // lưu token để dùng cho request sau
+#     client.global.set("accessToken", response.body.accessToken);
+#     client.global.set("refreshToken", response.body.refreshToken);
+# %}
+
+##################################################
+### 3. REFRESH TOKEN
+##################################################
+POST {{Host}}/api/Auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+##################################################
+### 4. TEST AUTH (FEEDBACK CREATE)
+##################################################
+POST {{Host}}/api/feedbacks
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "category": "bug",
+  "priority": "high",
+  "title": "Test login success",
+  "content": "Token works",
+  "platform": "web"
+}
