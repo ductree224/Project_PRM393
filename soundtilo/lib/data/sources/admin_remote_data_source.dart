@@ -104,4 +104,78 @@ class AdminRemoteDataSource {
     );
     return Map<String, dynamic>.from(response.data as Map);
   }
+
+  // ─── Dashboard ────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> getDashboardSummary() async {
+    final response = await _dio.get(ApiUrls.adminDashboardSummary);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getDashboardUserGrowth({String? month}) async {
+    final params = <String, dynamic>{};
+    if (month != null && month.isNotEmpty) params['month'] = month;
+    final response = await _dio.get(
+      ApiUrls.adminDashboardUserGrowth,
+      queryParameters: params.isEmpty ? null : params,
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getDashboardPlayTrend({String? month}) async {
+    final params = <String, dynamic>{};
+    if (month != null && month.isNotEmpty) params['month'] = month;
+    final response = await _dio.get(
+      ApiUrls.adminDashboardPlayTrend,
+      queryParameters: params.isEmpty ? null : params,
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<Map<String, dynamic>> getDashboardTopTracks({
+    String? month,
+    int limit = 10,
+  }) async {
+    final params = <String, dynamic>{'limit': limit};
+    if (month != null && month.isNotEmpty) params['month'] = month;
+    final response = await _dio.get(
+      ApiUrls.adminDashboardTopTracks,
+      queryParameters: params,
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  // ─── Analytics ────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> getAnalyticsOverview() async {
+    final response = await _dio.get(ApiUrls.adminAnalyticsOverview);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<List<dynamic>> getAnalyticsTopTracks({int count = 10}) async {
+    final response = await _dio.get(
+      ApiUrls.adminAnalyticsTopTracks,
+      queryParameters: {'count': count},
+    );
+    return response.data as List<dynamic>;
+  }
+
+  Future<List<dynamic>> getAnalyticsDailyStats({
+    String? from,
+    String? to,
+  }) async {
+    final params = <String, dynamic>{};
+    if (from != null && from.isNotEmpty) params['from'] = from;
+    if (to != null && to.isNotEmpty) params['to'] = to;
+    final response = await _dio.get(
+      ApiUrls.adminAnalyticsDailyStats,
+      queryParameters: params.isEmpty ? null : params,
+    );
+    return response.data as List<dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getSubscriptionStats() async {
+    final response = await _dio.get(ApiUrls.adminSubscriptionStats);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
 }

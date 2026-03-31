@@ -4,7 +4,8 @@ import 'package:soundtilo/presentation/admin/widgets/admin_sidebar.dart';
 import 'package:soundtilo/presentation/admin/widgets/admin_topbar.dart';
 
 import 'admin_dashboard_page.dart';
-import 'admin_users_page.dart';
+import 'users_page.dart';
+import 'admin_analytics_page.dart';
 import 'admin_tracks_page.dart';
 import 'admin_artists_albums_page.dart';
 import 'admin_notifications_page.dart';
@@ -26,9 +27,7 @@ class _AdminMainShellState extends State<AdminMainShell> {
     const AdminArtistsAlbumsPage(), // Index 2
     const AdminUsersPage(), // Index 3: User Mgt
     const AdminNotificationsPage(), // Index 4: Notifications
-    const Center(
-      child: Text('Analytics Page', style: TextStyle(color: Colors.white)),
-    ), // Index 5
+    const AdminAnalyticsPage(), // Index 5: Analytics
     const AdminSubscriptionsPage(), // Index 6: Payment Management
   ];
 
