@@ -19,7 +19,7 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
           [];
       return Right(favorites);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể tải danh sách yêu thích.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể tải danh sách yêu thích.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -31,7 +31,7 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
       final isFavorite = await _remoteDataSource.toggleFavorite(trackExternalId);
       return Right(isFavorite);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể cập nhật yêu thích.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể cập nhật yêu thích.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -43,7 +43,7 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
       final isFav = await _remoteDataSource.isFavorite(trackExternalId);
       return Right(isFav);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể kiểm tra trạng thái yêu thích.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể kiểm tra trạng thái yêu thích.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }

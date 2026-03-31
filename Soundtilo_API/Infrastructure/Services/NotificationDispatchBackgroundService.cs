@@ -1,3 +1,4 @@
+using Application.Interfaces.Services;
 using Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +19,7 @@ public class NotificationDispatchBackgroundService : BackgroundService
     private int _tickCounter;
 
     public NotificationDispatchBackgroundService(
-        IServiceScopeFactory scopeFactory,
+        IServiceScopeFactory scopeFactory ,
         ILogger<NotificationDispatchBackgroundService> logger)
     {
         _scopeFactory = scopeFactory;
@@ -29,20 +30,21 @@ public class NotificationDispatchBackgroundService : BackgroundService
     {
         _logger.LogInformation("Notification dispatcher background service started.");
 
-        while (!stoppingToken.IsCancellationRequested)
+        while ( !stoppingToken.IsCancellationRequested )
         {
             try
             {
                 using var scope = _scopeFactory.CreateScope();
                 var scheduler = scope.ServiceProvider.GetRequiredService<NotificationSchedulerService>();
-                var notificationService = scope.ServiceProvider.GetRequiredService<NotificationService>();
+                //var notificationService = scope.ServiceProvider.GetRequiredService<NotificationService>();
+                var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-                var processed = await scheduler.DispatchDueSchedulesAsync(BatchSize, stoppingToken);
+                var processed = await scheduler.DispatchDueSchedulesAsync(BatchSize , stoppingToken);
                 var cleaned = await notificationService.CleanupExpiredNotificationsAsync();
 
-                if (processed > 0 || cleaned > 0)
+                if ( processed > 0 || cleaned > 0 )
                 {
-                    _logger.LogInformation("Notification dispatcher tick: processedSchedules={Processed}, cleanedExpired={Cleaned}", processed, cleaned);
+                    _logger.LogInformation("Notification dispatcher tick: processedSchedules={Processed}, cleanedExpired={Cleaned}" , processed , cleaned);
                 }
 
                 // Subscription expiry check + auto-downgrade (every ~6 hours)
@@ -67,12 +69,12 @@ public class NotificationDispatchBackgroundService : BackgroundService
                     }
                 }
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                _logger.LogError(ex, "Notification dispatcher tick failed.");
+                _logger.LogError(ex , "Notification dispatcher tick failed.");
             }
 
-            await Task.Delay(PollInterval, stoppingToken);
+            await Task.Delay(PollInterval , stoppingToken);
         }
     }
 }

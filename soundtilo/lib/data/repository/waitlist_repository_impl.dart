@@ -25,7 +25,7 @@ class WaitlistRepositoryImpl implements WaitlistRepository {
 
 
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Không thể tải danh sách chờ.');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể tải danh sách chờ.');
     } catch (e) {
       throw Exception('Đã xảy ra lỗi: $e');
     }
@@ -36,7 +36,7 @@ class WaitlistRepositoryImpl implements WaitlistRepository {
     try {
       await _remoteDataSource.addTrack(trackExternalId);
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Lỗi khi thêm vào danh sách chờ.');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Lỗi khi thêm vào danh sách chờ.');
     }
   }
 
@@ -45,7 +45,7 @@ class WaitlistRepositoryImpl implements WaitlistRepository {
     try {
       await _remoteDataSource.removeTrack(trackExternalId);
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Lỗi khi xóa khỏi danh sách chờ.');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Lỗi khi xóa khỏi danh sách chờ.');
     }
   }
 
@@ -54,7 +54,7 @@ class WaitlistRepositoryImpl implements WaitlistRepository {
     try {
       await _remoteDataSource.reorderTracks(trackExternalIds);
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Lỗi khi sắp xếp danh sách chờ.');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Lỗi khi sắp xếp danh sách chờ.');
     }
   }
 
@@ -63,7 +63,7 @@ class WaitlistRepositoryImpl implements WaitlistRepository {
     try {
       await _remoteDataSource.clearWaitlist();
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Lỗi khi dọn dẹp danh sách chờ.');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Lỗi khi dọn dẹp danh sách chờ.');
     }
   }
 }

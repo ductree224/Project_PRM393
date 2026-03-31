@@ -20,6 +20,7 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   StreamSubscription? _positionSub;
   StreamSubscription? _durationSub;
   StreamSubscription? _playerStateSub;
+  StreamSubscription? _playerErrorSub;
   int _lastPositionEventMs = -1;
   int _songsPlayedCount = 0;
   PlayerPlay? _pendingPlayEvent;
@@ -50,6 +51,7 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     on<PlayerToggleFavorite>(_onToggleFavorite);
     on<PlayerHideMiniPlayer>(_onHideMiniPlayer);
     on<PlayerShowMiniPlayer>(_onShowMiniPlayer);
+    on<PlayerSourceError>(_onSourceError);
     on<PlayerAdFinished>(_onAdFinished); // Đăng ký event quảng cáo
 
     _positionSub = _audioPlayer.positionStream.listen((pos) {
@@ -72,6 +74,13 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         add(PlayerCompleted());
       }
     });
+
+    _playerErrorSub = _audioPlayer.playbackEventStream.listen(
+      (_) {},
+      onError: (Object error, StackTrace _) {
+        if (!isClosed) add(PlayerSourceError(error));
+      },
+    );
   }
 
   // CHỈ CÓ 1 HÀM _onPlay DUY NHẤT Ở ĐÂY
@@ -130,8 +139,9 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     try {
       String? url = event.track.playableUrl;
 
-      // If no URL, fetch stream URL from API
-      if (url == null || url.isEmpty) {
+      // Deezer preview URLs are time-limited CDN links. Always fetch a fresh
+      // URL via the API — never use the cached URL from the track entity.
+      if (url == null || url.isEmpty || event.track.source == 'deezer') {
         final streamLookupStopwatch = Stopwatch()..start();
         final result = await _trackRepository.getStreamUrl(
           event.track.externalId,
@@ -352,11 +362,27 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     }
   }
 
+  void _onSourceError(
+    PlayerSourceError event,
+    Emitter<PlayerState> emit,
+  ) {
+    if (state.status == PlayerStatus.playing ||
+        state.status == PlayerStatus.loading) {
+      emit(
+        state.copyWith(
+          status: PlayerStatus.error,
+          errorMessage: 'Không thể phát bài hát này. Vui lòng thử lại.',
+        ),
+      );
+    }
+  }
+
   @override
   Future<void> close() {
     _positionSub?.cancel();
     _durationSub?.cancel();
     _playerStateSub?.cancel();
+    _playerErrorSub?.cancel();
     _audioPlayer.dispose();
     return super.close();
   }

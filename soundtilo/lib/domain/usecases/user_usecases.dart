@@ -50,3 +50,15 @@ class GetSubscriptionStatusUseCase {
     return _repository.getSubscriptionStatus();
   }
 }
+
+/// Soft-cancels the user's active subscription.
+/// The subscription remains active until the current period ends.
+class CancelSubscriptionUseCase {
+  final SubscriptionRepository _repository;
+
+  CancelSubscriptionUseCase(this._repository);
+
+  Future<Either<String, void>> call() {
+    return _repository.cancelSubscription();
+  }
+}

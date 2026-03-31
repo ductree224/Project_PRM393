@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Application.DTOs.Subscriptions;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 
@@ -18,17 +19,20 @@ public class SubscriptionService
     private readonly IPaymentTransactionRepository _paymentTransactionRepository;
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
+    private readonly NotificationService _notificationService;
 
     public SubscriptionService(
         ISubscriptionRepository subscriptionRepository,
         IPaymentTransactionRepository paymentTransactionRepository,
         IUserRepository userRepository,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        NotificationService notificationService)
     {
         _subscriptionRepository = subscriptionRepository;
         _paymentTransactionRepository = paymentTransactionRepository;
         _userRepository = userRepository;
         _configuration = configuration;
+        _notificationService = notificationService;
     }
 
     // ==================== USER-FACING ====================
@@ -63,7 +67,7 @@ public class SubscriptionService
         // VNPay amount is in VND × 100 (smallest currency unit)
         var amount = (long)(plan.Price * 100);
 
-        var orderInfo = $"Soundtilo Premium - {plan.Name} - User:{userId}";
+        var orderInfo = $"Soundtilo Premium {plan.Name}";
 
         // Create pending transaction
         await _paymentTransactionRepository.CreateAsync(new PaymentTransaction
@@ -95,21 +99,17 @@ public class SubscriptionService
             ["vnp_ExpireDate"] = DateTime.UtcNow.AddHours(7).AddMinutes(15).ToString("yyyyMMddHHmmss")
         };
 
-        // Build hash data and query string
-        var hashData = new StringBuilder();
+        // Build hash data and query string.
+        // VNPay PHP reference uses urlencode() for BOTH hashdata and query string,
+        // so hashData and query must be built identically.
         var query = new StringBuilder();
         foreach (var kv in vnpParams)
         {
-            if (hashData.Length > 0)
-            {
-                hashData.Append('&');
-                query.Append('&');
-            }
-            hashData.Append(kv.Key).Append('=').Append(kv.Value);
+            if (query.Length > 0) query.Append('&');
             query.Append(WebUtility.UrlEncode(kv.Key)).Append('=').Append(WebUtility.UrlEncode(kv.Value));
         }
 
-        var secureHash = HmacSha512(hashSecret, hashData.ToString());
+        var secureHash = HmacSha512(hashSecret, query.ToString());
         var fullUrl = $"{paymentUrl}?{query}&vnp_SecureHash={secureHash}";
 
         return new CreatePaymentResponse(fullUrl, txnRef);
@@ -129,7 +129,7 @@ public class SubscriptionService
             vnpParams.Where(kv => kv.Key != "vnp_SecureHash" && kv.Key != "vnp_SecureHashType")
                      .ToDictionary(kv => kv.Key, kv => kv.Value));
 
-        var hashData = string.Join("&", paramsToHash.Select(kv => $"{kv.Key}={kv.Value}"));
+        var hashData = string.Join("&", paramsToHash.Select(kv => $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
         var computedHash = HmacSha512(hashSecret, hashData);
 
         if (!string.Equals(computedHash, receivedHash, StringComparison.OrdinalIgnoreCase))
@@ -185,7 +185,7 @@ public class SubscriptionService
             vnpParams.Where(kv => kv.Key != "vnp_SecureHash" && kv.Key != "vnp_SecureHashType")
                      .ToDictionary(kv => kv.Key, kv => kv.Value));
 
-        var hashData = string.Join("&", paramsToHash.Select(kv => $"{kv.Key}={kv.Value}"));
+        var hashData = string.Join("&", paramsToHash.Select(kv => $"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}"));
         var computedHash = HmacSha512(hashSecret, hashData);
 
         var txnRef = vnpParams.TryGetValue("vnp_TxnRef", out var txnRefRet) ? txnRefRet : "";
@@ -452,6 +452,30 @@ public class SubscriptionService
         user.PremiumExpiresAt = periodEnd;
         user.UpdatedAt = now;
         await _userRepository.UpdateAsync(user);
+
+        // Notify user of successful activation
+        var startVn = now.AddHours(7).ToString("dd/MM/yyyy");
+        var endVn = periodEnd.AddHours(7).ToString("dd/MM/yyyy");
+        var planLabel = plan.Interval == "yearly" ? "1 năm" : "1 tháng";
+        await _notificationService.SendToUserAsync(
+            actorAdminId: Guid.Empty,
+            userId: user.Id,
+            type: NotificationType.SubscriptionActivated,
+            source: NotificationSource.Automatic,
+            title: "Đăng ký Premium thành công!",
+            message: $"Gói {planLabel} đã được kích hoạt. Bắt đầu: {startVn} — Hết hạn: {endVn}. Cảm ơn bạn đã tin tưởng Soundtilo!",
+            metadataJson: $"{{\"planId\":\"{plan.Id}\",\"interval\":\"{plan.Interval}\",\"periodEnd\":\"{periodEnd:O}\"}}",
+            expiresAt: periodEnd.AddDays(7));
+    }
+
+    public async Task CancelSubscriptionAsync(Guid userId)
+    {
+        var sub = await _subscriptionRepository.GetByUserIdAsync(userId)
+            ?? throw new KeyNotFoundException("Không tìm thấy đăng ký.");
+        if (sub.Status != "active")
+            throw new InvalidOperationException("Đăng ký không ở trạng thái active.");
+        sub.CancelledAt = DateTime.UtcNow;
+        await _subscriptionRepository.UpdateAsync(sub);
     }
 
     private static string HmacSha512(string key, string data)

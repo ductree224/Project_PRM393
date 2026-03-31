@@ -25,7 +25,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
           .toList(growable: false);
       return Right(items);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message']?.toString() ?? 'Khong the tai thong bao.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ?? 'Khong the tai thong bao.');
     } catch (e) {
       return Left('Da xay ra loi: $e');
     }
@@ -37,7 +37,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
       final count = await _remote.getUnreadCount();
       return Right(count);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message']?.toString() ?? 'Khong the tai so thong bao chua doc.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ?? 'Khong the tai so thong bao chua doc.');
     } catch (e) {
       return Left('Da xay ra loi: $e');
     }
@@ -49,7 +49,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
       await _remote.markAsRead(notificationId);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message']?.toString() ?? 'Khong the cap nhat thong bao.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ?? 'Khong the cap nhat thong bao.');
     } catch (e) {
       return Left('Da xay ra loi: $e');
     }
@@ -61,7 +61,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
       await _remote.markAllAsRead();
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message']?.toString() ?? 'Khong the cap nhat thong bao.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ?? 'Khong the cap nhat thong bao.');
     } catch (e) {
       return Left('Da xay ra loi: $e');
     }

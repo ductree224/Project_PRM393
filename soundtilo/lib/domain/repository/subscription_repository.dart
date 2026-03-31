@@ -11,6 +11,9 @@ abstract class SubscriptionRepository {
 
   /// Gets the current user's subscription status.
   Future<Either<String, SubscriptionStatusEntity>> getSubscriptionStatus();
+
+  /// Soft-cancels the user's active subscription.
+  Future<Either<String, void>> cancelSubscription();
 }
 
 class SubscriptionStatusEntity {
