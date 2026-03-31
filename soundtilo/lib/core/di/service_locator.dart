@@ -74,6 +74,10 @@ import 'package:soundtilo/domain/usecases/admin_user_usecases.dart';
 import 'package:soundtilo/domain/usecases/waitlist_usecases.dart';
 import 'package:soundtilo/domain/usecases/user_usecases.dart';
 import 'package:soundtilo/domain/usecases/history_usecases.dart';
+import 'package:soundtilo/domain/usecases/admin_dashboard_usecases.dart';
+import 'package:soundtilo/domain/usecases/admin_analytics_usecases.dart';
+import 'package:soundtilo/presentation/admin/bloc/admin_dashboard_bloc.dart';
+import 'package:soundtilo/presentation/admin/bloc/admin_analytics_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -285,6 +289,32 @@ Future<void> initServiceLocator() async {
   );
   sl.registerLazySingleton(() => GrantPremiumUseCase(sl<AdminRepository>()));
   sl.registerLazySingleton(() => RevokePremiumUseCase(sl<AdminRepository>()));
+
+  // Admin Dashboard
+  sl.registerLazySingleton(() => GetDashboardSummaryUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetDashboardUserGrowthUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetDashboardPlayTrendUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetDashboardTopTracksUseCase(sl<AdminRepository>()));
+
+  // Admin Analytics
+  sl.registerLazySingleton(() => GetAnalyticsOverviewUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetAnalyticsTopTracksUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetAnalyticsDailyStatsUseCase(sl<AdminRepository>()));
+  sl.registerLazySingleton(() => GetAdminSubscriptionStatsUseCase(sl<AdminRepository>()));
+
+  // Admin BLoCs
+  sl.registerFactory(() => AdminDashboardBloc(
+    getSummary: sl<GetDashboardSummaryUseCase>(),
+    getPlayTrend: sl<GetDashboardPlayTrendUseCase>(),
+    getUserGrowth: sl<GetDashboardUserGrowthUseCase>(),
+    getTopTracks: sl<GetDashboardTopTracksUseCase>(),
+  ));
+  sl.registerFactory(() => AdminAnalyticsBloc(
+    getOverview: sl<GetAnalyticsOverviewUseCase>(),
+    getTopTracks: sl<GetAnalyticsTopTracksUseCase>(),
+    getDailyStats: sl<GetAnalyticsDailyStatsUseCase>(),
+    getSubscriptionStats: sl<GetAdminSubscriptionStatsUseCase>(),
+  ));
 
   // User & Subscription
   sl.registerLazySingleton(() => GetProfileUseCase(sl<UserRepository>()));
