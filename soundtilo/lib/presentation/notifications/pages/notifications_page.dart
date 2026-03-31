@@ -30,7 +30,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thong bao'),
+        title: const Text('Thông báo'),
         actions: [
           BlocBuilder<NotificationCubit, NotificationState>(
             builder: (context, state) {
@@ -40,7 +40,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               return TextButton(
                 onPressed: () =>
                     context.read<NotificationCubit>().markAllAsRead(),
-                child: const Text('Doc tat ca'),
+                child: const Text('Đọc tất cả'),
               );
             },
           ),
@@ -57,7 +57,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           }
 
           if (state.items.isEmpty) {
-            return const Center(child: Text('Chua co thong bao nao.'));
+            return const Center(child: Text('Chưa có thông báo nào'));
           }
 
           return RefreshIndicator(
