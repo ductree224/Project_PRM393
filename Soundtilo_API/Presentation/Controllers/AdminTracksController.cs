@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Application.DTOs.Tracks;
 
 namespace Presentation.Controllers;
 
@@ -53,5 +54,26 @@ public class AdminTracksController : ControllerBase
 
         await _trackService.BulkAddTracksToAlbumAsync(payload);
         return Ok(new { message = "Tracks added to album successfully." });
+    }
+
+    [HttpGet("discover")]
+    public async Task<IActionResult> SearchExternal([FromQuery] string q, [FromQuery] string? source = null, [FromQuery] int limit = 20)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+            return BadRequest(new { message = "Search query is required." });
+
+        // This triggers the fallbackExternal logic but DOES NOT cache the results (persist: false)
+        var result = await _trackService.SearchAsync(q, source, limit, 0, cacheOnly: false, fallbackExternal: true, persist: false);
+        return Ok(result.Tracks);
+    }
+
+    [HttpPost("import")]
+    public async Task<IActionResult> ImportTracks([FromBody] IEnumerable<TrackDto> tracks)
+    {
+        if (tracks == null || !tracks.Any())
+            return BadRequest(new { message = "No tracks provided for import." });
+
+        await _trackService.ImportTracksAsync(tracks);
+        return Ok(new { message = $"{tracks.Count()} tracks imported successfully." });
     }
 }

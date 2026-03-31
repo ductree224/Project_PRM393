@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../../data/models/track_admin_model.dart';
+import '../../../../data/models/track_model.dart';
 
 abstract class TrackAdminState extends Equatable {
   const TrackAdminState();
@@ -58,4 +59,13 @@ class TrackAdminOperationSuccess extends TrackAdminState {
 
   @override
   List<Object?> get props => [message];
+}
+
+class TrackAdminDiscoveryLoaded extends TrackAdminState {
+  final List<TrackModel> results;
+
+  const TrackAdminDiscoveryLoaded(this.results);
+
+  @override
+  List<Object?> get props => [results];
 }

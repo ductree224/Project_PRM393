@@ -71,8 +71,8 @@ public class AuthService
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
             throw new UnauthorizedAccessException("Tên đăng nhập hoặc mật khẩu không đúng.");
 
-        if (user.IsBanned)
-            throw new UnauthorizedAccessException("Tài khoản của bạn đã bị khóa. Lý do: " + (user.BannedReason ?? "Vi phạm điều khoản dịch vụ."));
+        //if (user.IsBanned)
+        //    throw new UnauthorizedAccessException("Tài khoản của bạn đã bị khóa. Lý do: " + (user.BannedReason ?? "Vi phạm điều khoản dịch vụ."));
 
         return await GenerateAuthResponseAsync(user);
     }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../data/models/track_model.dart';
 
 abstract class TrackAdminEvent extends Equatable {
   const TrackAdminEvent();
@@ -47,4 +48,26 @@ class AddTracksToAlbum extends TrackAdminEvent {
 
   @override
   List<Object?> get props => [albumId, trackIds];
+}
+
+class ImportTracks extends TrackAdminEvent {
+  final List<TrackModel> tracks;
+
+  const ImportTracks(this.tracks);
+
+  @override
+  List<Object?> get props => [tracks];
+}
+
+class FetchExternalTracks extends TrackAdminEvent {
+  final String query;
+  final String? source;
+
+  const FetchExternalTracks({
+    required this.query,
+    this.source,
+  });
+
+  @override
+  List<Object?> get props => [query, source];
 }
