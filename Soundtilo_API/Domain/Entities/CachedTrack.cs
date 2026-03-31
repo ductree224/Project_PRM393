@@ -1,3 +1,5 @@
+using Domain.Enums;
+
 namespace Domain.Entities;
 
 public class CachedTrack
@@ -15,6 +17,7 @@ public class CachedTrack
     public string? Genre { get; set; }
     public string? Mood { get; set; }
     public long PlayCount { get; set; }
+    public TrackStatus Status { get; set; } = TrackStatus.Active;
     public string? ExternalData { get; set; } // JSON string
     public DateTime CachedAt { get; set; }
     public DateTime ExpiresAt { get; set; }

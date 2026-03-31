@@ -59,3 +59,7 @@ class PlayerDurationChanged extends PlayerEvent {
 class PlayerCompleted extends PlayerEvent {}
 
 class PlayerToggleFavorite extends PlayerEvent {}
+
+class PlayerHideMiniPlayer extends PlayerEvent {}
+
+class PlayerShowMiniPlayer extends PlayerEvent {}

@@ -12,6 +12,7 @@ class PlayerState extends Equatable {
   final Duration duration;
   final String? errorMessage;
   final bool isFavorite;
+  final bool isMiniPlayerHidden;
 
   const PlayerState({
     this.currentTrack,
@@ -22,6 +23,7 @@ class PlayerState extends Equatable {
     this.duration = Duration.zero,
     this.errorMessage,
     this.isFavorite = false,
+    this.isMiniPlayerHidden = false,
   });
 
   PlayerState copyWith({
@@ -33,6 +35,7 @@ class PlayerState extends Equatable {
     Duration? duration,
     String? errorMessage,
     bool? isFavorite,
+    bool? isMiniPlayerHidden,
   }) {
     return PlayerState(
       currentTrack: currentTrack ?? this.currentTrack,
@@ -43,6 +46,7 @@ class PlayerState extends Equatable {
       duration: duration ?? this.duration,
       errorMessage: errorMessage ?? this.errorMessage,
       isFavorite: isFavorite ?? this.isFavorite,
+      isMiniPlayerHidden: isMiniPlayerHidden ?? this.isMiniPlayerHidden,
     );
   }
 
@@ -51,5 +55,5 @@ class PlayerState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [currentTrack, queue, currentIndex, status, position, duration, errorMessage, isFavorite];
+      [currentTrack, queue, currentIndex, status, position, duration, errorMessage, isFavorite, isMiniPlayerHidden];
 }

@@ -1,8 +1,7 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/domain/entities/playlist_detail_entity.dart';
@@ -13,6 +12,7 @@ import 'package:soundtilo/domain/usecases/track_usecases.dart';
 import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/library/bloc/library_event.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
+import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 
 class PlaylistDetailPage extends StatefulWidget {
   final String playlistId;
@@ -274,7 +274,7 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
     return Stack(
       children: [
         ReorderableListView.builder(
-          padding: const EdgeInsets.only(bottom: 80),
+          padding: const EdgeInsets.only(bottom: 100),
           itemCount: playlist.tracks.length,
           onReorder: _onReorder,
           itemBuilder: (context, index) {
@@ -298,6 +298,17 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
               onRemove: () => _removeTrack(playlistTrack.trackExternalId),
             );
           },
+        ),
+        Positioned(
+          left: 8,
+          right: 8,
+          bottom: 8,
+          child: const MiniPlayer(),
+        ),
+        Positioned(
+          right: 16,
+          bottom: 8,
+          child: const MiniPlayerShowButton(),
         ),
         if (_isSavingOrder)
           const Positioned(

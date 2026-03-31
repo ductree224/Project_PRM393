@@ -6,10 +6,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:soundtilo/common/helper/is_dark_mode.dart';
-import 'package:soundtilo/common/widgets/track/track_card.dart';
 import 'package:soundtilo/common/widgets/track/track_tile.dart';
+import 'package:soundtilo/common/widgets/track/track_card.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
+import 'package:soundtilo/data/models/album_model.dart';
+import 'package:soundtilo/data/models/track_model.dart';
 import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/presentation/choose_mode/bloc/theme_cubit.dart';
 import 'package:soundtilo/presentation/home/bloc/home_bloc.dart';
@@ -17,13 +19,23 @@ import 'package:soundtilo/presentation/home/bloc/home_event.dart';
 import 'package:soundtilo/presentation/home/bloc/home_state.dart';
 import 'package:soundtilo/presentation/library/bloc/library_bloc.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
+import 'package:soundtilo/presentation/home/models/local_album.dart';
+import 'package:soundtilo/presentation/home/widgets/album_card.dart';
+import 'package:soundtilo/presentation/home/pages/album_detail.dart';
 import 'package:soundtilo/presentation/search/bloc/search_bloc.dart';
 import 'package:soundtilo/presentation/search/pages/search.dart';
 
 class HomePage extends StatelessWidget {
   static const int _horizontalPreviewLimit = 8;
   final List<String> _tags = const [
-    'pop', 'rock', 'hip-hop', 'electronic', 'jazz', 'classical', 'lofi', 'r&b'
+    'pop',
+    'rock',
+    'hip-hop',
+    'electronic',
+    'jazz',
+    'classical',
+    'lofi',
+    'r&b',
   ];
 
   const HomePage({super.key});
@@ -46,6 +58,27 @@ class HomePage extends StatelessWidget {
               return _buildContent(context, state);
             }
 
+            if (state is HomeRefreshing) {
+              return Stack(
+                children: [
+                  _buildContentFromState(
+                    context, 
+                    state.trendingTracks, 
+                    state.adminAlbums, 
+                    state.currentOffset, 
+                    state.hasMore,
+                    recentTracks: state.recentTracks, // Pass from Refreshing
+                  ),
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: LinearProgressIndicator(minHeight: 2),
+                  ),
+                ],
+              );
+            }
+
             return const SizedBox.shrink();
           },
         ),
@@ -54,24 +87,118 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context, HomeLoaded state) {
+    return _buildContentFromState(
+      context, 
+      state.trendingTracks, 
+      state.adminAlbums, 
+      state.currentOffset, 
+      state.hasMore,
+      recentTracks: state.recentTracks,
+      selectedTag: state.selectedTag,
+      tagTracks: state.tagTracks,
+      isTagLoading: state.isTagLoading,
+      isLoadingMore: state.isLoadingMore,
+    );
+  }
+
+  Widget _buildContentFromState(
+    BuildContext context, 
+    List<TrackEntity> trendingTracks, 
+    List<AlbumModel> adminAlbums,
+    int currentOffset,
+    bool hasMore,
+    {
+      List<TrackEntity> recentTracks = const [],
+      String selectedTag = 'pop',
+      List<TrackEntity> tagTracks = const [],
+      bool isTagLoading = false,
+      bool isLoadingMore = false,
+    }
+  ) {
+    // Show only admin-managed albums
+    final List<LocalAlbum> displayedAlbums = adminAlbums.map((adminAlbum) {
+      return LocalAlbum(
+        id: adminAlbum.id,
+        title: adminAlbum.title,
+        artistName: adminAlbum.artist?.name ?? 'Unknown',
+        coverImageUrl: adminAlbum.coverImageUrl ?? '',
+        // These are just placeholders/previews; tracks will be fetched in detail page
+        tracks: adminAlbum.tracks.map((at) => at.track ?? TrackModel(
+          externalId: at.trackExternalId,
+          source: 'audius',
+          title: 'Loading...',
+          artistName: adminAlbum.artist?.name ?? 'Unknown',
+          durationSeconds: 0,
+        )).toList(),
+      );
+    }).toList();
+
     return RefreshIndicator(
       onRefresh: () async => context.read<HomeBloc>().add(HomeRefresh()),
-      child: CustomScrollView(
-        slivers: [
-          _buildAppBar(context),
-          
-          _buildSectionHeader(context, 'Thịnh hành'),
-          _buildTrendingList(state.trendingTracks),
+      child: NotificationListener<ScrollEndNotification>(
+        onNotification: (notification) {
+          final metrics = notification.metrics;
+          if (metrics.pixels >= metrics.maxScrollExtent - 200 &&
+              hasMore &&
+              !isLoadingMore) {
+            context.read<HomeBloc>().add(HomeLoadMore());
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            _buildAppBar(context),
+
+            _buildSectionHeader(context, 'Thịnh hành'),
+            _buildTrendingList(trendingTracks),
+
+            if (recentTracks.isNotEmpty) ...[
+              _buildSectionHeader(context, 'Mới phát gần đây'),
+              _buildRecentlyPlayedList(recentTracks),
+            ],
 
           _buildSectionHeader(context, 'Khám phá theo thể loại'),
-          _buildTagBar(context, state.selectedTag),
-          _buildTagTracks(context, state),
+          _buildTagBar(context, selectedTag),
+          _buildTagTracks(context, tagTracks, isTagLoading),
+
+          if (displayedAlbums.isNotEmpty) ...[
+            _buildSectionHeader(context, 'Album Thịnh hành'),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 210,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: displayedAlbums.length,
+                  itemBuilder: (context, index) {
+                    final album = displayedAlbums[index];
+                    return AlbumCard(
+                      album: album,
+                      onTap: () {
+                        final libraryBloc = context.read<LibraryBloc>();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: libraryBloc,
+                              child: AlbumDetailPage(album: album),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
 
           _buildSectionHeader(context, 'Dành cho bạn'),
-          _buildInfiniteList(context, state),
+          _buildInfiniteList(context, trendingTracks, hasMore),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
@@ -81,10 +208,14 @@ class HomePage extends StatelessWidget {
       floating: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leadingWidth: 70, 
+      leadingWidth: 70,
       leading: Padding(
         padding: const EdgeInsets.only(left: 12),
-        child: SvgPicture.asset(AppVectors.logo, height: 30, alignment: Alignment.centerLeft),
+        child: SvgPicture.asset(
+          AppVectors.logo,
+          height: 30,
+          alignment: Alignment.centerLeft,
+        ),
       ),
       title: GestureDetector(
         onTap: () => _openSearch(context),
@@ -113,10 +244,7 @@ class HomePage extends StatelessWidget {
         ),
       ),
       centerTitle: true,
-      actions: [
-        _buildThemeSwitcher(),
-        const SizedBox(width: 4),
-      ],
+      actions: [_buildThemeSwitcher(), const SizedBox(width: 4)],
     );
   }
 
@@ -138,26 +266,41 @@ class HomePage extends StatelessWidget {
                 onTap: () => context.read<HomeBloc>().add(HomeLoadByTag(tag)),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    gradient: isSelected ? const LinearGradient(
-                      colors: [AppColors.primary, AppColors.thirdly],
-                    ) : null,
-                    color: isSelected ? null : (context.isDarkMode ? Colors.white10 : Colors.grey.shade200),
+                    gradient: isSelected
+                        ? const LinearGradient(
+                            colors: [AppColors.primary, AppColors.thirdly],
+                          )
+                        : null,
+                    color: isSelected
+                        ? null
+                        : (context.isDarkMode
+                              ? Colors.white10
+                              : Colors.grey.shade200),
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: isSelected ? [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      )
-                    ] : [],
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : [],
                   ),
                   child: Center(
                     child: Text(
                       tag.toUpperCase(),
                       style: GoogleFonts.inter(
-                        color: isSelected ? Colors.white : (context.isDarkMode ? Colors.grey : Colors.black87),
+                        color: isSelected
+                            ? Colors.white
+                            : (context.isDarkMode
+                                  ? Colors.grey
+                                  : Colors.black87),
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -172,8 +315,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTagTracks(BuildContext context, HomeLoaded state) {
-    if (state.isTagLoading) {
+  Widget _buildTagTracks(BuildContext context, List<TrackEntity> tagTracks, bool isTagLoading) {
+    if (isTagLoading) {
       return SliverToBoxAdapter(
         child: SizedBox(
           height: 240,
@@ -199,7 +342,9 @@ class HomePage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.primary.withOpacity(context.isDarkMode ? 0.2 : 0.1),
+                      AppColors.primary.withOpacity(
+                        context.isDarkMode ? 0.2 : 0.1,
+                      ),
                       AppColors.primary.withOpacity(0),
                     ],
                   ),
@@ -216,7 +361,9 @@ class HomePage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.thirdly.withOpacity(context.isDarkMode ? 0.2 : 0.1),
+                      AppColors.thirdly.withOpacity(
+                        context.isDarkMode ? 0.2 : 0.1,
+                      ),
                       AppColors.thirdly.withOpacity(0),
                     ],
                   ),
@@ -238,10 +385,10 @@ class HomePage extends StatelessWidget {
                 mainAxisSpacing: 15,
                 crossAxisSpacing: 10,
               ),
-              itemCount: state.tagTracks.length,
+              itemCount: tagTracks.length,
               itemBuilder: (context, index) {
-                final track = state.tagTracks[index];
-                return _buildHorizontalTrackItem(context, track, state.tagTracks);
+                final track = tagTracks[index];
+                return _buildHorizontalTrackItem(context, track, tagTracks);
               },
             ),
           ],
@@ -250,7 +397,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalTrackItem(BuildContext context, TrackEntity track, List<TrackEntity> queue) {
+  Widget _buildHorizontalTrackItem(
+    BuildContext context,
+    TrackEntity track,
+    List<TrackEntity> queue,
+  ) {
     return GestureDetector(
       onTap: () => _openPlayer(context, track, queue),
       child: Container(
@@ -265,7 +416,8 @@ class HomePage extends StatelessWidget {
                 height: 55,
                 fit: BoxFit.cover,
                 errorWidget: (_, __, ___) => Container(
-                  width: 55, height: 55,
+                  width: 55,
+                  height: 55,
                   color: AppColors.grey.withOpacity(0.1),
                   child: const Icon(Icons.music_note, color: AppColors.grey),
                 ),
@@ -313,7 +465,9 @@ class HomePage extends StatelessWidget {
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          itemCount: tracks.length > _horizontalPreviewLimit ? _horizontalPreviewLimit : tracks.length,
+          itemCount: tracks.length > _horizontalPreviewLimit
+              ? _horizontalPreviewLimit
+              : tracks.length,
           itemBuilder: (context, index) => TrackCard(
             track: tracks[index],
             onTap: () => _openPlayer(context, tracks[index], tracks),
@@ -323,21 +477,96 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfiniteList(BuildContext context, HomeLoaded state) {
+  Widget _buildRecentlyPlayedList(List<TrackEntity> tracks) {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 200,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: tracks.length,
+          itemBuilder: (context, index) {
+            final track = tracks[index];
+            return GestureDetector(
+              onTap: () => _openPlayer(context, track, tracks),
+              child: Container(
+                width: 130,
+                margin: const EdgeInsets.only(right: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: track.artworkUrl ?? '',
+                        width: 130,
+                        height: 130,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          width: 130,
+                          height: 130,
+                          color: context.isDarkMode
+                              ? Colors.white10
+                              : Colors.grey.shade200,
+                          child: const Icon(Icons.music_note, color: AppColors.grey),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 130,
+                          height: 130,
+                          color: context.isDarkMode
+                              ? Colors.white10
+                              : Colors.grey.shade200,
+                          child: const Icon(Icons.music_note, color: AppColors.grey),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      track.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            context.isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      track.artistName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: AppColors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfiniteList(BuildContext context, List<TrackEntity> tracks, bool hasMore) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          if (index >= state.trendingTracks.length) {
-            return state.hasMore ? _buildShimmerLoading(context) : const SizedBox.shrink();
+          if (index >= tracks.length) {
+            return hasMore ? _buildShimmerLoading(context) : const SizedBox.shrink();
           }
-          final track = state.trendingTracks[index];
+          final track = tracks[index];
           return TrackTile(
             key: ValueKey(track.externalId),
             track: track,
-            onTap: () => _openPlayer(context, track, state.trendingTracks),
+            onTap: () => _openPlayer(context, track, tracks),
           );
         },
-        childCount: state.trendingTracks.length + (state.hasMore ? 1 : 0),
+        childCount: tracks.length + (hasMore ? 1 : 0),
       ),
     );
   }
@@ -361,14 +590,18 @@ class HomePage extends StatelessWidget {
   Widget _buildThemeSwitcher() {
     return BlocBuilder<ThemeCubit, ThemeMode>(
       builder: (context, mode) {
-        final isDark = mode == ThemeMode.dark || (mode == ThemeMode.system && context.isDarkMode);
+        final isDark =
+            mode == ThemeMode.dark ||
+            (mode == ThemeMode.system && context.isDarkMode);
         return IconButton(
           icon: Icon(
             isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
             color: isDark ? Colors.orangeAccent : Colors.indigo,
             size: 20,
           ),
-          onPressed: () => context.read<ThemeCubit>().updateTheme(isDark ? ThemeMode.light : ThemeMode.dark),
+          onPressed: () => context.read<ThemeCubit>().updateTheme(
+            isDark ? ThemeMode.light : ThemeMode.dark,
+          ),
         );
       },
     );
@@ -391,7 +624,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  void _openPlayer(BuildContext context, TrackEntity track, List<TrackEntity> queue) {
+  void _openPlayer(
+    BuildContext context,
+    TrackEntity track,
+    List<TrackEntity> queue,
+  ) {
     Navigator.push(context, PlayerPage.createRoute(track: track, queue: queue));
   }
 
@@ -416,7 +653,9 @@ class HomePage extends StatelessWidget {
   Widget _buildHorizontalShimmerGrid(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: context.isDarkMode ? Colors.white10 : Colors.grey.shade200,
-      highlightColor: context.isDarkMode ? Colors.white24 : Colors.grey.shade100,
+      highlightColor: context.isDarkMode
+          ? Colors.white24
+          : Colors.grey.shade100,
       child: GridView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -429,17 +668,26 @@ class HomePage extends StatelessWidget {
         itemCount: 6,
         itemBuilder: (_, __) => Row(
           children: [
-            Container(width: 55, height: 55, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
+            Container(
+              width: 55,
+              height: 55,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(height: 14, width: 150, color: Colors.white),
-                const SizedBox(height: 6),
-                Container(height: 10, width: 80, color: Colors.white),
-              ],
-            ))
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(height: 14, width: 150, color: Colors.white),
+                  const SizedBox(height: 6),
+                  Container(height: 10, width: 80, color: Colors.white),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -449,7 +697,9 @@ class HomePage extends StatelessWidget {
   Widget _buildShimmerLoading(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: context.isDarkMode ? Colors.white10 : Colors.grey.shade200,
-      highlightColor: context.isDarkMode ? Colors.white24 : Colors.grey.shade100,
+      highlightColor: context.isDarkMode
+          ? Colors.white24
+          : Colors.grey.shade100,
       child: ListTile(
         leading: Container(width: 56, height: 56, color: Colors.white),
         title: Container(height: 14, width: 100, color: Colors.white),

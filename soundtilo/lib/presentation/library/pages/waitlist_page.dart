@@ -71,7 +71,6 @@ class _WaitlistPageState extends State<WaitlistPage> {
 
                   // CẮT BỎ HOÀN TOÀN LỊCH SỬ - Chỉ lấy từ bài Đang phát trở về sau
                   final activeTracks = tracks.sublist(actualFadedCount);
-                  final historyTracks = tracks.sublist(0, actualFadedCount); // Giữ lại ngầm để lưu DB
 
                   return Column(
                     children: [

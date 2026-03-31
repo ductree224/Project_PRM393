@@ -16,9 +16,25 @@ public class PlaylistRepository : IPlaylistRepository
 
     public async Task<Playlist?> GetByIdAsync(Guid id)
     {
-        return await _context.Playlists
+        var playlist = await _context.Playlists
             .Include(p => p.PlaylistTracks)
             .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (playlist != null)
+        {
+            // Filter PlaylistTracks by status in CachedTracks
+            var activeTrackIds = await _context.CachedTracks
+                .Where(t => playlist.PlaylistTracks.Select(pt => pt.TrackExternalId).Contains(t.ExternalId) 
+                         && t.Status == Domain.Enums.TrackStatus.Active)
+                .Select(t => t.ExternalId)
+                .ToListAsync();
+
+            playlist.PlaylistTracks = playlist.PlaylistTracks
+                .Where(pt => activeTrackIds.Contains(pt.TrackExternalId))
+                .ToList();
+        }
+
+        return playlist;
     }
 
     public async Task<IEnumerable<Playlist>> GetByUserIdAsync(Guid userId)

@@ -10,7 +10,9 @@ public record AdminUserDto(
     bool IsBanned,
     DateTime? BannedAt,
     string? BannedReason,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    string SubscriptionTier,
+    DateTime? PremiumExpiresAt
 );
 
 public record AdminUserDetailDto(
@@ -27,7 +29,9 @@ public record AdminUserDetailDto(
     int TotalListens,
     int TotalListeningTimeSeconds,
     int TotalFavorites,
-    int TotalPlaylists
+    int TotalPlaylists,
+    string SubscriptionTier,
+    DateTime? PremiumExpiresAt
 );
 
 public record AdminUserListResponse(
@@ -92,6 +96,17 @@ public record BanUserRequest(
 
 public record ChangeRoleRequest(
     string Role
+);
+
+public record GrantPremiumRequest(
+    DateTime? ExpiresAt
+);
+
+public record AdminSubscriptionStatsDto(
+    int TotalPremiumUsers,
+    int TotalFreeUsers,
+    int ActiveSubscriptions,
+    decimal TotalRevenue
 );
 
 public record AdminAnalyticsOverviewDto(

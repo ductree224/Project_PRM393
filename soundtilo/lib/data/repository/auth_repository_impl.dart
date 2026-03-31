@@ -24,6 +24,9 @@ class AuthRepositoryImpl implements AuthRepository {
   static const _emailKey = 'email';
   static const _displayNameKey = 'display_name';
   static const _avatarUrlKey = 'avatar_url';
+  static const _roleKey = 'role';
+  static const _subscriptionTierKey = 'subscription_tier';
+  static const _premiumExpiresAtKey = 'premium_expires_at';
 
   @override
   Future<Either<String, (UserEntity, AuthTokens)>> register({
@@ -46,12 +49,16 @@ class AuthRepositoryImpl implements AuthRepository {
         email: response.email,
         displayName: response.displayName,
         avatarUrl: response.avatarUrl,
+        role: response.role,
         createdAt: DateTime.now(),
       );
       return Right((user, response.toTokens()));
     } on DioException catch (e) {
-      final message =
-          e.response?.data?['message'] ?? 'Đăng ký thất bại. Vui lòng thử lại.';
+      final data = e.response?.data;
+      String message = 'Đăng ký thất bại. Vui lòng thử lại.';
+      if (data is Map) {
+        message = data['message']?.toString() ?? message;
+      }
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -75,13 +82,16 @@ class AuthRepositoryImpl implements AuthRepository {
         email: response.email,
         displayName: response.displayName,
         avatarUrl: response.avatarUrl,
+        role: response.role,
         createdAt: DateTime.now(),
       );
       return Right((user, response.toTokens()));
     } on DioException catch (e) {
-      final message =
-          e.response?.data?['message'] ??
-          'Đăng nhập thất bại. Vui lòng thử lại.';
+      final data = e.response?.data;
+      String message = 'Đăng nhập thất bại. Vui lòng thử lại.';
+      if (data is Map) {
+        message = data['message']?.toString() ?? message;
+      }
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -114,6 +124,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: response.email,
         displayName: response.displayName,
         avatarUrl: response.avatarUrl,
+        role: response.role,
         createdAt: DateTime.now(),
       );
       return Right((user, response.toTokens()));
@@ -140,8 +151,11 @@ class AuthRepositoryImpl implements AuthRepository {
       await _saveTokens(response);
       return Right(response.toTokens());
     } on DioException catch (e) {
-      final message =
-          e.response?.data?['message'] ?? 'Phiên đăng nhập đã hết hạn.';
+      final data = e.response?.data;
+      String message = 'Phiên đăng nhập đã hết hạn.';
+      if (data is Map) {
+        message = data['message']?.toString() ?? message;
+      }
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -154,8 +168,11 @@ class AuthRepositoryImpl implements AuthRepository {
       final token = await _remoteDataSource.forgotPassword(email);
       return Right(token);
     } on DioException catch (e) {
-      final message =
-          e.response?.data?['message'] ?? 'Yêu cầu đặt lại mật khẩu thất bại.';
+      final data = e.response?.data;
+      String message = 'Yêu cầu đặt lại mật khẩu thất bại.';
+      if (data is Map) {
+        message = data['message']?.toString() ?? message;
+      }
       return Left(message);
     } on FormatException catch (e) {
       return Left(e.message);
@@ -176,8 +193,11 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(message);
     } on DioException catch (e) {
-      final message =
-          e.response?.data?['message'] ?? 'Đặt lại mật khẩu thất bại.';
+      final data = e.response?.data;
+      String message = 'Đặt lại mật khẩu thất bại.';
+      if (data is Map) {
+        message = data['message']?.toString() ?? message;
+      }
       return Left(message);
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -194,6 +214,9 @@ class AuthRepositoryImpl implements AuthRepository {
     await _prefs.remove(_emailKey);
     await _prefs.remove(_displayNameKey);
     await _prefs.remove(_avatarUrlKey);
+    await _prefs.remove(_roleKey);
+    await _prefs.remove(_subscriptionTierKey);
+    await _prefs.remove(_premiumExpiresAtKey);
   }
 
   @override
@@ -298,6 +321,12 @@ class AuthRepositoryImpl implements AuthRepository {
     if (response.avatarUrl != null) {
       await _prefs.setString(_avatarUrlKey, response.avatarUrl!);
     }
+    await _prefs.setString(_roleKey, response.role ?? 'User');
+    // Subscription tier is not in the auth response — default to 'free' on login.
+    // AuthBloc dispatches AuthProfileRefreshRequested to sync the real tier
+    // from GET /api/users/profile after authentication.
+    await _prefs.setString(_subscriptionTierKey, 'free');
+    await _prefs.remove(_premiumExpiresAtKey);
   }
 
 }

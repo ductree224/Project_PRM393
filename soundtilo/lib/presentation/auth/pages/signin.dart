@@ -14,6 +14,8 @@ import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
 import 'package:soundtilo/presentation/auth/pages/forgot_password.dart';
 import 'package:soundtilo/presentation/auth/pages/signup.dart';
 import 'package:soundtilo/presentation/main_shell.dart';
+import 'package:soundtilo/presentation/admin/pages/admin_main_shell.dart';
+
 import '../../../common/widgets/textFormField/custom_field.dart';
 
 class SignInPage extends StatefulWidget {
@@ -64,11 +66,19 @@ class _SignInPageState extends State<SignInPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const MainShell()),
-            (route) => false,
-          );
+          if (state.user.role == 'admin') {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminMainShell()),
+              (route) => false,
+            );
+          } else {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const MainShell()),
+              (route) => false,
+            );
+          }
         } else if (state is AuthError) {
           _showErrorSnackBar(context, state.message);
         }

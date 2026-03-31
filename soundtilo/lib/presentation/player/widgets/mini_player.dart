@@ -17,15 +17,17 @@ class MiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<PlayerBloc, PlayerState, (TrackEntity?, PlayerStatus)>(
-      selector: (state) => (state.currentTrack, state.status),
+    return BlocSelector<PlayerBloc, PlayerState, (TrackEntity?, PlayerStatus, bool)>(
+      selector: (state) => (state.currentTrack, state.status, state.isMiniPlayerHidden),
       builder: (context, data) {
         final track = data.$1;
         final status = data.$2;
+        final isHidden = data.$3;
         final shouldShow =
             track != null &&
             status != PlayerStatus.idle &&
-            status != PlayerStatus.error;
+            status != PlayerStatus.error &&
+            !isHidden;
 
         if (!shouldShow) {
           return const SizedBox.shrink();
@@ -60,6 +62,7 @@ class MiniPlayer extends StatelessWidget {
             },
             child: Container(
               height: _barHeight,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: AppColors.darkBackground,
                 borderRadius: BorderRadius.circular(14),
@@ -85,6 +88,7 @@ class MiniPlayer extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(child: _MiniPlayerText(track: track)),
                         const _MiniPlayerControls(),
+                        const _MiniPlayerCloseButton(),
                         const SizedBox(width: 4),
                       ],
                     ),
@@ -95,6 +99,23 @@ class MiniPlayer extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _MiniPlayerCloseButton extends StatelessWidget {
+  const _MiniPlayerCloseButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      iconSize: 20,
+      splashRadius: 18,
+      color: AppColors.grey,
+      onPressed: () {
+        context.read<PlayerBloc>().add(PlayerHideMiniPlayer());
+      },
+      icon: const Icon(Icons.close),
     );
   }
 }
@@ -111,12 +132,50 @@ class _MiniPlayerProgressBar extends StatelessWidget {
         final playedMs = progress.$1.inMilliseconds;
         final ratio = totalMs > 0 ? (playedMs / totalMs).clamp(0.0, 1.0) : 0.0;
 
-        return SizedBox(
-          height: 3,
-          child: LinearProgressIndicator(
-            value: ratio,
-            backgroundColor: AppColors.grey.withValues(alpha: 0.22),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+        return LinearProgressIndicator(
+          value: ratio,
+          minHeight: 3,
+          backgroundColor: AppColors.grey.withValues(alpha: 0.22),
+          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+        );
+      },
+    );
+  }
+}
+
+class MiniPlayerShowButton extends StatelessWidget {
+  const MiniPlayerShowButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<PlayerBloc, PlayerState, (TrackEntity?, bool)>(
+      selector: (state) => (state.currentTrack, state.isMiniPlayerHidden),
+      builder: (context, data) {
+        final track = data.$1;
+        final isHidden = data.$2;
+        if (track == null || !isHidden) return const SizedBox.shrink();
+
+        return GestureDetector(
+          onTap: () => context.read<PlayerBloc>().add(PlayerShowMiniPlayer()),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.music_note,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
         );
       },

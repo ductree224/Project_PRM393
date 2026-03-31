@@ -55,6 +55,8 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
         unbanAdminUserUseCase: sl<UnbanAdminUserUseCase>(),
         changeAdminUserRoleUseCase: sl<ChangeAdminUserRoleUseCase>(),
         deleteAdminUserUseCase: sl<DeleteAdminUserUseCase>(),
+        grantPremiumUseCase: sl<GrantPremiumUseCase>(),
+        revokePremiumUseCase: sl<RevokePremiumUseCase>(),
       )..add(const AdminUsersStarted()),
       child: Scaffold(
         appBar: AppBar(
@@ -94,6 +96,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                   searchController: _searchController,
                   role: state.role,
                   isBanned: state.isBanned,
+                  subscriptionTier: state.subscriptionTier,
                   onSearchSubmitted: (query) => context
                       .read<AdminUsersBloc>()
                       .add(AdminUsersSearchChanged(query)),
@@ -103,6 +106,9 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                   onBanChanged: (isBanned) => context
                       .read<AdminUsersBloc>()
                       .add(AdminUsersBanFilterChanged(isBanned)),
+                  onTierChanged: (tier) => context
+                      .read<AdminUsersBloc>()
+                      .add(AdminUsersSubscriptionTierFilterChanged(tier)),
                 ),
                 Expanded(child: _buildBody(context, state)),
               ],
@@ -176,6 +182,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
             onBanToggle: () => _onBanToggle(context, user),
             onRoleChange: () => _onRoleChange(context, user),
             onDelete: () => _onDelete(context, user),
+            onPremiumToggle: () => _onPremiumToggle(context, user),
           );
         },
       ),
@@ -248,6 +255,67 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     }
 
     context.read<AdminUsersBloc>().add(AdminUsersDeleteRequested(user.id));
+  }
+
+  Future<void> _onPremiumToggle(
+    BuildContext context,
+    AdminUserEntity user,
+  ) async {
+    if (user.isPremium) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Thu hoi Premium?'),
+          content: Text(
+            'Ban chac chan muon thu hoi quyen premium cua ${user.displayLabel}?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Huy'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.errorColor,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Thu hoi'),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !context.mounted) return;
+      context.read<AdminUsersBloc>().add(
+        AdminUsersRevokePremiumRequested(user.id),
+      );
+    } else {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Cap quyen Premium'),
+          content: Text(
+            'Cap quyen Premium cho ${user.displayLabel} trong 30 ngay?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Huy'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Cap quyen'),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !context.mounted) return;
+      context.read<AdminUsersBloc>().add(
+        AdminUsersGrantPremiumRequested(
+          userId: user.id,
+          expiresAt: DateTime.now().add(const Duration(days: 30)),
+        ),
+      );
+    }
   }
 
   Future<String?> _showReasonDialog(BuildContext context) async {
@@ -329,17 +397,21 @@ class _FilterBar extends StatelessWidget {
   final TextEditingController searchController;
   final String? role;
   final bool? isBanned;
+  final String? subscriptionTier;
   final ValueChanged<String> onSearchSubmitted;
   final ValueChanged<String?> onRoleChanged;
   final ValueChanged<bool?> onBanChanged;
+  final ValueChanged<String?> onTierChanged;
 
   const _FilterBar({
     required this.searchController,
     required this.role,
     required this.isBanned,
+    required this.subscriptionTier,
     required this.onSearchSubmitted,
     required this.onRoleChanged,
     required this.onBanChanged,
+    required this.onTierChanged,
   });
 
   @override
@@ -411,6 +483,23 @@ class _FilterBar extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<String?>(
+            initialValue: subscriptionTier,
+            decoration: const InputDecoration(labelText: 'Goi dang ky'),
+            items: const [
+              DropdownMenuItem<String?>(value: null, child: Text('Tat ca')),
+              DropdownMenuItem<String?>(
+                value: 'free',
+                child: Text('Free'),
+              ),
+              DropdownMenuItem<String?>(
+                value: 'premium',
+                child: Text('Premium'),
+              ),
+            ],
+            onChanged: onTierChanged,
+          ),
         ],
       ),
     );
@@ -423,6 +512,7 @@ class _UserCard extends StatelessWidget {
   final VoidCallback onBanToggle;
   final VoidCallback onRoleChange;
   final VoidCallback onDelete;
+  final VoidCallback onPremiumToggle;
 
   const _UserCard({
     required this.user,
@@ -430,6 +520,7 @@ class _UserCard extends StatelessWidget {
     required this.onBanToggle,
     required this.onRoleChange,
     required this.onDelete,
+    required this.onPremiumToggle,
   });
 
   @override
@@ -484,6 +575,9 @@ class _UserCard extends StatelessWidget {
                       case 'role':
                         onRoleChange();
                         break;
+                      case 'premium':
+                        onPremiumToggle();
+                        break;
                       case 'delete':
                         onDelete();
                         break;
@@ -495,6 +589,14 @@ class _UserCard extends StatelessWidget {
                       child: Text(user.isBanned ? 'Unban user' : 'Ban user'),
                     ),
                     const PopupMenuItem(value: 'role', child: Text('Doi role')),
+                    PopupMenuItem(
+                      value: 'premium',
+                      child: Text(
+                        user.isPremium
+                            ? 'Thu hoi Premium'
+                            : 'Cap quyen Premium',
+                      ),
+                    ),
                     const PopupMenuItem(
                       value: 'delete',
                       child: Text('Xoa user'),
@@ -519,8 +621,11 @@ class _UserCard extends StatelessWidget {
                   color: user.isBanned
                       ? AppColors.errorColor
                       : AppColors.successColor,
-                ),
-              ],
+                ),                if (user.isPremium)
+                  _InfoChip(
+                    label: '\u2b50 Premium',
+                    color: Colors.amber.shade700,
+                  ),              ],
             ),
             const SizedBox(height: 12),
             Align(

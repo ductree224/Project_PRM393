@@ -13,5 +13,6 @@ public class PasswordResetToken
     public bool IsUsed => UsedAt != null;
     public bool IsActive => !IsUsed && !IsExpired;
 
+    [System.Text.Json.Serialization.JsonIgnore]
     public User User { get; set; } = null!;
 }

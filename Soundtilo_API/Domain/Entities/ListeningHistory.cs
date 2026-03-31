@@ -10,5 +10,6 @@ public class ListeningHistory
     public bool Completed { get; set; }
 
     // Navigation properties
+    [System.Text.Json.Serialization.JsonIgnore]
     public User User { get; set; } = null!;
 }

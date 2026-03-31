@@ -1,27 +1,35 @@
+using Application.DTOs;
 using Application.DTOs.Tracks;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Interfaces;
 
 namespace Application.Services;
 
-public class TrackService
+public class TrackService : ITrackService
 {
     private readonly IAudiusApiClient _audiusApi;
     private readonly IDeezerApiClient _deezerApi;
     private readonly IJamendoApiClient _jamendoApi;
     private readonly ITrackCacheRepository _trackCache;
+    private readonly IAlbumService _albumService;
+    private readonly NotificationService _notificationService;
 
     public TrackService(
         IAudiusApiClient audiusApi,
         IDeezerApiClient deezerApi,
         IJamendoApiClient jamendoApi,
-        ITrackCacheRepository trackCache)
+        ITrackCacheRepository trackCache,
+        IAlbumService albumService,
+        NotificationService notificationService)
     {
         _audiusApi = audiusApi;
         _deezerApi = deezerApi;
         _jamendoApi = jamendoApi;
         _trackCache = trackCache;
+        _albumService = albumService;
+        _notificationService = notificationService;
     }
 
     public async Task<TrackSearchResponse> SearchAsync(
@@ -73,9 +81,22 @@ public class TrackService
             externalTracks.AddRange(jamendoTracks);
         }
 
+        var externalTrackIds = externalTracks.Select(t => t.ExternalId).ToList();
+        var existingRecords = (await _trackCache.GetManyByExternalIdsAsync(externalTrackIds))
+            .ToDictionary(r => r.ExternalId, r => r, StringComparer.OrdinalIgnoreCase);
+
         var seenExternalIds = new HashSet<string>(tracks.Select(t => t.ExternalId), StringComparer.OrdinalIgnoreCase);
         foreach (var externalTrack in externalTracks)
         {
+            // NEW: Check if this track is hidden/inactive in our cache
+            if (existingRecords.TryGetValue(externalTrack.ExternalId, out var cacheRecord))
+            {
+                if (cacheRecord.Status != TrackStatus.Active)
+                {
+                    continue;
+                }
+            }
+
             if (seenExternalIds.Add(externalTrack.ExternalId))
             {
                 tracks.Add(externalTrack);
@@ -157,13 +178,21 @@ public class TrackService
         tracks.AddRange(deezerTask.Result);
         tracks.AddRange(jamendoTask.Result);
 
-        // Deduplicate by ExternalId
+        // Deduplicate by ExternalId and filter by status
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var uniqueTracks = new List<TrackDto>();
         foreach (var t in tracks)
         {
-            if (seen.Add(t.ExternalId))
-                uniqueTracks.Add(t);
+            if (!seen.Add(t.ExternalId)) continue;
+            
+            // NEW: Check if this track is hidden/inactive in our cache
+            var cacheRecord = await _trackCache.GetByExternalIdAsync(t.ExternalId);
+            if (cacheRecord != null && cacheRecord.Status != TrackStatus.Active)
+            {
+                continue;
+            }
+
+            uniqueTracks.Add(t);
         }
 
         // Cache all unique tracks
@@ -334,4 +363,38 @@ public class TrackService
 
         return new TrackSearchResponse(tracks, tracks.Count);
     }
+
+    public async Task<IEnumerable<TrackAdminDto>> GetTracksAsync(TrackStatus? status = null, string? query = null, int limit = 50, int offset = 0)
+    {
+        var tracks = await _trackCache.ListAsync(status, query, limit, offset);
+        return tracks.Select(t => new TrackAdminDto
+        {
+            ExternalId = t.ExternalId,
+            Source = t.Source,
+            Title = t.Title,
+            ArtistName = t.ArtistName,
+            AlbumName = t.AlbumName,
+            ArtworkUrl = t.ArtworkUrl,
+            Status = t.Status.ToString(),
+            CachedAt = t.CachedAt
+        });
+    }
+
+    public async Task UpdateStatusesAsync(UpdateTrackStatusDto payload, Guid actorAdminId)
+    {
+        await _trackCache.UpdateStatusesAsync(payload.ExternalIds, payload.Status);
+
+        var message = $"{payload.ExternalIds.Count()} track(s) đã được cập nhật sang trạng thái {payload.Status}.";
+        await _notificationService.SendTrackUpdateBroadcastAsync(
+            actorAdminId,
+            "Cập nhật thư viện nhạc",
+            message,
+            $"{{\"status\":\"{payload.Status}\",\"count\":{payload.ExternalIds.Count()}}}");
+    }
+
+    public async Task BulkAddTracksToAlbumAsync(BulkAddTracksToAlbumDto payload)
+    {
+        await _albumService.BulkAddTracksToAlbumAsync(payload);
+    }
+
 }

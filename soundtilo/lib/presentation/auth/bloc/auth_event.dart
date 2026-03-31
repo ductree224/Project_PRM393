@@ -74,6 +74,10 @@ class AuthUpdateProfileRequested extends AuthEvent {
   AuthUpdateProfileRequested({required this.displayName, this.avatarUrl});
 }
 
+/// Dispatched by ProfilePage on init to fetch the latest profile from the API
+/// and sync the subscription tier into AuthBloc state + SharedPreferences.
+class AuthProfileRefreshRequested extends AuthEvent {}
+
 // Sự kiện yêu cầu đổi mật khẩu
 class AuthChangePasswordRequested extends AuthEvent {
   final String oldPassword;
