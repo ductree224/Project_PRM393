@@ -34,6 +34,11 @@ class AdminSidebar extends StatelessWidget {
         index: 4,
       ),
       const _SidebarEntry(icon: Icons.insights, label: 'Analytics', index: 5),
+      const _SidebarEntry(
+        icon: Icons.payment,
+        label: 'Payment Management',
+        index: 6,
+      ),
     ];
 
     return Container(

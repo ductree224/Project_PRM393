@@ -29,6 +29,25 @@ class UserEntity extends Equatable {
       subscriptionTier == 'premium' &&
       (premiumExpiresAt == null || premiumExpiresAt!.isAfter(DateTime.now()));
 
+  // HÀM COPYWITH ĐƯỢC THÊM VÀO ĐÂY Ạ
+  UserEntity copyWith({
+    String? id,
+    String? username,
+    String? email,
+    String? displayName,
+    String? avatarUrl,
+    DateTime? createdAt,
+  }) {
+    return UserEntity(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      displayName: displayName ?? this.displayName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,

@@ -5,7 +5,7 @@ namespace Domain.Interfaces;
 public interface ISubscriptionRepository
 {
     Task<Subscription?> GetByUserIdAsync(Guid userId);
-    Task<Subscription?> GetByStripeSubscriptionIdAsync(string stripeSubscriptionId);
+    Task<Subscription?> GetByVnpayOrderInfoAsync(string vnpayOrderInfo);
     Task<Subscription> CreateAsync(Subscription subscription);
     Task UpdateAsync(Subscription subscription);
     Task<(IEnumerable<Subscription> Items, int Total)> GetAllAsync(
@@ -14,4 +14,7 @@ public interface ISubscriptionRepository
         string? status = null);
     Task<int> CountPremiumUsersAsync();
     Task<IEnumerable<SubscriptionPlan>> GetActivePlansAsync();
+    Task<IEnumerable<Subscription>> GetExpiringSubscriptionsAsync(DateTime from, DateTime to);
+    Task<int> GetExpiringCountAsync(DateTime before);
+    Task<Subscription?> GetByIdAsync(Guid id);
 }

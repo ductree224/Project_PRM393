@@ -19,6 +19,12 @@ import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/premium/pages/premium_paywall_page.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
+import '../../../domain/usecases/auth_usecases.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -367,6 +373,22 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
+                const SizedBox(height: 28),
+                const SizedBox(height: 12),
+                _ProfileMenuCard(
+                  icon: Icons.manage_accounts_rounded,
+                  title: 'Đổi mật khẩu & Thông tin',
+                  onTap: () => showDialog(
+                    context: context,
+                    builder: (_) => _EditProfileDialog(
+                      email: email,
+                      currentName: username,
+                      currentAvatar: avatarUrl,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 28),
                   const SizedBox(height: 28),
 
                   // Logout button
@@ -659,6 +681,293 @@ class _AvatarFallbackLarge extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: AppColors.primary,
           ),
+        ),
+      ),
+    );
+  }
+}
+class _EditProfileDialog extends StatefulWidget {
+  final String email;
+  final String currentName;
+  final String? currentAvatar;
+
+  const _EditProfileDialog({
+    required this.email,
+    required this.currentName,
+    this.currentAvatar,
+  });
+
+  @override
+  State<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends State<_EditProfileDialog> {
+  late TextEditingController _nameController;
+  final TextEditingController _oldPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+
+  Uint8List? _selectedImageBytes;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.currentName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    super.dispose();
+  }
+
+  // Cắt chuỗi ẩn Email (Ví dụ: n***@gmail.com)
+  String _getMaskedEmail(String email) {
+    if (email.isEmpty || !email.contains('@')) return email;
+    final parts = email.split('@');
+    final name = parts[0];
+    final domain = parts[1];
+    if (name.isEmpty) return email;
+    return '${name[0]}***@$domain';
+  }
+
+  Future<String?> _uploadImageToImgBB(Uint8List imageBytes) async {
+    const String apiKey = '19aa9239cea3d71680af0b6a6af6ef93';
+    final url = Uri.parse('https://api.imgbb.com/1/upload?key=$apiKey');
+
+    try {
+      final request = http.MultipartRequest('POST', url)
+        ..files.add(http.MultipartFile.fromBytes(
+          'image',
+          imageBytes,
+          filename: 'avatar.jpg',
+        ));
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        final jsonResult = json.decode(responseData);
+        return jsonResult['data']['url'];
+      } else {
+        debugPrint('Lỗi upload ImgBB: Mã ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Lỗi kết nối ImgBB: $e');
+    }
+    return null;
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 60);
+
+    if (image != null) {
+      final bytes = await image.readAsBytes();
+      setState(() {
+        _selectedImageBytes = bytes;
+      });
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    FocusScope.of(context).unfocus();
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tên không được để trống!')));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      String? finalAvatarUrl = widget.currentAvatar;
+
+      // 1. Tải ảnh lên ImgBB nếu có thay đổi
+      if (_selectedImageBytes != null) {
+        final uploadedUrl = await _uploadImageToImgBB(_selectedImageBytes!);
+        if (uploadedUrl != null) {
+          finalAvatarUrl = uploadedUrl;
+        } else {
+          throw Exception('Không thể tải ảnh. Vui lòng thử lại.');
+        }
+      }
+
+      // 2. Xử lý Đổi mật khẩu (chờ Backend C# phản hồi)
+      if (_oldPasswordController.text.isNotEmpty && _newPasswordController.text.isNotEmpty) {
+        final changePassResult = await sl<ChangePasswordUseCase>().call(
+          oldPassword: _oldPasswordController.text,
+          newPassword: _newPasswordController.text,
+        );
+
+        // Kiểm tra kết quả
+        bool isPasswordSuccess = false;
+        changePassResult.fold(
+                (error) {
+              // Nếu C# báo lỗi (như "Mật khẩu hiện tại không chính xác") -> Ném lỗi ra
+              throw Exception(error);
+            },
+                (_) {
+              isPasswordSuccess = true;
+            }
+        );
+
+        // Nếu đổi mật khẩu thất bại thì dừng luôn, không làm tiếp
+        if (!isPasswordSuccess) return;
+      }
+
+      // 3. Xử lý Cập nhật thông tin Profile (Tên, Avatar)
+      final updateProfileResult = await sl<UpdateProfileUseCase>().call(
+        displayName: _nameController.text.trim(),
+        avatarUrl: finalAvatarUrl,
+      );
+
+      updateProfileResult.fold(
+              (error) => throw Exception(error),
+              (_) {
+            // Báo cho BLoC biết để nó cập nhật UI bên ngoài
+            context.read<AuthBloc>().add(AuthUpdateProfileRequested(
+              displayName: _nameController.text.trim(),
+              avatarUrl: finalAvatarUrl,
+            ));
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('✨ Cập nhật thành công!'),
+                backgroundColor: Colors.green, // Thông báo xanh khi thành công
+              ));
+              Navigator.pop(context); // Đóng popup
+            }
+          }
+      );
+
+    } catch (e) {
+      if (mounted) {
+        // Cắt bỏ chữ "Exception:" thừa thãi để thông báo đẹp hơn
+        String errorMsg = e.toString().replaceAll('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: AppColors.errorColor, // Thông báo đỏ khi sai mật khẩu
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.all(20),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('Hồ sơ của bạn', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            const SizedBox(height: 20),
+
+            // Avatar Picker
+            Center(
+              child: GestureDetector(
+                onTap: _pickImage,
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                      backgroundImage: _selectedImageBytes != null
+                          ? MemoryImage(_selectedImageBytes!)
+                          : (widget.currentAvatar != null ? CachedNetworkImageProvider(widget.currentAvatar!) : null) as ImageProvider?,
+                      child: (_selectedImageBytes == null && widget.currentAvatar == null)
+                          ? Text(widget.currentName[0].toUpperCase(), style: const TextStyle(fontSize: 40, color: AppColors.primary))
+                          : null,
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                      child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Email (Chỉ đọc, đã làm mờ)
+            TextField(
+              controller: TextEditingController(text: _getMaskedEmail(widget.email)),
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                prefixIcon: const Icon(Icons.email_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Display Name
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Tên hiển thị',
+                prefixIcon: const Icon(Icons.person_outline),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Divider(),
+            ),
+            const Text('Đổi mật khẩu', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+
+            // Mật khẩu cũ
+            TextField(
+              controller: _oldPasswordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Mật khẩu hiện tại (Để trống nếu không đổi)',
+                prefixIcon: const Icon(Icons.lock_outline),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Mật khẩu mới
+            TextField(
+              controller: _newPasswordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Mật khẩu mới',
+                prefixIcon: const Icon(Icons.lock_reset),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Nút Lưu
+            SizedBox(
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isLoading
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Lưu thay đổi', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            ),
+          ],
         ),
       ),
     );

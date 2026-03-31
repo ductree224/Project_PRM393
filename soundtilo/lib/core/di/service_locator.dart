@@ -126,7 +126,6 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<AdminRemoteDataSource>(
     () => AdminRemoteDataSource(sl<ApiClient>().dio),
   );
-  // BỔ SUNG: Đăng ký WaitlistRemoteDataSource
   sl.registerLazySingleton<WaitlistRemoteDataSource>(
     () => WaitlistRemoteDataSourceImpl(sl<ApiClient>().dio),
   );
@@ -140,13 +139,14 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSource(sl<ApiClient>().dio),
   );
-  // Subscription uses plain Dio (public endpoint — no auth required)
+  // Subscription uses authenticated Dio (payment endpoints require JWT)
   sl.registerLazySingleton<SubscriptionRemoteDataSource>(
-    () => SubscriptionRemoteDataSource(sl<Dio>(instanceName: 'plainDio')),
+    () => SubscriptionRemoteDataSource(sl<ApiClient>().dio),
   );
   sl.registerLazySingleton<UserRemoteDataSource>(
     () => UserRemoteDataSource(sl<ApiClient>().dio),
   );
+
 
   // ===================== Repositories =====================
   sl.registerLazySingleton<AuthRepository>(
@@ -216,6 +216,8 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => GoogleSignInUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => ForgotPasswordUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => ResetPasswordUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => UpdateProfileUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => ChangePasswordUseCase(sl<AuthRepository>()));
 
   // Tracks
   sl.registerLazySingleton(() => SearchTracksUseCase(sl<TrackRepository>()));
@@ -288,6 +290,10 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => GetProfileUseCase(sl<UserRepository>()));
   sl.registerLazySingleton(
       () => GetSubscriptionPlansUseCase(sl<SubscriptionRepository>()));
+  sl.registerLazySingleton(
+      () => CreatePaymentUrlUseCase(sl<SubscriptionRepository>()));
+  sl.registerLazySingleton(
+      () => GetSubscriptionStatusUseCase(sl<SubscriptionRepository>()));
 
   // BỔ SUNG: Đăng ký Waitlist UseCases
   sl.registerLazySingleton(() => GetWaitlistUseCase(sl<WaitlistRepository>()));

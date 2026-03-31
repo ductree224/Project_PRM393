@@ -8,7 +8,7 @@ public class SubscriptionPlan
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public string Interval { get; set; } = string.Empty; // free / monthly / yearly
-    public string? StripePriceId { get; set; }
+    public string? PlanCode { get; set; }
     public string Currency { get; set; } = "vnd";
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; }

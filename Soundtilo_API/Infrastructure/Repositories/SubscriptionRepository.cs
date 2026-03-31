@@ -21,11 +21,11 @@ public class SubscriptionRepository : ISubscriptionRepository
             .FirstOrDefaultAsync(s => s.UserId == userId);
     }
 
-    public async Task<Subscription?> GetByStripeSubscriptionIdAsync(string stripeSubscriptionId)
+    public async Task<Subscription?> GetByVnpayOrderInfoAsync(string vnpayOrderInfo)
     {
         return await _context.Subscriptions
             .Include(s => s.Plan)
-            .FirstOrDefaultAsync(s => s.StripeSubscriptionId == stripeSubscriptionId);
+            .FirstOrDefaultAsync(s => s.VnpayOrderInfo == vnpayOrderInfo);
     }
 
     public async Task<Subscription> CreateAsync(Subscription subscription)
@@ -78,5 +78,29 @@ public class SubscriptionRepository : ISubscriptionRepository
             .Where(p => p.IsActive)
             .OrderBy(p => p.Price)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Subscription>> GetExpiringSubscriptionsAsync(DateTime from, DateTime to)
+    {
+        return await _context.Subscriptions
+            .Include(s => s.User)
+            .Include(s => s.Plan)
+            .Where(s => s.Status == "active" && s.CurrentPeriodEnd >= from && s.CurrentPeriodEnd <= to)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetExpiringCountAsync(DateTime before)
+    {
+        return await _context.Subscriptions
+            .CountAsync(s => s.Status == "active" && s.CurrentPeriodEnd <= before);
+    }
+
+    public async Task<Subscription?> GetByIdAsync(Guid id)
+    {
+        return await _context.Subscriptions
+            .Include(s => s.User)
+            .Include(s => s.Plan)
+            .Include(s => s.PaymentTransactions)
+            .FirstOrDefaultAsync(s => s.Id == id);
     }
 }

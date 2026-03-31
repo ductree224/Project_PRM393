@@ -16,7 +16,7 @@ public class User
     public DateTime UpdatedAt { get; set; }
     public string SubscriptionTier { get; set; } = "free"; // free | premium
     public DateTime? PremiumExpiresAt { get; set; }
-    public string? StripeCustomerId { get; set; }
+    public string? VnpayCustomerId { get; set; }
 
     // Navigation properties
     [System.Text.Json.Serialization.JsonIgnore]
