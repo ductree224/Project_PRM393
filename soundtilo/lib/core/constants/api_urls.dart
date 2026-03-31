@@ -61,9 +61,16 @@ class ApiUrls {
 
   // Users
   static const String userProfile = '/api/users/profile';
+  static const String changePassword = '/api/users/change-password';
 
   // Subscriptions (public — no auth required)
   static const String subscriptionPlans = '/api/subscriptions/plans';
+
+  // Payment (VNPay)
+  static const String createPaymentUrl = '/api/payment/create-payment-url';
+  static const String subscriptionStatus = '/api/payment/subscription-status';
+  static const String cancelSubscription = '/api/payment/subscription';
+  static String vnpayReturn = '/api/payment/vnpay-return';
 
   // Admin - Users
   static const String adminUsers = '/api/admin/users';
@@ -89,6 +96,10 @@ class ApiUrls {
   static const String adminSubscriptionStats = '/api/admin/subscriptions/stats';
   static const String adminSubscriptionTransactions =
       '/api/admin/subscriptions/transactions';
+  static const String adminSubscriptionsExpiring =
+      '/api/admin/subscriptions/expiring';
+  static String adminSubscriptionById(String id) =>
+      '/api/admin/subscriptions/$id';
 
   // Artists
   static const String artists = '/api/artists';

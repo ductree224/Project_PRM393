@@ -127,6 +127,8 @@ class MyApp extends StatelessWidget {
             forgotPasswordUseCase: sl<ForgotPasswordUseCase>(),
             resetPasswordUseCase: sl<ResetPasswordUseCase>(),
             getProfileUseCase: sl<GetProfileUseCase>(),
+            updateProfileUseCase: sl<UpdateProfileUseCase>(),
+            changePasswordUseCase: sl<ChangePasswordUseCase>(),
             prefs: sl<SharedPreferences>(),
           )..add(AuthCheckStatus()),
         ),
@@ -279,6 +281,19 @@ class MyApp extends StatelessWidget {
                             return const SizedBox.shrink();
                           }
                           return const MiniPlayer();
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      right: 16,
+                      bottom: bottomInset,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _isPlayerRouteActive,
+                        builder: (context, isPlayerRouteActive, _) {
+                          if (isPlayerRouteActive) {
+                            return const SizedBox.shrink();
+                          }
+                          return const MiniPlayerShowButton();
                         },
                       ),
                     ),

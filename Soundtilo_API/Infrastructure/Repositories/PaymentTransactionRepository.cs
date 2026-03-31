@@ -21,6 +21,18 @@ public class PaymentTransactionRepository : IPaymentTransactionRepository
         return transaction;
     }
 
+    public async Task<PaymentTransaction?> GetByVnpTxnRefAsync(string vnpTxnRef)
+    {
+        return await _context.PaymentTransactions
+            .FirstOrDefaultAsync(t => t.VnpTxnRef == vnpTxnRef);
+    }
+
+    public async Task UpdateAsync(PaymentTransaction transaction)
+    {
+        _context.PaymentTransactions.Update(transaction);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<(IEnumerable<PaymentTransaction> Items, int Total)> GetAllAsync(
         int page = 1,
         int pageSize = 20,

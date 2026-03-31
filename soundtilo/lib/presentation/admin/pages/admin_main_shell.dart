@@ -8,6 +8,7 @@ import 'admin_users_page.dart';
 import 'admin_tracks_page.dart';
 import 'admin_artists_albums_page.dart';
 import 'admin_notifications_page.dart';
+import 'admin_subscriptions_page.dart';
 
 class AdminMainShell extends StatefulWidget {
   const AdminMainShell({super.key});
@@ -28,6 +29,7 @@ class _AdminMainShellState extends State<AdminMainShell> {
     const Center(
       child: Text('Analytics Page', style: TextStyle(color: Colors.white)),
     ), // Index 5
+    const AdminSubscriptionsPage(), // Index 6: Payment Management
   ];
 
   @override

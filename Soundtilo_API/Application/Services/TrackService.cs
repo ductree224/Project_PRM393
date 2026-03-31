@@ -298,10 +298,8 @@ public class TrackService : ITrackService
 
             case "deezer":
                 {
-                    var cachedDeezer = await _trackCache.GetByExternalIdAsync(trackId);
-                    if (!string.IsNullOrWhiteSpace(cachedDeezer?.PreviewUrl))
-                        return cachedDeezer!.PreviewUrl;
-
+                    // Deezer preview URLs are time-limited CDN links that expire (~30 min).
+                    // Always fetch a fresh URL from the Deezer API — never serve from cache.
                     var deezerTrack = await _deezerApi.GetTrackAsync(trackId);
                     return deezerTrack?.PreviewUrl;
                 }

@@ -216,13 +216,6 @@ public class AdminController : ControllerBase
         }
     }
 
-    /// <summary>GET /api/admin/subscriptions/stats</summary>
-    [HttpGet("subscriptions/stats")]
-    public async Task<IActionResult> GetSubscriptionStats()
-    {
-        var stats = await _adminService.GetSubscriptionStatsAsync();
-        return Ok(stats);
-    }
     // ─── Analytics ────────────────────────────────────────────────────────────
 
     /// <summary>GET /api/admin/analytics/overview</summary>

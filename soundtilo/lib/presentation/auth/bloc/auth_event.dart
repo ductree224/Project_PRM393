@@ -66,7 +66,25 @@ class AuthResetPasswordRequested extends AuthEvent {
   @override
   List<Object?> get props => [token, newPassword];
 }
+// Sự kiện yêu cầu cập nhật thông tin cá nhân (Tên, Avatar)
+class AuthUpdateProfileRequested extends AuthEvent {
+  final String displayName;
+  final String? avatarUrl;
+
+  AuthUpdateProfileRequested({required this.displayName, this.avatarUrl});
+}
 
 /// Dispatched by ProfilePage on init to fetch the latest profile from the API
 /// and sync the subscription tier into AuthBloc state + SharedPreferences.
 class AuthProfileRefreshRequested extends AuthEvent {}
+
+// Sự kiện yêu cầu đổi mật khẩu
+class AuthChangePasswordRequested extends AuthEvent {
+  final String oldPassword;
+  final String newPassword;
+
+  AuthChangePasswordRequested({
+    required this.oldPassword,
+    required this.newPassword,
+  });
+}

@@ -1,105 +1,83 @@
-# Gradle files
+# ================== BUILD / CACHE ==================
 .gradle/
 build/
+bin/
+obj/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+coverage/
 
-# Local configuration file (sdk path, etc)
-local.properties
+# ================== IDE ==================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.vs/
 
-# Log/OS Files
+# ================== OS / SYSTEM ==================
+.DS_Store
+
+# ================== LOG ==================
 *.log
+.buildlog
 
-# Android Studio generated files and folders
+# ================== ANDROID ==================
+local.properties
 captures/
 .externalNativeBuild/
 .cxx/
 *.apk
 output.json
-
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
-
-# Keystore files
-*.jks
-*.keystore
-
-# Google Services (e.g. APIs or Firebase)
-google-services.json
-
-# Android Profiling
-*.hprof
-*.md
-*.mdc
-.skillsrc
-.vs/
-bin/
-obj/
-.idea/
-.vscode/
-build/
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-.dart_tool/
-**/ios/Flutter/.last_build_id
-.flutter-plugins-dependencies
-
-.pub-cache/
-.pub/
-/build/
-/coverage/
-
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile
 /android/app/release
 
-# Secrets
+# ================== FLUTTER ==================
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# ================== GENERATED ==================
+*.class
+*.pyc
+*.swp
+
+# ================== APPLE ==================
+.swiftpm/
+
+# ================== OTHER ==================
+.atom/
+.build/
+.history
+.svn/
+migrate_working_dir/
+
+# ================== SECRETS ==================
 .env
-<<<<<<< Updated upstream
+
+# ================== PROJECT SPECIFIC ==================
+
+# Flutter generated
 soundtilo/.flutter-plugins-dependencies
 soundtilo/macos/Flutter/GeneratedPluginRegistrant.swift
-soundtilo/macos/Flutter/GeneratedPluginRegistrant.swift
-/Database
-/docs
-/docs
-=======
+
+# Backend build (RẤT QUAN TRỌNG)
+Soundtilo_API/temp_bin/
+
+# Database / docs (tuỳ project bạn)
+Database/
+docs/
+
+# SQL (tuỳ bạn, thường nên ignore)
 *.sql
 >>>>>>> Stashed changes
 *.txt
+docs/code-1/guildline
+
+# ❌ KHÔNG ignore txt để debug
+# *.txt
+*.md
+*.mdc

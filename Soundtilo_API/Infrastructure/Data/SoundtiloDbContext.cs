@@ -59,11 +59,7 @@ public class SoundtiloDbContext : DbContext
             entity.HasIndex(e => e.Role);
             entity.Property(e => e.SubscriptionTier).HasColumnName("subscription_tier").HasMaxLength(20).HasDefaultValue("free");
             entity.Property(e => e.PremiumExpiresAt).HasColumnName("premium_expires_at");
-            entity.Property(e => e.StripeCustomerId).HasColumnName("stripe_customer_id").HasMaxLength(255);
-            entity.HasIndex(e => e.SubscriptionTier);
-            entity.Property(e => e.SubscriptionTier).HasColumnName("subscription_tier").HasMaxLength(20).HasDefaultValue("free");
-            entity.Property(e => e.PremiumExpiresAt).HasColumnName("premium_expires_at");
-            entity.Property(e => e.StripeCustomerId).HasColumnName("stripe_customer_id").HasMaxLength(255);
+            entity.Property(e => e.VnpayCustomerId).HasColumnName("vnpay_customer_id").HasMaxLength(255);
             entity.HasIndex(e => e.SubscriptionTier);
         });
 
@@ -508,7 +504,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
             entity.Property(e => e.Price).HasColumnName("price").HasColumnType("decimal(10,2)");
             entity.Property(e => e.Interval).HasColumnName("interval").HasMaxLength(20).IsRequired();
-            entity.Property(e => e.StripePriceId).HasColumnName("stripe_price_id").HasMaxLength(255);
+            entity.Property(e => e.PlanCode).HasColumnName("plan_code").HasMaxLength(255);
             entity.Property(e => e.Currency).HasColumnName("currency").HasMaxLength(10).HasDefaultValue("vnd");
             entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
@@ -522,7 +518,7 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.PlanId).HasColumnName("plan_id");
-            entity.Property(e => e.StripeSubscriptionId).HasColumnName("stripe_subscription_id").HasMaxLength(255);
+            entity.Property(e => e.VnpayOrderInfo).HasColumnName("vnpay_order_info").HasMaxLength(255);
             entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(30).HasDefaultValue("active");
             entity.Property(e => e.CurrentPeriodStart).HasColumnName("current_period_start");
             entity.Property(e => e.CurrentPeriodEnd).HasColumnName("current_period_end");
@@ -531,7 +527,7 @@ public class SoundtiloDbContext : DbContext
             entity.HasOne(e => e.User).WithOne(u => u.Subscription).HasForeignKey<Subscription>(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Plan).WithMany(p => p.Subscriptions).HasForeignKey(e => e.PlanId).OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(e => e.UserId).IsUnique();
-            entity.HasIndex(e => e.StripeSubscriptionId);
+            entity.HasIndex(e => e.VnpayOrderInfo);
         });
 
         // PaymentTransaction
@@ -542,8 +538,9 @@ public class SoundtiloDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.SubscriptionId).HasColumnName("subscription_id");
-            entity.Property(e => e.StripePaymentIntentId).HasColumnName("stripe_payment_intent_id").HasMaxLength(255);
-            entity.Property(e => e.StripeInvoiceId).HasColumnName("stripe_invoice_id").HasMaxLength(255);
+            entity.Property(e => e.VnpTxnRef).HasColumnName("vnp_txn_ref").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.VnpTransactionNo).HasColumnName("vnp_transaction_no").HasMaxLength(255);
+            entity.Property(e => e.VnpResponseCode).HasColumnName("vnp_response_code").HasMaxLength(10);
             entity.Property(e => e.Amount).HasColumnName("amount").HasColumnType("decimal(10,2)");
             entity.Property(e => e.Currency).HasColumnName("currency").HasMaxLength(10).HasDefaultValue("vnd");
             entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(20).IsRequired();
