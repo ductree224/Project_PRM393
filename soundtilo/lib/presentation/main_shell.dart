@@ -18,7 +18,6 @@ import 'package:soundtilo/presentation/notifications/pages/notifications_page.da
 import 'package:soundtilo/presentation/profile/pages/profile.dart';
 import 'package:soundtilo/presentation/search/bloc/search_bloc.dart';
 import 'package:soundtilo/presentation/search/pages/search.dart';
-import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -99,24 +98,9 @@ class _MainShellState extends State<MainShell> {
       child: Scaffold(
         body: ValueListenableBuilder<int>(
           valueListenable: _currentIndex,
-          builder: (context, index, _) => Stack(
-            children: [
-              IndexedStack(
-                index: index,
-                children: _pages,
-              ),
-              Positioned(
-                left: 8,
-                right: 8,
-                bottom: 8, // Directly above the bottom nav bar (if any)
-                child: const MiniPlayer(),
-              ),
-              Positioned(
-                right: 16,
-                bottom: 8,
-                child: const MiniPlayerShowButton(),
-              ),
-            ],
+          builder: (context, index, _) => IndexedStack(
+            index: index,
+            children: _pages,
           ),
         ),
         bottomNavigationBar: ValueListenableBuilder<int>(

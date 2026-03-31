@@ -14,7 +14,7 @@ class LyricsRepositoryImpl implements LyricsRepository {
       final lyrics = await _remoteDataSource.getLyrics(artist: artist, title: title);
       return Right(lyrics);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể tải lời bài hát.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể tải lời bài hát.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }

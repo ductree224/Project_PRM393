@@ -69,6 +69,7 @@ class ApiUrls {
   // Payment (VNPay)
   static const String createPaymentUrl = '/api/payment/create-payment-url';
   static const String subscriptionStatus = '/api/payment/subscription-status';
+  static const String cancelSubscription = '/api/payment/subscription';
   static String vnpayReturn = '/api/payment/vnpay-return';
 
   // Admin - Users

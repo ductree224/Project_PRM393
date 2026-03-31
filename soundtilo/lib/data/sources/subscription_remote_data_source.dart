@@ -26,4 +26,9 @@ class SubscriptionRemoteDataSource {
     final response = await _dio.get(ApiUrls.subscriptionStatus);
     return response.data as Map<String, dynamic>;
   }
+
+  /// Soft-cancels the user's active subscription.
+  Future<void> cancelSubscription() async {
+    await _dio.delete(ApiUrls.cancelSubscription);
+  }
 }
