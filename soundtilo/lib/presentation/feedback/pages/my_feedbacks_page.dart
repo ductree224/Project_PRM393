@@ -19,11 +19,8 @@ class _MyFeedbacksPageState extends State<MyFeedbacksPage> {
 
   static const _statusFilters = [
     (null, 'Tất cả'),
-    ('pending', 'Chờ xử lý'),
-    ('reviewing', 'Đang xem xét'),
-    ('in_progress', 'Đang xử lý'),
+    ('pending', 'Đã gửi'),
     ('resolved', 'Đã giải quyết'),
-    ('rejected', 'Đã từ chối'),
   ];
 
   @override
@@ -252,19 +249,10 @@ class _FeedbackCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // Category + Priority chips
-            Row(
-              children: [
-                _ChipLabel(
-                  label: feedback.categoryLabel,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 6),
-                _ChipLabel(
-                  label: feedback.priorityLabel,
-                  color: feedback.priorityColor,
-                ),
-              ],
+            // Category chip
+            _ChipLabel(
+              label: feedback.categoryLabel,
+              color: AppColors.primary,
             ),
 
             const SizedBox(height: 8),

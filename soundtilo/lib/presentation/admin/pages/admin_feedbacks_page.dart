@@ -593,15 +593,11 @@ class _AdminFeedbackCard extends StatelessWidget {
 
             const SizedBox(height: 6),
 
-            // Category + Priority
+            // Category + Date
             Row(
               children: [
                 _SmallChip(
                     label: feedback.categoryLabel, color: Colors.white54),
-                const SizedBox(width: 6),
-                _SmallChip(
-                    label: feedback.priorityLabel,
-                    color: feedback.priorityColor),
                 const Spacer(),
                 Text(
                   _formatDate(feedback.createdAt),

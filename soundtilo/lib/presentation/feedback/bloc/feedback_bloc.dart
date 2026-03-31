@@ -37,7 +37,7 @@ class FeedbackBloc extends Bloc<FeedbackEvent, FeedbackState> {
 
     final result = await _createFeedbackUseCase(
       category: event.category,
-      priority: event.priority,
+      priority: 'medium',
       title: event.title,
       content: event.content,
       platform: platformName,

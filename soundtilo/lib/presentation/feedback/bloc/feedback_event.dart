@@ -11,19 +11,17 @@ abstract class FeedbackEvent extends Equatable {
 
 class FeedbackFormSubmitted extends FeedbackEvent {
   final String category;
-  final String priority;
   final String title;
   final String content;
 
   const FeedbackFormSubmitted({
     required this.category,
-    required this.priority,
     required this.title,
     required this.content,
   });
 
   @override
-  List<Object?> get props => [category, priority, title, content];
+  List<Object?> get props => [category, title, content];
 }
 
 // ─── My Feedbacks ─────────────────────────────────────────────────────────────

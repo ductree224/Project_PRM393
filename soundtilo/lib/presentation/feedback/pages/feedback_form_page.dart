@@ -18,7 +18,6 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
   final _contentController = TextEditingController();
 
   String _category = 'general';
-  String _priority = 'medium';
 
   static const _categories = [
     ('general', 'Chung'),
@@ -27,13 +26,6 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
     ('performance', 'Hiệu suất'),
     ('payment', 'Thanh toán'),
     ('other', 'Khác'),
-  ];
-
-  static const _priorities = [
-    ('low', 'Thấp'),
-    ('medium', 'Trung bình'),
-    ('high', 'Cao'),
-    ('critical', 'Khẩn cấp'),
   ];
 
   @override
@@ -48,7 +40,6 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
 
     context.read<FeedbackBloc>().add(FeedbackFormSubmitted(
           category: _category,
-          priority: _priority,
           title: _titleController.text.trim(),
           content: _contentController.text.trim(),
         ));
@@ -121,33 +112,6 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
                           .toList(),
                       onChanged: (v) {
                         if (v != null) setState(() => _category = v);
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // ─── Priority ────────────────────────────────────
-                    Text(
-                      'Mức độ ưu tiên',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white70 : Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _priority,
-                      decoration: _inputDecoration(isDark),
-                      dropdownColor:
-                          isDark ? const Color(0xFF2A2A2A) : Colors.white,
-                      items: _priorities
-                          .map((e) => DropdownMenuItem(
-                                value: e.$1,
-                                child: Text(e.$2),
-                              ))
-                          .toList(),
-                      onChanged: (v) {
-                        if (v != null) setState(() => _priority = v);
                       },
                     ),
 
