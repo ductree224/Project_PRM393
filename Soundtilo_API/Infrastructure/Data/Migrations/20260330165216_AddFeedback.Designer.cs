@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SoundtiloDbContext))]
-    partial class SoundtiloDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260330165216_AddFeedback")]
+    partial class AddFeedback
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -774,6 +777,16 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
+                    b.Property<string>("StripeInvoiceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("stripe_invoice_id");
+
+                    b.Property<string>("StripePaymentIntentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("stripe_payment_intent_id");
+
                     b.Property<Guid?>("SubscriptionId")
                         .HasColumnType("uuid")
                         .HasColumnName("subscription_id");
@@ -781,22 +794,6 @@ namespace Infrastructure.Data.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
-
-                    b.Property<string>("VnpResponseCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
-                        .HasColumnName("vnp_response_code");
-
-                    b.Property<string>("VnpTransactionNo")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("vnp_transaction_no");
-
-                    b.Property<string>("VnpTxnRef")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("vnp_txn_ref");
 
                     b.HasKey("Id");
 
@@ -960,23 +957,23 @@ namespace Infrastructure.Data.Migrations
                         .HasDefaultValue("active")
                         .HasColumnName("status");
 
+                    b.Property<string>("StripeSubscriptionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("stripe_subscription_id");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
-
-                    b.Property<string>("VnpayOrderInfo")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("vnpay_order_info");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PlanId");
 
+                    b.HasIndex("StripeSubscriptionId");
+
                     b.HasIndex("UserId")
                         .IsUnique();
-
-                    b.HasIndex("VnpayOrderInfo");
 
                     b.ToTable("subscriptions", (string)null);
                 });
@@ -1018,14 +1015,14 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
-                    b.Property<string>("PlanCode")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("plan_code");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("price");
+
+                    b.Property<string>("StripePriceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("stripe_price_id");
 
                     b.HasKey("Id");
 
@@ -1090,6 +1087,11 @@ namespace Infrastructure.Data.Migrations
                         .HasDefaultValue("user")
                         .HasColumnName("role");
 
+                    b.Property<string>("StripeCustomerId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("stripe_customer_id");
+
                     b.Property<string>("SubscriptionTier")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -1107,11 +1109,6 @@ namespace Infrastructure.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("username");
-
-                    b.Property<string>("VnpayCustomerId")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("vnpay_customer_id");
 
                     b.HasKey("Id");
 
