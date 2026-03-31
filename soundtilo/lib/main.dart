@@ -127,6 +127,8 @@ class MyApp extends StatelessWidget {
             forgotPasswordUseCase: sl<ForgotPasswordUseCase>(),
             resetPasswordUseCase: sl<ResetPasswordUseCase>(),
             getProfileUseCase: sl<GetProfileUseCase>(),
+            updateProfileUseCase: sl<UpdateProfileUseCase>(),
+            changePasswordUseCase: sl<ChangePasswordUseCase>(),
             prefs: sl<SharedPreferences>(),
           )..add(AuthCheckStatus()),
         ),

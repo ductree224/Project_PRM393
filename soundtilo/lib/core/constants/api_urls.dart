@@ -61,6 +61,7 @@ class ApiUrls {
 
   // Users
   static const String userProfile = '/api/users/profile';
+  static const String changePassword = '/api/users/change-password';
 
   // Subscriptions (public — no auth required)
   static const String subscriptionPlans = '/api/subscriptions/plans';

@@ -19,6 +19,10 @@ import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/premium/pages/premium_paywall_page.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -367,6 +371,22 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
+                const SizedBox(height: 28),
+                const SizedBox(height: 12),
+                _ProfileMenuCard(
+                  icon: Icons.manage_accounts_rounded,
+                  title: 'Đổi mật khẩu & Thông tin',
+                  onTap: () => showDialog(
+                    context: context,
+                    builder: (_) => _EditProfileDialog(
+                      email: email,
+                      currentName: username,
+                      currentAvatar: avatarUrl,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 28),
                   const SizedBox(height: 28),
 
                   // Logout button

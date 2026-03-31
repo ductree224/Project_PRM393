@@ -126,7 +126,6 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<AdminRemoteDataSource>(
     () => AdminRemoteDataSource(sl<ApiClient>().dio),
   );
-  // BỔ SUNG: Đăng ký WaitlistRemoteDataSource
   sl.registerLazySingleton<WaitlistRemoteDataSource>(
     () => WaitlistRemoteDataSourceImpl(sl<ApiClient>().dio),
   );
@@ -147,6 +146,7 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<UserRemoteDataSource>(
     () => UserRemoteDataSource(sl<ApiClient>().dio),
   );
+
 
   // ===================== Repositories =====================
   sl.registerLazySingleton<AuthRepository>(
@@ -216,6 +216,8 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => GoogleSignInUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => ForgotPasswordUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => ResetPasswordUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => UpdateProfileUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => ChangePasswordUseCase(sl<AuthRepository>()));
 
   // Tracks
   sl.registerLazySingleton(() => SearchTracksUseCase(sl<TrackRepository>()));

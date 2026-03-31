@@ -1,11 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:soundtilo/core/constants/api_urls.dart';
 import 'package:soundtilo/data/models/auth_response_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:soundtilo/core/di/service_locator.dart';
 
 class AuthRemoteDataSource {
   final Dio _dio;
 
   AuthRemoteDataSource(this._dio);
+
 
   Future<AuthResponseModel> register({
     required String username,
@@ -67,5 +70,54 @@ class AuthRemoteDataSource {
       'newPassword': newPassword,
     });
     return response.data['message']?.toString() ?? 'Đặt lại mật khẩu thành công.';
+  }
+  Future<void> updateProfile({required String displayName, String? avatarUrl}) async {
+    // 1. Lấy token từ bộ nhớ tạm
+    final token = sl<SharedPreferences>().getString('access_token');
+
+    final response = await _dio.put(ApiUrls.userProfile,
+      data: {
+        'displayName': displayName,
+        'avatarUrl': avatarUrl,
+      },
+      // 2. Gắn token vào Header gửi đi
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ),
+    );
+
+    if (response.statusCode != 200) {
+      throw DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+      );
+    }
+  }
+
+  Future<void> changePassword({required String oldPassword, required String newPassword}) async {
+    // 1. Lấy token từ bộ nhớ tạm
+    final token = sl<SharedPreferences>().getString('access_token');
+
+    final response = await _dio.post(ApiUrls.changePassword,
+      data: {
+        'oldPassword': oldPassword,
+        'newPassword': newPassword,
+      },
+      // 2. Gắn token vào Header gửi đi
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ),
+    );
+
+    if (response.statusCode != 200) {
+      throw DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+      );
+    }
   }
 }
