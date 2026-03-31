@@ -19,14 +19,14 @@ public class AdminService
     private readonly IPaymentTransactionRepository _paymentTransactionRepository;
 
     public AdminService(
-        IUserRepository userRepository ,
-        IAdminAuditLogRepository auditLogRepository ,
-        IAdminAnalyticsRepository analyticsRepository ,
-        IHistoryRepository historyRepository ,
-        IFavoriteRepository favoriteRepository ,
-        IPlaylistRepository playlistRepository ,
-        NotificationService notificationService ,
-        ISubscriptionRepository subscriptionRepository ,
+        IUserRepository userRepository,
+        IAdminAuditLogRepository auditLogRepository,
+        IAdminAnalyticsRepository analyticsRepository,
+        IHistoryRepository historyRepository,
+        IFavoriteRepository favoriteRepository,
+        IPlaylistRepository playlistRepository,
+        NotificationService notificationService,
+        ISubscriptionRepository subscriptionRepository,
         IPaymentTransactionRepository paymentTransactionRepository)
     {
         _userRepository = userRepository;
