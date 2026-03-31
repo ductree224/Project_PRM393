@@ -5,7 +5,9 @@ import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/domain/entities/subscription_plan_entity.dart';
 import 'package:soundtilo/domain/usecases/user_usecases.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
+import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_state.dart';
+import 'package:soundtilo/presentation/premium/pages/vnpay_payment_page.dart';
 
 class PremiumPaywallPage extends StatefulWidget {
   const PremiumPaywallPage({super.key});
@@ -308,7 +310,6 @@ class _PlanCard extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 12),
-          // TODO: Replace with Stripe checkout navigation
           ElevatedButton(
             onPressed: () => _onSubscribeTapped(context, plan),
             style: ElevatedButton.styleFrom(
@@ -343,25 +344,65 @@ class _PlanCard extends StatelessWidget {
     );
   }
 
-  void _onSubscribeTapped(BuildContext context, SubscriptionPlanEntity plan) {
-    // TODO: Dev implement Stripe Checkout Session here.
-    // 1. Call POST /api/payments/create-checkout-session with planId
-    // 2. Open the returned Stripe URL in a WebView / in_app_webview
-    // 3. On success redirect, dispatch AuthProfileRefreshRequested to sync subscription
+  void _onSubscribeTapped(BuildContext context, SubscriptionPlanEntity plan) async {
+    // Show loading
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Sắp ra mắt'),
-        content: Text(
-            'Thanh toán cho gói "${plan.name}" sẽ được tích hợp với Stripe. '
-            'Vui lòng chờ cập nhật tiếp theo.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Create VNPay payment URL
+    final result = await sl<CreatePaymentUrlUseCase>().call(plan.id);
+
+    if (!context.mounted) return;
+    Navigator.pop(context); // dismiss loading
+
+    result.fold(
+      (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: AppColors.errorColor,
           ),
-        ],
-      ),
+        );
+      },
+      (data) async {
+        // Open VNPay WebView
+        final success = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => VnpayPaymentPage(
+              paymentUrl: data.paymentUrl,
+              txnRef: data.txnRef,
+            ),
+          ),
+        );
+
+        if (!context.mounted) return;
+
+        if (success == true) {
+          // Refresh user profile to get updated subscription status
+          context.read<AuthBloc>().add(AuthProfileRefreshRequested());
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🎉 Nâng cấp Premium thành công!'),
+              backgroundColor: AppColors.successColor,
+            ),
+          );
+
+          // Pop back to previous screen
+          Navigator.pop(context);
+        } else if (success == false) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Thanh toán bị hủy hoặc thất bại.'),
+              backgroundColor: AppColors.errorColor,
+            ),
+          );
+        }
+      },
     );
   }
 }

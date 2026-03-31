@@ -37,4 +37,52 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
       return Left('Đã xảy ra lỗi: $e');
     }
   }
+
+  @override
+  Future<Either<String, ({String paymentUrl, String txnRef})>>
+      createPaymentUrl(String planId) async {
+    try {
+      final data = await _dataSource.createPaymentUrl(planId);
+      final paymentUrl = data['paymentUrl']?.toString() ?? '';
+      final txnRef = data['txnRef']?.toString() ?? '';
+      return Right((paymentUrl: paymentUrl, txnRef: txnRef));
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data is Map
+          ? data['message']?.toString() ?? 'Không thể tạo liên kết thanh toán.'
+          : 'Không thể tạo liên kết thanh toán.';
+      return Left(message);
+    } catch (e) {
+      return Left('Đã xảy ra lỗi: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, SubscriptionStatusEntity>>
+      getSubscriptionStatus() async {
+    try {
+      final data = await _dataSource.getSubscriptionStatus();
+      final status = SubscriptionStatusEntity(
+        subscriptionTier: data['subscriptionTier']?.toString() ?? 'free',
+        premiumExpiresAt: data['premiumExpiresAt'] != null
+            ? DateTime.tryParse(data['premiumExpiresAt'].toString())
+            : null,
+        isPremium: data['isPremium'] == true,
+        planName: data['planName']?.toString(),
+        planInterval: data['planInterval']?.toString(),
+        currentPeriodEnd: data['currentPeriodEnd'] != null
+            ? DateTime.tryParse(data['currentPeriodEnd'].toString())
+            : null,
+      );
+      return Right(status);
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data is Map
+          ? data['message']?.toString() ?? 'Không thể tải trạng thái đăng ký.'
+          : 'Không thể tải trạng thái đăng ký.';
+      return Left(message);
+    } catch (e) {
+      return Left('Đã xảy ra lỗi: $e');
+    }
+  }
 }

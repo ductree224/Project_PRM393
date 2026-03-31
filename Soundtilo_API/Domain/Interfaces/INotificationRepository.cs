@@ -15,4 +15,5 @@ public interface INotificationRepository
     Task<List<Guid>> GetAllUserIdsAsync();
     Task<List<Notification>> GetUnreadByUserIdAsync(Guid userId, int take = 50);
     Task<int> CleanupExpiredAsync(DateTime utcNow);
+    Task<bool> HasRecentNotificationAsync(Guid userId, NotificationType type, TimeSpan within);
 }

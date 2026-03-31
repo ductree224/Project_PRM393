@@ -13,6 +13,10 @@ public class NotificationDispatchBackgroundService : BackgroundService
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(20);
     private const int BatchSize = 50;
 
+    // Run subscription expiry check every ~6 hours (1080 ticks × 20s = 21600s = 6h)
+    private const int ExpiryCheckIntervalTicks = 1080;
+    private int _tickCounter;
+
     public NotificationDispatchBackgroundService(
         IServiceScopeFactory scopeFactory,
         ILogger<NotificationDispatchBackgroundService> logger)
@@ -39,6 +43,28 @@ public class NotificationDispatchBackgroundService : BackgroundService
                 if (processed > 0 || cleaned > 0)
                 {
                     _logger.LogInformation("Notification dispatcher tick: processedSchedules={Processed}, cleanedExpired={Cleaned}", processed, cleaned);
+                }
+
+                // Subscription expiry check + auto-downgrade (every ~6 hours)
+                _tickCounter++;
+                if (_tickCounter >= ExpiryCheckIntervalTicks)
+                {
+                    _tickCounter = 0;
+                    try
+                    {
+                        var expiryService = scope.ServiceProvider.GetRequiredService<SubscriptionExpiryNotificationService>();
+                        var notified = await expiryService.CheckAndNotifyExpiringSubscriptionsAsync(stoppingToken);
+                        var downgraded = await expiryService.DowngradeExpiredSubscriptionsAsync(stoppingToken);
+
+                        if (notified > 0 || downgraded > 0)
+                        {
+                            _logger.LogInformation("Subscription expiry check: notified={Notified}, downgraded={Downgraded}", notified, downgraded);
+                        }
+                    }
+                    catch (Exception expiryEx)
+                    {
+                        _logger.LogError(expiryEx, "Subscription expiry check failed.");
+                    }
                 }
             }
             catch (Exception ex)

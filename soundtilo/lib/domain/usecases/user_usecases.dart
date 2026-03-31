@@ -27,3 +27,26 @@ class GetProfileUseCase {
     return _repository.getProfile();
   }
 }
+
+/// Creates a VNPay payment URL for the selected plan.
+class CreatePaymentUrlUseCase {
+  final SubscriptionRepository _repository;
+
+  CreatePaymentUrlUseCase(this._repository);
+
+  Future<Either<String, ({String paymentUrl, String txnRef})>> call(
+      String planId) {
+    return _repository.createPaymentUrl(planId);
+  }
+}
+
+/// Gets the current user's subscription status.
+class GetSubscriptionStatusUseCase {
+  final SubscriptionRepository _repository;
+
+  GetSubscriptionStatusUseCase(this._repository);
+
+  Future<Either<String, SubscriptionStatusEntity>> call() {
+    return _repository.getSubscriptionStatus();
+  }
+}

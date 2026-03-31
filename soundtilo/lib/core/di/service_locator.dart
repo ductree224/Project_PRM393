@@ -140,9 +140,9 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSource(sl<ApiClient>().dio),
   );
-  // Subscription uses plain Dio (public endpoint — no auth required)
+  // Subscription uses authenticated Dio (payment endpoints require JWT)
   sl.registerLazySingleton<SubscriptionRemoteDataSource>(
-    () => SubscriptionRemoteDataSource(sl<Dio>(instanceName: 'plainDio')),
+    () => SubscriptionRemoteDataSource(sl<ApiClient>().dio),
   );
   sl.registerLazySingleton<UserRemoteDataSource>(
     () => UserRemoteDataSource(sl<ApiClient>().dio),
@@ -288,6 +288,10 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => GetProfileUseCase(sl<UserRepository>()));
   sl.registerLazySingleton(
       () => GetSubscriptionPlansUseCase(sl<SubscriptionRepository>()));
+  sl.registerLazySingleton(
+      () => CreatePaymentUrlUseCase(sl<SubscriptionRepository>()));
+  sl.registerLazySingleton(
+      () => GetSubscriptionStatusUseCase(sl<SubscriptionRepository>()));
 
   // BỔ SUNG: Đăng ký Waitlist UseCases
   sl.registerLazySingleton(() => GetWaitlistUseCase(sl<WaitlistRepository>()));

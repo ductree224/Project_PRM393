@@ -99,4 +99,11 @@ public class NotificationRepository : INotificationRepository
             .Where(x => x.ExpiresAt.HasValue && x.ExpiresAt <= utcNow)
             .ExecuteDeleteAsync();
     }
+
+    public async Task<bool> HasRecentNotificationAsync(Guid userId, Domain.Enums.NotificationType type, TimeSpan within)
+    {
+        var cutoff = DateTime.UtcNow - within;
+        return await _context.Notifications
+            .AnyAsync(x => x.UserId == userId && x.Type == type && x.CreatedAt >= cutoff);
+    }
 }
