@@ -5,6 +5,8 @@ import 'package:soundtilo/domain/entities/feedback_entity.dart';
 import 'package:soundtilo/presentation/feedback/bloc/feedback_bloc.dart';
 import 'package:soundtilo/presentation/feedback/bloc/feedback_event.dart';
 import 'package:soundtilo/presentation/feedback/bloc/feedback_state.dart';
+import 'package:soundtilo/presentation/notifications/bloc/notification_cubit.dart';
+import 'package:soundtilo/presentation/notifications/bloc/notification_state.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
@@ -37,7 +39,16 @@ class _FeedbackPageState extends State<FeedbackPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<NotificationCubit, NotificationState>(
+      listenWhen: (prev, curr) =>
+          curr.realtimeArrivalVersion > prev.realtimeArrivalVersion,
+      listener: (context, state) {
+        final latest = state.latestRealtimeNotification;
+        if (latest != null && latest.title.contains('Phản hồi')) {
+          context.read<FeedbackBloc>().add(const MyFeedbacksLoaded());
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Phản hồi'),
         backgroundColor: Colors.transparent,
@@ -66,6 +77,7 @@ class _FeedbackPageState extends State<FeedbackPage>
           ),
           const _MyFeedbacksTab(),
         ],
+      ),
       ),
     );
   }
@@ -318,6 +330,7 @@ class _MyFeedbacksTabState extends State<_MyFeedbacksTab>
   static const _statusFilters = [
     (null, 'Tất cả'),
     ('pending', 'Đã gửi'),
+    ('in_progress', 'Đang xử lý'),
     ('resolved', 'Đã giải quyết'),
   ];
 

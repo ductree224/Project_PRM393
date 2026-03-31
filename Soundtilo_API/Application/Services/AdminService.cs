@@ -311,7 +311,7 @@ public class AdminService
             {
                 Id = Guid.NewGuid() ,
                 UserId = targetUserId ,
-                PlanId = Guid.Empty , // no Stripe plan for manual grants
+                PlanId = Guid.Empty , 
                 Status = "manually_granted" ,
                 CurrentPeriodStart = DateTime.UtcNow ,
                 CurrentPeriodEnd = premiumEnd ,

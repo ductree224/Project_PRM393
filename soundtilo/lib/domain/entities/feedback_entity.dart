@@ -39,14 +39,10 @@ class FeedbackEntity {
     switch (status) {
       case 'pending':
         return 'Chờ xử lý';
-      case 'reviewing':
-        return 'Đang xem xét';
       case 'in_progress':
         return 'Đang xử lý';
       case 'resolved':
         return 'Đã giải quyết';
-      case 'rejected':
-        return 'Đã từ chối';
       default:
         return status;
     }
@@ -56,14 +52,10 @@ class FeedbackEntity {
     switch (status) {
       case 'pending':
         return const Color(0xFFFFB74D);
-      case 'reviewing':
-        return const Color(0xFF42A5F5);
       case 'in_progress':
-        return const Color(0xFF8B5CF6);
+        return const Color(0xFF42A5F5);
       case 'resolved':
         return const Color(0xFF66BB6A);
-      case 'rejected':
-        return const Color(0xFFEF5350);
       default:
         return Colors.grey;
     }
@@ -116,6 +108,6 @@ class FeedbackEntity {
     }
   }
 
-  bool get isResolved => status == 'resolved' || status == 'rejected';
+  bool get isResolved => status == 'resolved';
   bool get hasAdminReply => adminReply != null && adminReply!.isNotEmpty;
 }

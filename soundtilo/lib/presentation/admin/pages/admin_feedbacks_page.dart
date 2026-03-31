@@ -48,21 +48,19 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
 
   static const _statusFilters = [
     (null, 'Tất cả'),
-    ('pending', 'Pending'),
-    ('reviewing', 'Reviewing'),
-    ('in_progress', 'In Progress'),
-    ('resolved', 'Resolved'),
-    ('rejected', 'Rejected'),
+    ('pending', 'Chờ xử lý'),
+    ('in_progress', 'Đang xử lý'),
+    ('resolved', 'Đã giải quyết'),
   ];
 
   static const _categoryFilters = [
     (null, 'Tất cả'),
-    ('general', 'General'),
-    ('bug', 'Bug'),
-    ('ux', 'UX'),
-    ('performance', 'Performance'),
-    ('payment', 'Payment'),
-    ('other', 'Other'),
+    ('general', 'Chung'),
+    ('bug', 'Lỗi kỹ thuật'),
+    ('ux', 'Trải nghiệm UI/UX'),
+    ('performance', 'Hiệu suất'),
+    ('payment', 'Thanh toán'),
+    ('other', 'Khác'),
   ];
 
   @override
@@ -95,8 +93,8 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
             labelColor: const Color(0xFFFFD79B),
             unselectedLabelColor: Colors.grey,
             tabs: const [
-              Tab(text: 'Feedback List'),
-              Tab(text: 'Analytics'),
+              Tab(text: 'Danh sách'),
+              Tab(text: 'Thống kê'),
             ],
           ),
           Expanded(
@@ -205,7 +203,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
                           size: 48, color: Color(0xFFFF5252)),
                       const SizedBox(height: 12),
                       Text(
-                        state.errorMessage ?? 'Error loading feedbacks',
+                        state.errorMessage ?? 'Không thể tải danh sách phản hồi',
                         style: const TextStyle(color: Colors.white70),
                       ),
                       const SizedBox(height: 12),
@@ -213,7 +211,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
                         onPressed: () => context
                             .read<AdminFeedbackBloc>()
                             .add(const AdminFeedbacksLoaded()),
-                        child: const Text('Retry'),
+                        child: const Text('Thử lại'),
                       ),
                     ],
                   ),
@@ -223,7 +221,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
               if (state.feedbacks.isEmpty) {
                 return const Center(
                   child: Text(
-                    'No feedbacks found',
+                    'Không có phản hồi nào',
                     style: TextStyle(color: Colors.white54),
                   ),
                 );
@@ -278,7 +276,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
         if (data == null) {
           return const Center(
             child: Text(
-              'No analytics data',
+              'Chưa có dữ liệu thống kê',
               style: TextStyle(color: Colors.white54),
             ),
           );
@@ -299,7 +297,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
                 children: [
                   Expanded(
                     child: _AnalyticsCard(
-                      title: 'Total',
+                      title: 'Tổng cộng',
                       value: '$total',
                       icon: Icons.feedback,
                       color: const Color(0xFF42A5F5),
@@ -308,7 +306,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
                   const SizedBox(width: 12),
                   Expanded(
                     child: _AnalyticsCard(
-                      title: 'Resolved',
+                      title: 'Đã giải quyết',
                       value: '$resolved',
                       icon: Icons.check_circle,
                       color: const Color(0xFF66BB6A),
@@ -317,7 +315,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
                   const SizedBox(width: 12),
                   Expanded(
                     child: _AnalyticsCard(
-                      title: 'Resolved Rate',
+                      title: 'Tỉ lệ xử lý',
                       value: '${(resolvedRate * 100).toStringAsFixed(1)}%',
                       icon: Icons.percent,
                       color: const Color(0xFFFFB74D),
@@ -329,7 +327,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
               const SizedBox(height: 24),
 
               const Text(
-                'By Category',
+                'Theo danh mục',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -348,7 +346,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
                       Expanded(
                         flex: 2,
                         child: Text(
-                          category,
+                          _categoryLabel(category),
                           style: const TextStyle(color: Colors.white70),
                         ),
                       ),
@@ -384,16 +382,17 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
 
   void _showHandleDialog(FeedbackEntity feedback) {
     final replyController = TextEditingController();
-    String selectedStatus = 'resolved';
+    String selectedStatus = 'in_progress';
+    final bloc = context.read<AdminFeedbackBloc>();
 
     showDialog(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (dialogContext, setDialogState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF1E1E1E),
-              title: const Text('Xử lý Feedback',
+              title: const Text('Xử lý phản hồi',
                   style: TextStyle(color: Colors.white)),
               content: SizedBox(
                 width: 400,
@@ -450,13 +449,9 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
                       ),
                       items: const [
                         DropdownMenuItem(
-                            value: 'reviewing', child: Text('Reviewing')),
+                            value: 'in_progress', child: Text('Đang xử lý')),
                         DropdownMenuItem(
-                            value: 'in_progress', child: Text('In Progress')),
-                        DropdownMenuItem(
-                            value: 'resolved', child: Text('Resolved')),
-                        DropdownMenuItem(
-                            value: 'rejected', child: Text('Rejected')),
+                            value: 'resolved', child: Text('Đã giải quyết')),
                       ],
                       onChanged: (v) {
                         if (v != null) {
@@ -468,7 +463,7 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
                     const SizedBox(height: 16),
 
                     // Reply
-                    const Text('Phản hồi',
+                    const Text('Nội dung phản hồi',
                         style: TextStyle(color: Colors.white70, fontSize: 13)),
                     const SizedBox(height: 6),
                     TextField(
@@ -492,19 +487,19 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Huỷ',
+                  child: const Text('Huỷ bỏ',
                       style: TextStyle(color: Colors.white54)),
                 ),
                 ElevatedButton(
                   onPressed: () {
+                    bloc.add(
+                      AdminFeedbackHandleRequested(
+                        feedbackId: feedback.id,
+                        reply: replyController.text.trim(),
+                        status: selectedStatus,
+                      ),
+                    );
                     Navigator.pop(ctx);
-                    context.read<AdminFeedbackBloc>().add(
-                          AdminFeedbackHandleRequested(
-                            feedbackId: feedback.id,
-                            reply: replyController.text.trim(),
-                            status: selectedStatus,
-                          ),
-                        );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFD79B),
@@ -532,6 +527,23 @@ class _AdminFeedbacksPageState extends State<AdminFeedbacksPage>
           borderSide: BorderSide.none,
         ),
       );
+
+  static String _categoryLabel(String raw) {
+    switch (raw) {
+      case 'bug':
+        return 'Lỗi kỹ thuật';
+      case 'ux':
+        return 'Trải nghiệm UI/UX';
+      case 'performance':
+        return 'Hiệu suất';
+      case 'payment':
+        return 'Thanh toán';
+      case 'other':
+        return 'Khác';
+      default:
+        return 'Chung';
+    }
+  }
 }
 
 // ─── Reusable widgets ───────────────────────────────────────────────────────
@@ -580,7 +592,7 @@ class _AdminFeedbackCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    feedback.status,
+                    feedback.statusLabel,
                     style: TextStyle(
                       color: feedback.statusColor,
                       fontSize: 11,
@@ -645,7 +657,7 @@ class _AdminFeedbackCard extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: onHandle,
                   icon: const Icon(Icons.reply, size: 16),
-                  label: const Text('Handle'),
+                  label: const Text('Xử lý'),
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xFFFFD79B),
                     padding:
