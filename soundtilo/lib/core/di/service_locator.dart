@@ -294,6 +294,8 @@ Future<void> initServiceLocator() async {
       () => CreatePaymentUrlUseCase(sl<SubscriptionRepository>()));
   sl.registerLazySingleton(
       () => GetSubscriptionStatusUseCase(sl<SubscriptionRepository>()));
+  sl.registerLazySingleton(
+      () => CancelSubscriptionUseCase(sl<SubscriptionRepository>()));
 
   // BỔ SUNG: Đăng ký Waitlist UseCases
   sl.registerLazySingleton(() => GetWaitlistUseCase(sl<WaitlistRepository>()));

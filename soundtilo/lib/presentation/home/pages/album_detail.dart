@@ -6,7 +6,6 @@ import 'package:soundtilo/domain/entities/track_entity.dart';
 import 'package:soundtilo/presentation/home/models/local_album.dart';
 import 'package:soundtilo/data/models/track_model.dart';
 import 'package:soundtilo/presentation/player/pages/player.dart';
-import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../domain/repositories/album_repository.dart';
 
@@ -128,17 +127,6 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
                 ],
               ],
             ),
-          ),
-          Positioned(
-            left: 8,
-            right: 8,
-            bottom: 8,
-            child: const MiniPlayer(),
-          ),
-          Positioned(
-            right: 16,
-            bottom: 8,
-            child: const MiniPlayerShowButton(),
           ),
         ],
       ),

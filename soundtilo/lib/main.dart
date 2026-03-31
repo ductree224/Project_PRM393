@@ -284,6 +284,19 @@ class MyApp extends StatelessWidget {
                         },
                       ),
                     ),
+                    Positioned(
+                      right: 16,
+                      bottom: bottomInset,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _isPlayerRouteActive,
+                        builder: (context, isPlayerRouteActive, _) {
+                          if (isPlayerRouteActive) {
+                            return const SizedBox.shrink();
+                          }
+                          return const MiniPlayerShowButton();
+                        },
+                      ),
+                    ),
                   ],
                 ),
               );

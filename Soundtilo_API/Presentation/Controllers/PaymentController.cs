@@ -97,4 +97,20 @@ public class PaymentController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// DELETE /api/payment/subscription — soft cancel (keeps active until period end)
+    /// </summary>
+    [HttpDelete("subscription")]
+    [Authorize]
+    public async Task<IActionResult> CancelSubscription()
+    {
+        try
+        {
+            await _subscriptionService.CancelSubscriptionAsync(GetUserId());
+            return Ok(new { message = "Đã hủy đăng ký. Gói Premium vẫn có hiệu lực đến hết kỳ thanh toán." });
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+    }
 }
