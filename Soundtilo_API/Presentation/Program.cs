@@ -107,6 +107,11 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 
+// Note: HttpsRedirection can sometimes cause CORS issues during local development with Web/Desktop
+
+// app.UseHttpsRedirection();
+
+app.UseCors("AllowFlutterApp");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -114,12 +119,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
-// Note: HttpsRedirection can sometimes cause CORS issues during local development with Web/Desktop
-
-// app.UseHttpsRedirection();
-
 app.UseCors("AllowFlutterApp");
+
 
 app.UseAuthentication();
 app.UseAuthorization();
