@@ -26,16 +26,17 @@ public class AdminController : ControllerBase
 
     // ─── User Management ──────────────────────────────────────────────────────
 
-    /// <summary>GET /api/admin/users?page=1&amp;pageSize=20&amp;search=&amp;role=&amp;isBanned=</summary>
+    /// <summary>GET /api/admin/users?page=1&amp;pageSize=20&amp;search=&amp;role=&amp;isBanned=&amp;subscriptionTier=</summary>
     [HttpGet("users")]
     public async Task<IActionResult> GetUsers(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
         [FromQuery] string? role = null,
-        [FromQuery] bool? isBanned = null)
+        [FromQuery] bool? isBanned = null,
+        [FromQuery] string? subscriptionTier = null)
     {
-        var result = await _adminService.GetUsersAsync(page, pageSize, search, role, isBanned);
+        var result = await _adminService.GetUsersAsync(page, pageSize, search, role, isBanned, subscriptionTier);
         return Ok(result);
     }
 
@@ -169,6 +170,41 @@ public class AdminController : ControllerBase
         {
             await _adminService.DeleteUserAsync(GetAdminId(), id);
             return Ok(new { message = "Tài khoản đã bị xóa." });
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Không tìm thấy người dùng." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+    // ─── Premium Management ────────────────────────────────────────────────────
+
+    /// <summary>POST /api/admin/users/{id}/premium — manually grant premium</summary>
+    [HttpPost("users/{id:guid}/premium")]
+    public async Task<IActionResult> GrantPremium(Guid id, [FromBody] GrantPremiumRequest request)
+    {
+        try
+        {
+            await _adminService.GrantPremiumAsync(GetAdminId(), id, request.ExpiresAt);
+            return Ok(new { message = "Đã cấp quyền premium thành công." });
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Không tìm thấy người dùng." });
+        }
+    }
+
+    /// <summary>DELETE /api/admin/users/{id}/premium — revoke premium</summary>
+    [HttpDelete("users/{id:guid}/premium")]
+    public async Task<IActionResult> RevokePremium(Guid id)
+    {
+        try
+        {
+            await _adminService.RevokePremiumAsync(GetAdminId(), id);
+            return Ok(new { message = "Đã thu hồi quyền premium." });
         }
         catch (KeyNotFoundException)
         {

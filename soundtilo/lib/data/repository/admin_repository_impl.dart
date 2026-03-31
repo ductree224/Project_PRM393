@@ -31,6 +31,7 @@ class AdminRepositoryImpl implements AdminRepository {
     String? search,
     String? role,
     bool? isBanned,
+    String? subscriptionTier,
   }) async {
     try {
       final data = await _remoteDataSource.getUsers(
@@ -39,6 +40,7 @@ class AdminRepositoryImpl implements AdminRepository {
         search: search,
         role: role,
         isBanned: isBanned,
+        subscriptionTier: subscriptionTier,
       );
 
       final users =
@@ -111,6 +113,35 @@ class AdminRepositoryImpl implements AdminRepository {
       return const Right(null);
     } on DioException catch (e) {
       return Left(_extractDioErrorMessage(e, 'Không thể xóa user.'));
+    } catch (e) {
+      return Left('Đã xảy ra lỗi: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, void>> grantPremium(
+    String userId, {
+    DateTime? expiresAt,
+  }) async {
+    try {
+      await _remoteDataSource.grantPremium(userId, expiresAt: expiresAt);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_extractDioErrorMessage(e, 'Không thể cấp quyền premium.'));
+    } catch (e) {
+      return Left('Đã xảy ra lỗi: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, void>> revokePremium(String userId) async {
+    try {
+      await _remoteDataSource.revokePremium(userId);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(
+        _extractDioErrorMessage(e, 'Không thể thu hồi quyền premium.'),
+      );
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }

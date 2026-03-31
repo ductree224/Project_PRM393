@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart' hide PlayerState;
 import 'package:soundtilo/core/debug/perf_trace.dart';
 import 'package:soundtilo/domain/repository/track_repository.dart';
-import 'package:soundtilo/domain/repository/history_repository.dart';
 import 'package:soundtilo/domain/usecases/favorite_usecases.dart';
+import 'package:soundtilo/domain/usecases/history_usecases.dart';
 import 'package:soundtilo/presentation/player/bloc/player_event.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 
@@ -16,10 +16,11 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   final TrackRepository _trackRepository;
   final ToggleFavoriteUseCase _toggleFavoriteUseCase;
   final IsFavoriteUseCase _isFavoriteUseCase;
-  final HistoryRepository _historyRepository;
+  final RecordListenUseCase _recordListenUseCase;
   StreamSubscription? _positionSub;
   StreamSubscription? _durationSub;
   StreamSubscription? _playerStateSub;
+  StreamSubscription? _playerErrorSub;
   int _lastPositionEventMs = -1;
 
   PlayerBloc({
@@ -27,12 +28,12 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     required TrackRepository trackRepository,
     required ToggleFavoriteUseCase toggleFavoriteUseCase,
     required IsFavoriteUseCase isFavoriteUseCase,
-    required HistoryRepository historyRepository,
+    required RecordListenUseCase recordListenUseCase,
   }) : _audioPlayer = audioPlayer,
        _trackRepository = trackRepository,
        _toggleFavoriteUseCase = toggleFavoriteUseCase,
        _isFavoriteUseCase = isFavoriteUseCase,
-       _historyRepository = historyRepository,
+       _recordListenUseCase = recordListenUseCase,
        super(const PlayerState()) {
     on<PlayerPlay>(_onPlay, transformer: restartable());
     on<PlayerResume>(_onResume);
@@ -45,6 +46,9 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     on<PlayerDurationChanged>(_onDurationChanged);
     on<PlayerCompleted>(_onCompleted);
     on<PlayerToggleFavorite>(_onToggleFavorite);
+    on<PlayerHideMiniPlayer>(_onHideMiniPlayer);
+    on<PlayerShowMiniPlayer>(_onShowMiniPlayer);
+    on<PlayerSourceError>(_onSourceError);
 
     _positionSub = _audioPlayer.positionStream.listen((pos) {
       if (isClosed) return;
@@ -66,9 +70,34 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         add(PlayerCompleted());
       }
     });
+
+    _playerErrorSub = _audioPlayer.playbackEventStream.listen(
+      (_) {},
+      onError: (Object error, StackTrace _) {
+        if (!isClosed) add(PlayerSourceError(error));
+      },
+    );
   }
 
   Future<void> _onPlay(PlayerPlay event, Emitter<PlayerState> emit) async {
+    // Record listening history immediately on click (fire-and-forget)
+    unawaited(
+      _recordListenUseCase(
+        trackExternalId: event.track.externalId,
+        durationListened: 0,
+        completed: false,
+      ),
+    );
+
+    // If same track is already playing/paused, just resume if paused and ensure unhidden
+    if (state.currentTrack?.externalId == event.track.externalId) {
+      emit(state.copyWith(isMiniPlayerHidden: false));
+      if (state.status == PlayerStatus.paused) {
+        add(PlayerResume());
+      }
+      return;
+    }
+
     final stopwatch = Stopwatch()..start();
     int streamLookupMs = 0;
     int setSourceMs = 0;
@@ -82,14 +111,16 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         currentIndex: event.startIndex,
         position: Duration.zero,
         duration: Duration.zero,
+        isMiniPlayerHidden: false,
       ),
     );
 
     try {
       String? url = event.track.playableUrl;
 
-      // If no URL, fetch stream URL from API
-      if (url == null || url.isEmpty) {
+      // Deezer preview URLs are time-limited CDN links. Always fetch a fresh
+      // URL via the API — never use the cached URL from the track entity.
+      if (url == null || url.isEmpty || event.track.source == 'deezer') {
         final streamLookupStopwatch = Stopwatch()..start();
         final result = await _trackRepository.getStreamUrl(
           event.track.externalId,
@@ -153,14 +184,6 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
         }
       });
 
-      // Record listening history (fire-and-forget)
-      unawaited(
-        _historyRepository.recordListen(
-          trackExternalId: event.track.externalId,
-          durationListened: 0,
-          completed: false,
-        ),
-      );
     } catch (e) {
       emit(
         state.copyWith(
@@ -281,15 +304,6 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     PlayerCompleted event,
     Emitter<PlayerState> emit,
   ) async {
-    // Record completed listen
-    if (state.currentTrack != null) {
-      _historyRepository.recordListen(
-        trackExternalId: state.currentTrack!.externalId,
-        durationListened: state.duration.inSeconds,
-        completed: true,
-      );
-    }
-
     // Auto-play next
     if (state.hasNext) {
       add(PlayerNext());
@@ -309,11 +323,35 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     result.fold((_) {}, (isFav) => emit(state.copyWith(isFavorite: isFav)));
   }
 
+  void _onHideMiniPlayer(PlayerHideMiniPlayer event, Emitter<PlayerState> emit) {
+    emit(state.copyWith(isMiniPlayerHidden: true));
+  }
+
+  void _onShowMiniPlayer(PlayerShowMiniPlayer event, Emitter<PlayerState> emit) {
+    emit(state.copyWith(isMiniPlayerHidden: false));
+  }
+
+  void _onSourceError(
+    PlayerSourceError event,
+    Emitter<PlayerState> emit,
+  ) {
+    if (state.status == PlayerStatus.playing ||
+        state.status == PlayerStatus.loading) {
+      emit(
+        state.copyWith(
+          status: PlayerStatus.error,
+          errorMessage: 'Không thể phát bài hát này. Vui lòng thử lại.',
+        ),
+      );
+    }
+  }
+
   @override
   Future<void> close() {
     _positionSub?.cancel();
     _durationSub?.cancel();
     _playerStateSub?.cancel();
+    _playerErrorSub?.cancel();
     _audioPlayer.dispose();
     return super.close();
   }

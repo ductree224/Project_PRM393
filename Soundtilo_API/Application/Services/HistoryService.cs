@@ -34,7 +34,7 @@ public class HistoryService
 
     public async Task RecordListenAsync(Guid userId, RecordListenRequest request)
     {
-        await _historyRepository.AddAsync(new ListeningHistory
+        await _historyRepository.UpsertAsync(new ListeningHistory
         {
             Id = Guid.NewGuid(),
             UserId = userId,

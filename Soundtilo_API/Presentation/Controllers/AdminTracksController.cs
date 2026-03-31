@@ -1,6 +1,8 @@
 using Application.DTOs;
 using Application.Interfaces;
 using Domain.Enums;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +10,7 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/admin/tracks")]
-[Authorize] // Should ideally be [Authorize(Roles = "Admin")] if roles are implemented
+[Authorize(Roles = "admin")]
 public class AdminTracksController : ControllerBase
 {
     private readonly ITrackService _trackService;
@@ -17,6 +19,11 @@ public class AdminTracksController : ControllerBase
     {
         _trackService = trackService;
     }
+
+    private Guid GetAdminId() =>
+        Guid.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException());
 
     [HttpGet]
     public async Task<IActionResult> GetTracks([FromQuery] TrackStatus? status, [FromQuery] string? q, [FromQuery] int limit = 50, [FromQuery] int offset = 0)
@@ -31,7 +38,7 @@ public class AdminTracksController : ControllerBase
         if (payload.ExternalIds == null || !payload.ExternalIds.Any())
             return BadRequest(new { message = "No tracks selected." });
 
-        await _trackService.UpdateStatusesAsync(payload);
+        await _trackService.UpdateStatusesAsync(payload, GetAdminId());
         return NoContent();
     }
 

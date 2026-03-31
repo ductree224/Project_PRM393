@@ -87,3 +87,34 @@ class ResetPasswordUseCase {
     return repository.resetPassword(token: token, newPassword: newPassword);
   }
 }
+class UpdateProfileUseCase {
+  final AuthRepository repository;
+
+  UpdateProfileUseCase(this.repository);
+
+  Future<Either<String, void>> call({
+    required String displayName,
+    String? avatarUrl,
+  }) {
+    return repository.updateProfile(
+      displayName: displayName,
+      avatarUrl: avatarUrl,
+    );
+  }
+}
+
+class ChangePasswordUseCase {
+  final AuthRepository repository;
+
+  ChangePasswordUseCase(this.repository);
+
+  Future<Either<String, void>> call({
+    required String oldPassword,
+    required String newPassword,
+  }) {
+    return repository.changePassword(
+      oldPassword: oldPassword,
+      newPassword: newPassword,
+    );
+  }
+}

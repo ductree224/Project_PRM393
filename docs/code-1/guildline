@@ -19,7 +19,7 @@ Dự án dùng **EF Core Code First** với `Npgsql` và connection string Supab
 ```powershell
 cd "c:\Users\NITRO\Desktop\Dev\Flutter\Project\Soundtilo_API"
 
-dotnet ef migrations add AddComments `
+dotnet ef migrations add payment-features `
   --project Infrastructure `
   --startup-project Presentation `
   --context SoundtiloDbContext `

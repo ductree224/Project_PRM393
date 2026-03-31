@@ -16,6 +16,7 @@ class HomeLoading extends HomeState {}
 class HomeLoaded extends HomeState {
   final List<TrackEntity> trendingTracks;
   final List<TrackEntity> tagTracks; // Thêm danh sách nhạc theo tag
+  final List<TrackEntity> recentTracks; // NEW: Recently played
   final String selectedTag; // Thêm tag đang chọn
   final int currentOffset;
   final bool hasMore;
@@ -26,6 +27,7 @@ class HomeLoaded extends HomeState {
   const HomeLoaded({
     required this.trendingTracks,
     this.tagTracks = const [],
+    this.recentTracks = const [],
     this.selectedTag = 'pop',
     this.currentOffset = 0,
     this.hasMore = true,
@@ -37,6 +39,7 @@ class HomeLoaded extends HomeState {
   HomeLoaded copyWith({
     List<TrackEntity>? trendingTracks,
     List<TrackEntity>? tagTracks,
+    List<TrackEntity>? recentTracks,
     String? selectedTag,
     int? currentOffset,
     bool? hasMore,
@@ -47,6 +50,7 @@ class HomeLoaded extends HomeState {
     return HomeLoaded(
       trendingTracks: trendingTracks ?? this.trendingTracks,
       tagTracks: tagTracks ?? this.tagTracks,
+      recentTracks: recentTracks ?? this.recentTracks,
       selectedTag: selectedTag ?? this.selectedTag,
       currentOffset: currentOffset ?? this.currentOffset,
       hasMore: hasMore ?? this.hasMore,
@@ -60,6 +64,7 @@ class HomeLoaded extends HomeState {
   List<Object?> get props => [
         trendingTracks,
         tagTracks,
+        recentTracks,
         selectedTag,
         currentOffset,
         hasMore,
@@ -71,19 +76,21 @@ class HomeLoaded extends HomeState {
 
 class HomeRefreshing extends HomeState {
   final List<TrackEntity> trendingTracks;
+  final List<TrackEntity> recentTracks; // NEW
   final int currentOffset;
   final bool hasMore;
   final List<AlbumModel> adminAlbums;
 
   const HomeRefreshing({
     required this.trendingTracks,
+    this.recentTracks = const [],
     this.currentOffset = 0,
     this.hasMore = true,
     this.adminAlbums = const [],
   });
 
   @override
-  List<Object?> get props => [trendingTracks, currentOffset, hasMore, adminAlbums];
+  List<Object?> get props => [trendingTracks, recentTracks, currentOffset, hasMore, adminAlbums];
 }
 
 class HomeError extends HomeState {

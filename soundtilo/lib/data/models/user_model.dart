@@ -9,6 +9,8 @@ class UserModel extends UserEntity {
     super.avatarUrl,
     super.role,
     required super.createdAt,
+    super.subscriptionTier = 'free',
+    super.premiumExpiresAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -18,10 +20,15 @@ class UserModel extends UserEntity {
       email: json['email'] ?? '',
       displayName: json['displayName'],
       avatarUrl: json['avatarUrl'],
-      role: json['role']?.toString(), // Lấy role từ API
+      role: json['role']?.toString(),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),
+      subscriptionTier:
+          (json['subscriptionTier'] ?? 'free').toString(),
+      premiumExpiresAt: json['premiumExpiresAt'] != null
+          ? DateTime.tryParse(json['premiumExpiresAt'].toString())?.toLocal()
+          : null,
     );
   }
 

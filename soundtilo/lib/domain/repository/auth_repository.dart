@@ -33,4 +33,14 @@ abstract class AuthRepository {
   Future<String?> getAccessToken();
 
   Future<String?> getRefreshToken();
+
+  Future<Either<String, void>> updateProfile({
+    required String displayName,
+    String? avatarUrl,
+  });
+
+  Future<Either<String, void>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  });
 }

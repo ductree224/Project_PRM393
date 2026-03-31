@@ -82,3 +82,34 @@ class AdminUsersDeleteRequested extends AdminUsersEvent {
   @override
   List<Object?> get props => [userId];
 }
+
+class AdminUsersSubscriptionTierFilterChanged extends AdminUsersEvent {
+  final String? subscriptionTier;
+
+  const AdminUsersSubscriptionTierFilterChanged(this.subscriptionTier);
+
+  @override
+  List<Object?> get props => [subscriptionTier];
+}
+
+class AdminUsersGrantPremiumRequested extends AdminUsersEvent {
+  final String userId;
+  final DateTime? expiresAt;
+
+  const AdminUsersGrantPremiumRequested({
+    required this.userId,
+    this.expiresAt,
+  });
+
+  @override
+  List<Object?> get props => [userId, expiresAt];
+}
+
+class AdminUsersRevokePremiumRequested extends AdminUsersEvent {
+  final String userId;
+
+  const AdminUsersRevokePremiumRequested(this.userId);
+
+  @override
+  List<Object?> get props => [userId];
+}

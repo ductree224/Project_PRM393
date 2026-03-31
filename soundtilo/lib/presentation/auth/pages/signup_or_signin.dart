@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:soundtilo/common/helper/is_dark_mode.dart';
 import 'package:soundtilo/core/configs/assets/app_vectors.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/presentation/auth/pages/signin.dart';

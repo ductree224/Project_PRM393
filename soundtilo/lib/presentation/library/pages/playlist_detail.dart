@@ -1,8 +1,7 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/domain/entities/playlist_detail_entity.dart';
@@ -274,7 +273,7 @@ class _PlaylistDetailPageState extends State<PlaylistDetailPage> {
     return Stack(
       children: [
         ReorderableListView.builder(
-          padding: const EdgeInsets.only(bottom: 80),
+          padding: const EdgeInsets.only(bottom: 100),
           itemCount: playlist.tracks.length,
           onReorder: _onReorder,
           itemBuilder: (context, index) {

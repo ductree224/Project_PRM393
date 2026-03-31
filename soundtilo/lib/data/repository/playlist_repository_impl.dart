@@ -16,7 +16,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       final playlists = await _remoteDataSource.getMyPlaylists();
       return Right(playlists);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể tải playlist.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể tải playlist.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -31,7 +31,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       return Right(playlistDetail);
     } on DioException catch (e) {
       return Left(
-        e.response?.data?['message'] ?? 'Không thể tải chi tiết playlist.',
+        (e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể tải chi tiết playlist.',
       );
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -52,7 +52,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       );
       return Right(playlist);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể tạo playlist.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể tạo playlist.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -75,7 +75,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       return Right(playlist);
     } on DioException catch (e) {
       return Left(
-        e.response?.data?['message'] ?? 'Không thể cập nhật playlist.',
+        (e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể cập nhật playlist.',
       );
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
@@ -88,7 +88,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       await _remoteDataSource.deletePlaylist(id);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể xoá playlist.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể xoá playlist.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -103,7 +103,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       await _remoteDataSource.addTrack(playlistId, trackExternalId);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể thêm bài hát.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể thêm bài hát.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -118,7 +118,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       await _remoteDataSource.removeTrack(playlistId, trackExternalId);
       return const Right(null);
     } on DioException catch (e) {
-      return Left(e.response?.data?['message'] ?? 'Không thể xoá bài hát.');
+      return Left((e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể xoá bài hát.');
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');
     }
@@ -134,7 +134,7 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
       return const Right(null);
     } on DioException catch (e) {
       return Left(
-        e.response?.data?['message'] ?? 'Không thể sắp xếp lại playlist.',
+        (e.response?.data is Map ? e.response?.data['message'] : null) ?? 'Không thể sắp xếp lại playlist.',
       );
     } catch (e) {
       return Left('Đã xảy ra lỗi: $e');

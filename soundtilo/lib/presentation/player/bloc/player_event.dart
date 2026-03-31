@@ -58,4 +58,16 @@ class PlayerDurationChanged extends PlayerEvent {
 
 class PlayerCompleted extends PlayerEvent {}
 
+class PlayerSourceError extends PlayerEvent {
+  final Object error;
+  const PlayerSourceError(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
 class PlayerToggleFavorite extends PlayerEvent {}
+
+class PlayerHideMiniPlayer extends PlayerEvent {}
+
+class PlayerShowMiniPlayer extends PlayerEvent {}

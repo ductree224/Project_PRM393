@@ -25,6 +25,8 @@ class AuthRepositoryImpl implements AuthRepository {
   static const _displayNameKey = 'display_name';
   static const _avatarUrlKey = 'avatar_url';
   static const _roleKey = 'role';
+  static const _subscriptionTierKey = 'subscription_tier';
+  static const _premiumExpiresAtKey = 'premium_expires_at';
 
   @override
   Future<Either<String, (UserEntity, AuthTokens)>> register({
@@ -213,6 +215,8 @@ class AuthRepositoryImpl implements AuthRepository {
     await _prefs.remove(_displayNameKey);
     await _prefs.remove(_avatarUrlKey);
     await _prefs.remove(_roleKey);
+    await _prefs.remove(_subscriptionTierKey);
+    await _prefs.remove(_premiumExpiresAtKey);
   }
 
   @override
@@ -251,6 +255,58 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<String?> getRefreshToken() async {
     return _prefs.getString(_refreshTokenKey);
   }
+  @override
+  Future<Either<String, void>> updateProfile({
+    required String displayName,
+    String? avatarUrl,
+  }) async {
+    try {
+      await _remoteDataSource.updateProfile(
+        displayName: displayName,
+        avatarUrl: avatarUrl,
+      );
+
+      await _prefs.setString(_displayNameKey, displayName);
+      if (avatarUrl != null) {
+        await _prefs.setString(_avatarUrlKey, avatarUrl);
+      }
+      return const Right(null);
+    } on DioException catch (e) {
+      String errorMessage = 'Lỗi Backend: ';
+      if (e.response != null) {
+        errorMessage += 'Mã ${e.response?.statusCode} - ${e.response?.data}';
+      } else {
+        errorMessage += e.message ?? 'Lỗi mạng hoặc CORS (Trình duyệt chặn)';
+      }
+      return Left(errorMessage);
+    } catch (e) {
+      return Left('Đã xảy ra lỗi: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, void>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _remoteDataSource.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+      return const Right(null);
+    } on DioException catch (e) {
+      String errorMessage = 'Lỗi Backend: ';
+      if (e.response != null) {
+        errorMessage += 'Mã ${e.response?.statusCode} - ${e.response?.data}';
+      } else {
+        errorMessage += e.message ?? 'Lỗi mạng hoặc CORS (Trình duyệt chặn)';
+      }
+      return Left(errorMessage);
+    } catch (e) {
+      return Left('Đã xảy ra lỗi: $e');
+    }
+  }
 
   Future<void> _saveTokens(AuthResponseModel response) async {
     await _prefs.setString(_accessTokenKey, response.accessToken);
@@ -266,5 +322,11 @@ class AuthRepositoryImpl implements AuthRepository {
       await _prefs.setString(_avatarUrlKey, response.avatarUrl!);
     }
     await _prefs.setString(_roleKey, response.role ?? 'User');
+    // Subscription tier is not in the auth response — default to 'free' on login.
+    // AuthBloc dispatches AuthProfileRefreshRequested to sync the real tier
+    // from GET /api/users/profile after authentication.
+    await _prefs.setString(_subscriptionTierKey, 'free');
+    await _prefs.remove(_premiumExpiresAtKey);
   }
+
 }

@@ -15,6 +15,32 @@ class AdminSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final entries = <_SidebarEntry>[
+      const _SidebarEntry(icon: Icons.dashboard, label: 'Dashboard', index: 0),
+      const _SidebarEntry(
+        icon: Icons.music_note,
+        label: 'Track Management',
+        index: 1,
+      ),
+      const _SidebarEntry(icon: Icons.album, label: 'Artist & Album', index: 2),
+      const _SidebarEntry(
+        icon: Icons.people,
+        label: 'User Management',
+        index: 3,
+      ),
+      const _SidebarEntry(
+        icon: Icons.notifications_active,
+        label: 'Notification Management',
+        index: 4,
+      ),
+      const _SidebarEntry(icon: Icons.insights, label: 'Analytics', index: 5),
+      const _SidebarEntry(
+        icon: Icons.payment,
+        label: 'Payment Management',
+        index: 6,
+      ),
+    ];
+
     return Container(
       width: 256,
       color: const Color(0xFF0E0E0E),
@@ -56,38 +82,16 @@ class AdminSidebar extends StatelessWidget {
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
-              children: [
-                _NavItem(
-                  icon: Icons.dashboard,
-                  label: 'Dashboard',
-                  isSelected: selectedIndex == 0,
-                  onTap: () => onItemSelected(0),
-                ),
-                _NavItem(
-                  icon:Icons.music_note,
-                  label: 'Track Management',
-                  isSelected: selectedIndex == 1,
-                  onTap: () => onItemSelected(1),
-                ),
-                _NavItem(
-                  icon: Icons.album,
-                  label: 'Artist & Album',
-                  isSelected: selectedIndex == 2,
-                  onTap: () => onItemSelected(2),
-                ),
-                _NavItem(
-                  icon: Icons.people,
-                  label: 'User Management',
-                  isSelected: selectedIndex == 3,
-                  onTap: () => onItemSelected(3),
-                ),
-                _NavItem(
-                  icon: Icons.insights,
-                  label: 'Analytics',
-                  isSelected: selectedIndex == 4,
-                  onTap: () => onItemSelected(4),
-                ),
-              ],
+              children: entries
+                  .map(
+                    (entry) => _NavItem(
+                      icon: entry.icon,
+                      label: entry.label,
+                      isSelected: selectedIndex == entry.index,
+                      onTap: () => onItemSelected(entry.index),
+                    ),
+                  )
+                  .toList(growable: false),
             ),
           ),
           const Divider(color: Colors.white10, height: 1, thickness: 1),
@@ -98,7 +102,7 @@ class AdminSidebar extends StatelessWidget {
             onTap: () {
               // Trigger AuthLogoutRequested
               context.read<AuthBloc>().add(AuthLogoutRequested());
-              
+
               // Optional: Show a confirmation dialog or just logout
               // For now, making it direct as per most dashboard patterns
             },
@@ -108,6 +112,18 @@ class AdminSidebar extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SidebarEntry {
+  final IconData icon;
+  final String label;
+  final int index;
+
+  const _SidebarEntry({
+    required this.icon,
+    required this.label,
+    required this.index,
+  });
 }
 
 class _NavItem extends StatelessWidget {
@@ -129,7 +145,9 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withOpacity(0.05) : Colors.transparent,
+          color: isSelected
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.transparent,
           border: Border(
             left: BorderSide(
               color: isSelected ? const Color(0xFFEAC07D) : Colors.transparent,
@@ -142,14 +160,18 @@ class _NavItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFFFFD79B) : const Color(0xFFD6C4AC).withOpacity(0.7),
+              color: isSelected
+                  ? const Color(0xFFFFD79B)
+                  : const Color(0xFFD6C4AC).withValues(alpha: 0.7),
               size: 20,
             ),
             const SizedBox(width: 12),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? const Color(0xFFFFD79B) : const Color(0xFFD6C4AC).withOpacity(0.7),
+                color: isSelected
+                    ? const Color(0xFFFFD79B)
+                    : const Color(0xFFD6C4AC).withValues(alpha: 0.7),
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),

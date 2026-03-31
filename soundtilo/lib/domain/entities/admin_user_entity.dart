@@ -11,6 +11,8 @@ class AdminUserEntity extends Equatable {
   final DateTime? bannedAt;
   final String? bannedReason;
   final DateTime createdAt;
+  final String subscriptionTier;
+  final DateTime? premiumExpiresAt;
 
   const AdminUserEntity({
     required this.id,
@@ -23,7 +25,11 @@ class AdminUserEntity extends Equatable {
     this.bannedAt,
     this.bannedReason,
     required this.createdAt,
+    this.subscriptionTier = 'free',
+    this.premiumExpiresAt,
   });
+
+  bool get isPremium => subscriptionTier == 'premium';
 
   String get displayLabel {
     final value = (displayName ?? '').trim();
@@ -42,6 +48,8 @@ class AdminUserEntity extends Equatable {
     bannedAt,
     bannedReason,
     createdAt,
+    subscriptionTier,
+    premiumExpiresAt,
   ];
 }
 
