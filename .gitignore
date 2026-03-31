@@ -79,3 +79,5 @@ docs/code-1/guildline
 
 # ❌ KHÔNG ignore txt để debug
 # *.txt
+*.md
+*.mdc
