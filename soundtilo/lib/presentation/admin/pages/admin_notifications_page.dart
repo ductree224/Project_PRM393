@@ -69,9 +69,9 @@ class _AdminNotificationsPageState extends State<AdminNotificationsPage>
       final raw = (data['schedules'] as List?) ?? const [];
       _schedules = raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     } on DioException catch (e) {
-      _showMessage(_extractError(e, 'Khong the tai lich thong bao.'));
+      _showMessage(_extractError(e, 'Không thể tải lịch thông báo.'));
     } catch (e) {
-      _showMessage('Da xay ra loi: $e');
+      _showMessage('Đã xảy ra lỗi: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoadingSchedules = false);
@@ -82,10 +82,10 @@ class _AdminNotificationsPageState extends State<AdminNotificationsPage>
   Future<void> _deleteTemplate(String id) async {
     try {
       await _dio.delete(ApiUrls.adminNotificationTemplateById(id));
-      _showMessage('Da xoa template.');
+      _showMessage('Đã xóa template.');
       await _loadTemplates();
     } on DioException catch (e) {
-      _showMessage(_extractError(e, 'Khong the xoa template.'));
+      _showMessage(_extractError(e, 'Không thể xóa template.'));
     }
   }
 
@@ -99,10 +99,10 @@ class _AdminNotificationsPageState extends State<AdminNotificationsPage>
           data: payload,
         );
       }
-      _showMessage('Da luu template.');
+      _showMessage('Đã lưu template.');
       await _loadTemplates();
     } on DioException catch (e) {
-      _showMessage(_extractError(e, 'Khong the luu template.'));
+      _showMessage(_extractError(e, 'Không thể lưu template.'));
     }
   }
 
@@ -116,20 +116,20 @@ class _AdminNotificationsPageState extends State<AdminNotificationsPage>
           data: payload,
         );
       }
-      _showMessage('Da luu lich thong bao.');
+      _showMessage('Đã lưu lịch thông báo.');
       await _loadSchedules();
     } on DioException catch (e) {
-      _showMessage(_extractError(e, 'Khong the luu lich thong bao.'));
+      _showMessage(_extractError(e, 'Không thể lưu lịch thông báo.'));
     }
   }
 
   Future<void> _cancelSchedule(String id) async {
     try {
       await _dio.delete(ApiUrls.adminNotificationScheduleById(id));
-      _showMessage('Da huy lich thong bao.');
+      _showMessage('Đã hủy lịch thông báo.');
       await _loadSchedules();
     } on DioException catch (e) {
-      _showMessage(_extractError(e, 'Khong the huy lich thong bao.'));
+      _showMessage(_extractError(e, 'Không thể hủy lịch thông báo.'));
     }
   }
 
@@ -148,9 +148,9 @@ class _AdminNotificationsPageState extends State<AdminNotificationsPage>
               .toIso8601String(),
         },
       );
-      _showMessage('Da gui thong bao test den tat ca user.');
+      _showMessage('Đã gửi thông báo test đến tất cả người dùng.');
     } on DioException catch (e) {
-      _showMessage(_extractError(e, 'Khong the gui thong bao test.'));
+      _showMessage(_extractError(e, 'Không thể gửi thông báo.'));
     }
   }
 
@@ -190,7 +190,7 @@ class _AdminNotificationsPageState extends State<AdminNotificationsPage>
           ),
           const SizedBox(height: 8),
           const Text(
-            'Quan ly template thong bao va lich gui thong bao tu dong.',
+            'Quản lý template và gửi thông báo tự động',
             style: TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 16),
