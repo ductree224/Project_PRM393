@@ -19,6 +19,10 @@ import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_event.dart
 import 'package:soundtilo/presentation/library/bloc/waitlist/waitlist_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_equalizer.dart';
 
+import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/bloc/auth_state.dart';
+import '../../premium/pages/premium_paywall_page.dart';
+
 class PlayerPage extends StatefulWidget {
   static const String routeName = '/player';
 
@@ -429,24 +433,36 @@ class _PlayerPageState extends State<PlayerPage> {
                 color: context.isDarkMode ? Colors.white70 : Colors.black54,
               ),
               onPressed: () {
-                // KIỂM TRA: Bài đang hiển thị có phải là bài đang hát không?
-                final isCurrentlyPlaying = currentTrack?.externalId == _displayTrack.externalId;
 
-                if (isCurrentlyPlaying) {
-                  // Đang phát -> CHẶN LẠI VÀ THÔNG BÁO
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Bài hát đang phát không thể thêm vào danh sách chờ.'))
-                  );
-                } else {
-                  // Các bài khác -> THÊM / HỦY bình thường
                   if (isInWaitlist) {
                     context.read<WaitlistBloc>().add(WaitlistRemoveTrack(_displayTrack.externalId));
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã hủy khỏi danh sách chờ.')));
                   } else {
-                    context.read<WaitlistBloc>().add(WaitlistAddTrack(_displayTrack.externalId));
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã thêm vào danh sách chờ.')));
+
+                    // --- BẮT ĐẦU CHỐT CHẶN PREMIUM ---
+                    // 1. Kiểm tra trạng thái Premium từ AuthBloc
+                    final authState = context.read<AuthBloc>().state;
+                    bool isPremium = authState is AuthAuthenticated && authState.user.isPremium;
+
+                    // 2. Kiểm tra số lượng bài hát hiện có trong hàng chờ
+                    int currentWaitlistSize = 0;
+                    if (waitlistState is WaitlistLoaded) {
+                      // Tính toán số bài thực tế đang chờ (trừ đi các bài đã nghe xong)
+                      currentWaitlistSize = waitlistState.tracks.length - waitlistState.fadedCount;
+                    }
+
+                    if (!isPremium && currentWaitlistSize >= 5) {
+                      // Nếu là Free và đã đầy 5 bài -> Bật popup mời nâng cấp
+                      _showPremiumWaitlistDialog(context);
+                    } else {
+                      // Nếu là Premium HOẶC còn chỗ trống -> Cho phép thêm bình thường
+                      context.read<WaitlistBloc>().add(WaitlistAddTrack(_displayTrack.externalId));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã thêm vào danh sách chờ.')));
+                    }
+                    // --- KẾT THÚC CHỐT CHẶN ---
+
                   }
-                }
+
               },
             );
           },
@@ -683,7 +699,48 @@ class _PlayerPageState extends State<PlayerPage> {
       },
     );
   }
-
+  void _showPremiumWaitlistDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFB300), size: 28),
+            SizedBox(width: 10),
+            Text('Nâng cấp Premium', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: const Text(
+          'Bạn đã đạt giới hạn 5 bài hát trong hàng chờ cho tài khoản Miễn phí. Đăng ký Premium để thêm bài hát không giới hạn!',
+          style: TextStyle(fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Để sau', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFB300),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx); // Đóng popup lỗi
+              // Chuyển hướng sang trang thanh toán Premium
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PremiumPaywallPage()),
+              );
+            },
+            child: const Text('Đăng ký ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
   String _formatDuration(Duration d) {
     final minutes = d.inMinutes;
     final seconds = d.inSeconds % 60;

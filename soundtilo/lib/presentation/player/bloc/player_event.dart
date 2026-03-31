@@ -7,7 +7,7 @@ abstract class PlayerEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
-
+class PlayerAdFinished extends PlayerEvent {}
 class PlayerPlay extends PlayerEvent {
   final TrackEntity track;
   final List<TrackEntity> queue;
