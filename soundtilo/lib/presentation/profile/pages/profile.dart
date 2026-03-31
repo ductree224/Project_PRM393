@@ -19,6 +19,9 @@ import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/premium/pages/premium_paywall_page.dart';
+import 'package:soundtilo/presentation/feedback/bloc/feedback_bloc.dart';
+import 'package:soundtilo/presentation/feedback/pages/feedback_page.dart';
+import 'package:soundtilo/domain/usecases/feedback_usecases.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
@@ -341,6 +344,23 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 12),
+                  _ProfileMenuCard(
+                    icon: Icons.feedback_outlined,
+                    title: 'Phản hồi',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider(
+                          create: (_) => FeedbackBloc(
+                            createFeedbackUseCase: sl<CreateFeedbackUseCase>(),
+                            getMyFeedbacksUseCase: sl<GetMyFeedbacksUseCase>(),
+                          ),
+                          child: const FeedbackPage(),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   _ProfileMenuCard(
                     icon: Icons.dark_mode_rounded,
@@ -705,6 +725,8 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   late TextEditingController _nameController;
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
+  bool _obscureOldPassword = true;
+  bool _obscureNewPassword = true;
 
   Uint8List? _selectedImageBytes;
   bool _isLoading = false;
@@ -846,10 +868,28 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
       if (mounted) {
         // Cắt bỏ chữ "Exception:" thừa thãi để thông báo đẹp hơn
         String errorMsg = e.toString().replaceAll('Exception: ', '');
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(errorMsg),
-          backgroundColor: AppColors.errorColor, // Thông báo đỏ khi sai mật khẩu
-        ));
+
+        // Thay SnackBar bằng showDialog để hiện thông báo đè lên popup
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Icon(Icons.error_outline, color: AppColors.errorColor),
+                SizedBox(width: 8),
+                Text('Lỗi cập nhật', style: TextStyle(color: AppColors.errorColor, fontSize: 18)),
+              ],
+            ),
+            content: Text(errorMsg, style: const TextStyle(fontSize: 16)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx), // Đóng cái thông báo lỗi này
+                child: const Text('Đóng', style: TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -932,10 +972,22 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
             // Mật khẩu cũ
             TextField(
               controller: _oldPasswordController,
-              obscureText: true,
+              obscureText: _obscureOldPassword, // Dùng biến trạng thái ở đây
               decoration: InputDecoration(
                 labelText: 'Mật khẩu hiện tại (Để trống nếu không đổi)',
                 prefixIcon: const Icon(Icons.lock_outline),
+                // Bổ sung nút bấm hình con mắt ở cuối
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureOldPassword ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureOldPassword = !_obscureOldPassword; // Đảo trạng thái
+                    });
+                  },
+                ),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -944,10 +996,22 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
             // Mật khẩu mới
             TextField(
               controller: _newPasswordController,
-              obscureText: true,
+              obscureText: _obscureNewPassword, // Dùng biến trạng thái ở đây
               decoration: InputDecoration(
                 labelText: 'Mật khẩu mới',
                 prefixIcon: const Icon(Icons.lock_reset),
+                // Bổ sung nút bấm hình con mắt ở cuối
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureNewPassword = !_obscureNewPassword;
+                    });
+                  },
+                ),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),

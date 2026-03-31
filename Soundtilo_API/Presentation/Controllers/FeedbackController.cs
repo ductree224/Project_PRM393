@@ -58,6 +58,7 @@ public class FeedbackController : ControllerBase
         return Ok(data);
     }
 
+    [Authorize(Roles = "admin")]
     [HttpPut("{id}/handle")]
     public async Task<IActionResult> Handle(Guid id , HandleFeedbackRequest req)
     {
@@ -90,6 +91,6 @@ public class FeedbackController : ControllerBase
 public class HandleFeedbackRequest
 {
     public string Reply { get; set; } = string.Empty;
-    public string Status { get; set; } = "resolved";
+    public string Status { get; set; } = "in_progress";
 }
 

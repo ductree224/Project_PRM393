@@ -49,6 +49,7 @@ dependencies:
   google_fonts: ^8.0.2
   intl: ^0.19.0
   signalr_netcore: ^1.4.4
+  video_player: ^2.11.1
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +66,7 @@ flutter:
 
   assets:
     - .env
+    - assets/videos/
     - assets/fonts/
     - assets/images/
     - assets/vectors/
