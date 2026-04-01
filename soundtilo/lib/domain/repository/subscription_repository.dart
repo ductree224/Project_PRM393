@@ -23,6 +23,7 @@ class SubscriptionStatusEntity {
   final String? planName;
   final String? planInterval;
   final DateTime? currentPeriodEnd;
+  final bool isCancelled;
 
   const SubscriptionStatusEntity({
     required this.subscriptionTier,
@@ -31,5 +32,6 @@ class SubscriptionStatusEntity {
     this.planName,
     this.planInterval,
     this.currentPeriodEnd,
+    this.isCancelled = false,
   });
 }

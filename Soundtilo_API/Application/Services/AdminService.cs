@@ -303,6 +303,7 @@ public class AdminService
         {
             existingSub.Status = "manually_granted";
             existingSub.CurrentPeriodEnd = premiumEnd;
+            existingSub.CancelledAt = null;
             await _subscriptionRepository.UpdateAsync(existingSub);
         }
         else

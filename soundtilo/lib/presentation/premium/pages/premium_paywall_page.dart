@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:soundtilo/core/configs/theme/app_colors.dart';
 import 'package:soundtilo/core/di/service_locator.dart';
 import 'package:soundtilo/domain/entities/subscription_plan_entity.dart';
+import 'package:soundtilo/domain/repository/subscription_repository.dart';
 import 'package:soundtilo/domain/usecases/user_usecases.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_bloc.dart';
 import 'package:soundtilo/presentation/auth/bloc/auth_event.dart';
@@ -21,28 +22,46 @@ class PremiumPaywallPage extends StatefulWidget {
 
 class _PremiumPaywallPageState extends State<PremiumPaywallPage> {
   List<SubscriptionPlanEntity>? _plans;
+  SubscriptionStatusEntity? _subscriptionStatus;
   String? _error;
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadPlans();
+    _loadData();
   }
 
-  Future<void> _loadPlans() async {
-    final result = await sl<GetSubscriptionPlansUseCase>().call();
+  Future<void> _loadData() async {
+    setState(() => _loading = true);
+
+    final plansResult = await sl<GetSubscriptionPlansUseCase>().call();
     if (!mounted) return;
-    result.fold(
+
+    plansResult.fold(
       (err) => setState(() {
         _error = err;
         _loading = false;
       }),
-      (plans) => setState(() {
+      (plans) {
         _plans = plans.where((p) => !p.isFree).toList();
-        _loading = false;
-      }),
+      },
     );
+
+    if (_error != null) return;
+
+    // Load subscription status if user is authenticated
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      final statusResult = await sl<GetSubscriptionStatusUseCase>().call();
+      if (!mounted) return;
+      statusResult.fold(
+        (_) {}, // ignore error — status is optional, UI handles null gracefully
+        (status) => _subscriptionStatus = status,
+      );
+    }
+
+    if (mounted) setState(() => _loading = false);
   }
 
   @override
@@ -58,8 +77,12 @@ class _PremiumPaywallPageState extends State<PremiumPaywallPage> {
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
-                ? _ErrorView(error: _error!, onRetry: _loadPlans)
-                : _PaywallContent(plans: _plans ?? []),
+                ? _ErrorView(error: _error!, onRetry: _loadData)
+                : _PaywallContent(
+                    plans: _plans ?? [],
+                    subscriptionStatus: _subscriptionStatus,
+                    onStatusChanged: _loadData,
+                  ),
       ),
     );
   }
@@ -69,8 +92,14 @@ class _PremiumPaywallPageState extends State<PremiumPaywallPage> {
 
 class _PaywallContent extends StatelessWidget {
   final List<SubscriptionPlanEntity> plans;
+  final SubscriptionStatusEntity? subscriptionStatus;
+  final VoidCallback onStatusChanged;
 
-  const _PaywallContent({required this.plans});
+  const _PaywallContent({
+    required this.plans,
+    this.subscriptionStatus,
+    required this.onStatusChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +119,12 @@ class _PaywallContent extends StatelessWidget {
         final expiresAt = authState is AuthAuthenticated
             ? authState.user.premiumExpiresAt
             : null;
+
+        final currentInterval = subscriptionStatus?.planInterval;
+        final isCancelled = subscriptionStatus?.isCancelled ?? false;
+        // Hide monthly card entirely when user is on yearly plan
+        final showMonthlyCard = monthlyPlan != null &&
+            !(isPremium && !isCancelled && currentInterval == 'yearly');
 
         return BlocSelector<PlayerBloc, PlayerState, bool>(
           selector: (state) =>
@@ -118,17 +153,23 @@ class _PaywallContent extends StatelessWidget {
                   plan: yearlyPlan,
                   highlighted: true,
                   isPremium: isPremium,
-                  premiumExpiresAt: expiresAt),
+                  premiumExpiresAt: expiresAt,
+                  currentPlanInterval: currentInterval,
+                  isCancelled: isCancelled,
+                  onStatusChanged: onStatusChanged),
               const SizedBox(height: 12),
             ],
 
-            // Monthly plan card
-            if (monthlyPlan != null) ...[
+            // Monthly plan card (hidden when user is on yearly plan)
+            if (showMonthlyCard) ...[
               _PlanCard(
                   plan: monthlyPlan,
                   highlighted: false,
                   isPremium: isPremium,
-                  premiumExpiresAt: expiresAt),
+                  premiumExpiresAt: expiresAt,
+                  currentPlanInterval: currentInterval,
+                  isCancelled: isCancelled,
+                  onStatusChanged: onStatusChanged),
               const SizedBox(height: 24),
             ],
 
@@ -202,7 +243,7 @@ class _FeatureList extends StatelessWidget {
 
   // TODO: Dev điền vào các tính năng thực tế khi implement premium features.
   static const _features = [
-    (Icons.shuffle_rounded, 'Shuffle & Repeat không giới hạn'),
+    (Icons.shuffle_rounded, 'Mở khóa chức năng Shuffle & Repeat'),
     (Icons.skip_next_rounded, 'Skip không giới hạn'),
     (Icons.queue_music_rounded, 'Hàng chờ phát không giới hạn'),
   ];
@@ -256,17 +297,52 @@ class _PlanCard extends StatelessWidget {
   final bool highlighted;
   final bool isPremium;
   final DateTime? premiumExpiresAt;
+  final String? currentPlanInterval;
+  final bool isCancelled;
+  final VoidCallback onStatusChanged;
 
   const _PlanCard({
     required this.plan,
     required this.highlighted,
     required this.isPremium,
     this.premiumExpiresAt,
+    this.currentPlanInterval,
+    this.isCancelled = false,
+    required this.onStatusChanged,
   });
+
+  /// Determines what button to show:
+  /// - 'subscribe' → "Đăng ký" (new subscription)
+  /// - 'cancel' → "Hủy" (cancel current plan)
+  /// - 'upgrade' → "Nâng cấp" (upgrade from monthly to yearly)
+  /// - 'none' → no button (yearly user viewing monthly card)
+  String get _buttonType {
+    if (!isPremium || isCancelled) return 'subscribe';
+
+    // If we know the current plan interval
+    if (currentPlanInterval != null) {
+      final isCurrentPlan =
+          (plan.isMonthly && currentPlanInterval == 'monthly') ||
+          (plan.isYearly && currentPlanInterval == 'yearly');
+
+      if (isCurrentPlan) return 'cancel';
+
+      // User is on monthly, viewing yearly card → upgrade
+      if (currentPlanInterval == 'monthly' && plan.isYearly) return 'upgrade';
+
+      // User is on yearly, viewing monthly card → no button (no downgrade)
+      if (currentPlanInterval == 'yearly' && plan.isMonthly) return 'none';
+    }
+
+    // Fallback: user IS premium but plan interval unknown (status API failed)
+    // Show cancel on both cards — safer than showing subscribe
+    return 'cancel';
+  }
 
   @override
   Widget build(BuildContext context) {
     final savings = plan.yearlySavings;
+    final buttonType = _buttonType;
     return Container(
       decoration: BoxDecoration(
         color: highlighted
@@ -356,36 +432,37 @@ class _PlanCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(width: 12),
-          if (isPremium)
-            OutlinedButton(
-              onPressed: () => _onCancelTapped(context),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.grey,
-                side: const BorderSide(color: AppColors.grey),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+          if (buttonType != 'none') ...[
+            const SizedBox(width: 12),
+            if (buttonType == 'cancel')
+              OutlinedButton(
+                onPressed: () => _onCancelTapped(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.grey,
+                  side: const BorderSide(color: AppColors.grey),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              ),
-              child: const Text('Hủy'),
-            )
-          else
-            ElevatedButton(
-              onPressed: () => _onSubscribeTapped(context, plan),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    highlighted ? AppColors.primary : null,
-                foregroundColor: highlighted ? Colors.white : null,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                child: const Text('Hủy'),
+              )
+            else
+              ElevatedButton(
+                onPressed: () => _onSubscribeTapped(context, plan),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: highlighted ? AppColors.primary : null,
+                  foregroundColor: highlighted ? Colors.white : null,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Text(buttonType == 'upgrade' ? 'Nâng cấp' : 'Đăng ký'),
               ),
-              child: const Text('Đăng ký'),
-            ),
+          ],
         ],
       ),
     );
@@ -523,6 +600,7 @@ class _PlanCard extends StatelessWidget {
       ),
       (_) {
         context.read<AuthBloc>().add(AuthProfileRefreshRequested());
+        onStatusChanged();
         final msg = premiumExpiresAt != null
             ? 'Đã hủy. Gói Premium còn hiệu lực đến $expiryStr.'
             : 'Đã hủy đăng ký.';

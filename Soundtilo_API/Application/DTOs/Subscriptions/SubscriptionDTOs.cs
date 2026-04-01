@@ -81,7 +81,8 @@ public record UserSubscriptionStatusResponse(
     bool IsPremium,
     string? PlanName,
     string? PlanInterval,
-    DateTime? CurrentPeriodEnd
+    DateTime? CurrentPeriodEnd,
+    bool IsCancelled
 );
 
 /// <summary>Admin: subscription detail with user info and payment history</summary>

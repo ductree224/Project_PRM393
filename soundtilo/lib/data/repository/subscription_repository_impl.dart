@@ -89,6 +89,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
         currentPeriodEnd: data['currentPeriodEnd'] != null
             ? DateTime.tryParse(data['currentPeriodEnd'].toString())
             : null,
+        isCancelled: data['isCancelled'] == true,
       );
       return Right(status);
     } on DioException catch (e) {
