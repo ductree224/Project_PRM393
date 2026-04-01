@@ -7,7 +7,8 @@ import '../bloc/track_admin_state.dart';
 import '../bloc/album_admin_bloc.dart' as album_bloc;
 import '../bloc/album_admin_event.dart' as album_event;
 import '../bloc/album_admin_state.dart' as album_state;
-import '../../../../data/models/track_admin_model.dart';
+import '../../../data/models/track_admin_model.dart';
+import '../../../data/models/track_model.dart';
 import 'package:intl/intl.dart';
 
 class AdminTracksPage extends StatefulWidget {
@@ -64,7 +65,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           _buildHeaderTitle(),
-                          _buildHeaderActions(),
+                          _buildHeaderActions(context),
                         ],
                       )
                     : Column(
@@ -72,7 +73,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
                         children: [
                           _buildHeaderTitle(),
                           const SizedBox(height: 24),
-                          _buildHeaderActions(),
+                          _buildHeaderActions(context),
                         ],
                       ),
                 const SizedBox(height: 32),
@@ -303,7 +304,7 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
     );
   }
 
-  Widget _buildHeaderActions() {
+  Widget _buildHeaderActions(BuildContext context) {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
@@ -313,16 +314,207 @@ class _AdminTracksPageState extends State<AdminTracksPage> {
               backgroundColor: const Color(0xFFFFD79B),
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16)),
-          onPressed: () {
-            // Placeholder: Search external to add new tracks to cache
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Search in common UI to fetch more tracks.')),
-            );
-          },
+          onPressed: () => _showDiscoveryDialog(context),
           icon: const Icon(Icons.add),
           label: const Text('Fetch New Tracks'),
         ),
       ],
+    );
+  }
+
+  void _showDiscoveryDialog(BuildContext context) {
+    final trackAdminBloc = context.read<TrackAdminBloc>();
+    final TextEditingController queryController = TextEditingController();
+    String? selectedSource;
+    List<TrackModel> results = [];
+    final Set<String> selectedExternalIds = {};
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: trackAdminBloc,
+        child: StatefulBuilder(builder: (context, setDialogState) {
+          return BlocListener<TrackAdminBloc, TrackAdminState>(
+            listener: (context, state) {
+              if (state is TrackAdminDiscoveryLoaded) {
+                setDialogState(() {
+                  results = state.results;
+                  isLoading = false;
+                  selectedExternalIds.clear();
+                });
+              } else if (state is TrackAdminOperationInProgress) {
+                setDialogState(() { isLoading = true; });
+              } else if (state is TrackAdminOperationSuccess) {
+                 if (state.message.contains('imported')) {
+                   Navigator.pop(dialogContext);
+                 }
+              } else if (state is TrackAdminError) {
+                setDialogState(() { isLoading = false; });
+              }
+            },
+            child: AlertDialog(
+              backgroundColor: const Color(0xFF1A1A1A),
+              title: const Text('Discover & Import Tracks',
+                  style: TextStyle(color: Colors.white)),
+              content: SizedBox(
+                width: 500,
+                height: 600,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: TextField(
+                            controller: queryController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'Search external...',
+                              hintStyle: const TextStyle(color: Colors.grey),
+                              filled: true,
+                              fillColor: const Color(0xFF2A2A2A),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            dropdownColor: const Color(0xFF2A2A2A),
+                            value: selectedSource,
+                            items: const [
+                              DropdownMenuItem(
+                                  value: null,
+                                  child: Text('All Sources',
+                                      style: TextStyle(color: Colors.white, fontSize: 12))),
+                              DropdownMenuItem(
+                                  value: 'audius',
+                                  child: Text('Audius',
+                                      style: TextStyle(color: Colors.white, fontSize: 12))),
+                              DropdownMenuItem(
+                                  value: 'deezer',
+                                  child: Text('Deezer',
+                                      style: TextStyle(color: Colors.white, fontSize: 12))),
+                              DropdownMenuItem(
+                                  value: 'jamendo',
+                                  child: Text('Jamendo',
+                                      style: TextStyle(color: Colors.white, fontSize: 12))),
+                            ],
+                            onChanged: (val) => selectedSource = val,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFF2A2A2A),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  if (queryController.text.trim().isNotEmpty) {
+                                    trackAdminBloc.add(FetchExternalTracks(
+                                      query: queryController.text.trim(),
+                                      source: selectedSource,
+                                    ));
+                                  }
+                                },
+                          icon: isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2))
+                              : const Icon(Icons.search, color: Color(0xFFFFD79B)),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: results.isEmpty
+                          ? Center(
+                              child: Text(
+                                  isLoading ? 'Searching...' : 'No results yet',
+                                  style: const TextStyle(color: Colors.grey)))
+                          : ListView.separated(
+                              itemCount: results.length,
+                              separatorBuilder: (context, index) =>
+                                  const Divider(color: Colors.white10),
+                              itemBuilder: (context, index) {
+                                final track = results[index];
+                                final isSelected = selectedExternalIds
+                                    .contains(track.externalId);
+                                return ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: _buildImage(track.artworkUrl),
+                                  ),
+                                  title: Text(track.title,
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 13)),
+                                  subtitle: Text(
+                                      '${track.artistName} • ${track.source.toUpperCase()}',
+                                      style: const TextStyle(
+                                          color: Colors.grey, fontSize: 11)),
+                                  trailing: Checkbox(
+                                    value: isSelected,
+                                    activeColor: const Color(0xFFFFD79B),
+                                    checkColor: Colors.black,
+                                    onChanged: (val) {
+                                      setDialogState(() {
+                                        if (val == true) {
+                                          selectedExternalIds
+                                              .add(track.externalId);
+                                        } else {
+                                          selectedExternalIds
+                                              .remove(track.externalId);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel',
+                      style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD79B),
+                    foregroundColor: Colors.black,
+                    disabledBackgroundColor: Colors.white10,
+                  ),
+                  onPressed: (selectedExternalIds.isEmpty || isLoading)
+                      ? null
+                      : () {
+                          final tracksToImport = results
+                              .where((t) => selectedExternalIds
+                                  .contains(t.externalId))
+                              .toList();
+                          trackAdminBloc.add(ImportTracks(tracksToImport));
+                        },
+                  child: Text(selectedExternalIds.isEmpty
+                      ? 'Import'
+                      : 'Import (${selectedExternalIds.length})'),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../core/constants/api_urls.dart';
 import '../../domain/repositories/track_admin_repository.dart';
 import '../models/track_admin_model.dart';
+import '../models/track_model.dart';
 
 class TrackAdminRepositoryImpl implements TrackAdminRepository {
   final Dio dio;
@@ -101,6 +102,62 @@ class TrackAdminRepositoryImpl implements TrackAdminRepository {
       }
     } on DioException catch (e) {
       return Left(e.response?.data['message'] ?? 'Error adding tracks to album');
+    } catch (e) {
+      return Left('Error: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, List<TrackModel>>> fetchExternalTracks({
+    required String query,
+    String? source,
+    int limit = 20,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'q': query,
+        'limit': limit,
+      };
+      if (source != null) {
+        queryParams['source'] = source;
+      }
+
+      final response = await dio.get(
+        ApiUrls.adminTracksDiscover,
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        return Right((response.data as List)
+            .map((x) => TrackModel.fromJson(x))
+            .toList());
+      } else {
+        return const Left('Failed to fetch external tracks');
+      }
+    } on DioException catch (e) {
+      return Left(e.response?.data['message'] ?? 'Error fetching external tracks');
+    } catch (e) {
+      return Left('Error: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, void>> importTracks({
+    required List<TrackModel> tracks,
+  }) async {
+    try {
+      final response = await dio.post(
+        ApiUrls.adminTracksImport,
+        data: tracks.map((t) => t.toJson()).toList(),
+      );
+
+      if (response.statusCode == 200) {
+        return const Right(null);
+      } else {
+        return const Left('Failed to import tracks');
+      }
+    } on DioException catch (e) {
+      return Left(e.response?.data['message'] ?? 'Error importing tracks');
     } catch (e) {
       return Left('Error: $e');
     }

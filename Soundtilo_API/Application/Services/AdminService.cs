@@ -303,15 +303,22 @@ public class AdminService
         {
             existingSub.Status = "manually_granted";
             existingSub.CurrentPeriodEnd = premiumEnd;
+            existingSub.CancelledAt = null;
             await _subscriptionRepository.UpdateAsync(existingSub);
         }
         else
         {
+            // Look up the default premium plan (monthly) for the FK
+            var plans = await _subscriptionRepository.GetActivePlansAsync();
+            var premiumPlan = plans.FirstOrDefault(p => p.Interval == "monthly")
+                ?? plans.FirstOrDefault(p => p.Interval != "free")
+                ?? throw new InvalidOperationException("No active premium plan found. Please seed subscription plans first.");
+
             await _subscriptionRepository.CreateAsync(new Subscription
             {
                 Id = Guid.NewGuid() ,
                 UserId = targetUserId ,
-                PlanId = Guid.Empty , 
+                PlanId = premiumPlan.Id , 
                 Status = "manually_granted" ,
                 CurrentPeriodStart = DateTime.UtcNow ,
                 CurrentPeriodEnd = premiumEnd ,

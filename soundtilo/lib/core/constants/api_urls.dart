@@ -125,6 +125,8 @@ class ApiUrls {
 
   // Admin Tracks
   static const String adminTracks = '/api/admin/tracks';
+  static const String adminTracksDiscover = '/api/admin/tracks/discover';
+  static const String adminTracksImport = '/api/admin/tracks/import';
   static const String updateAdminTrackStatus = '/api/admin/tracks/status';
   static const String addTracksToAlbumToAdmin =
       '/api/admin/tracks/add-to-album';

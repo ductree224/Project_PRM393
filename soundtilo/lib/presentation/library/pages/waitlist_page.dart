@@ -9,6 +9,7 @@ import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_event.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_equalizer.dart';
+import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 
 class WaitlistPage extends StatefulWidget {
   const WaitlistPage({super.key});
@@ -95,6 +96,13 @@ class _WaitlistPageState extends State<WaitlistPage> {
                       // DANH SÁCH BÀI HÁT (Hiển thị tất cả: Đã nghe, Đang phát, Hàng đợi)
                       Expanded(
                         child: ReorderableListView.builder(
+                          padding: EdgeInsets.only(
+                            bottom: playerState.currentTrack != null &&
+                                    playerState.status != PlayerStatus.idle &&
+                                    playerState.status != PlayerStatus.error
+                                ? MiniPlayer.shellReservedHeight
+                                : 0,
+                          ),
                           itemCount: tracks.length, // Lấy toàn bộ danh sách thay vì chỉ lấy activeTracks
                           onReorder: (oldIndex, newIndex) {
                             if (newIndex > oldIndex) newIndex -= 1;

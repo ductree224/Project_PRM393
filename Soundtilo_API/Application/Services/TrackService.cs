@@ -38,7 +38,8 @@ public class TrackService : ITrackService
         int limit = 20,
         int offset = 0,
         bool cacheOnly = false,
-        bool fallbackExternal = true)
+        bool fallbackExternal = true,
+        bool persist = true)
     {
         var normalizedQuery = query.Trim();
         if (string.IsNullOrWhiteSpace(normalizedQuery))
@@ -109,27 +110,27 @@ public class TrackService : ITrackService
         }
 
         // Cache only tracks fetched from external providers
-        var cachedEntities = externalTracks.Select(t => new CachedTrack
+        if (persist && externalTracks.Any())
         {
-            Id = Guid.NewGuid(),
-            ExternalId = t.ExternalId,
-            Source = t.Source,
-            Title = t.Title,
-            ArtistName = t.ArtistName,
-            AlbumName = t.AlbumName,
-            ArtworkUrl = t.ArtworkUrl,
-            StreamUrl = t.StreamUrl,
-            PreviewUrl = t.PreviewUrl,
-            DurationSeconds = t.DurationSeconds,
-            Genre = t.Genre,
-            Mood = t.Mood,
-            PlayCount = t.PlayCount,
-            CachedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddHours(24)
-        });
+            var cachedEntities = externalTracks.Select(t => new CachedTrack
+            {
+                Id = Guid.NewGuid(),
+                ExternalId = t.ExternalId,
+                Source = t.Source,
+                Title = t.Title,
+                ArtistName = t.ArtistName,
+                AlbumName = t.AlbumName,
+                ArtworkUrl = t.ArtworkUrl,
+                StreamUrl = t.StreamUrl,
+                PreviewUrl = t.PreviewUrl,
+                DurationSeconds = t.DurationSeconds,
+                Genre = t.Genre,
+                Mood = t.Mood,
+                PlayCount = t.PlayCount,
+                CachedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddHours(24)
+            });
 
-        if (cachedEntities.Any())
-        {
             await _trackCache.UpsertManyAsync(cachedEntities);
         }
 
@@ -393,6 +394,32 @@ public class TrackService : ITrackService
     public async Task BulkAddTracksToAlbumAsync(BulkAddTracksToAlbumDto payload)
     {
         await _albumService.BulkAddTracksToAlbumAsync(payload);
+    }
+
+    public async Task ImportTracksAsync(IEnumerable<TrackDto> tracks)
+    {
+        if (tracks == null || !tracks.Any()) return;
+
+        var cachedEntities = tracks.Select(t => new CachedTrack
+        {
+            Id = Guid.NewGuid(),
+            ExternalId = t.ExternalId,
+            Source = t.Source,
+            Title = t.Title,
+            ArtistName = t.ArtistName,
+            AlbumName = t.AlbumName,
+            ArtworkUrl = t.ArtworkUrl,
+            StreamUrl = t.StreamUrl,
+            PreviewUrl = t.PreviewUrl,
+            DurationSeconds = t.DurationSeconds,
+            Genre = t.Genre,
+            Mood = t.Mood,
+            PlayCount = t.PlayCount,
+            CachedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddHours(24)
+        });
+
+        await _trackCache.UpsertManyAsync(cachedEntities);
     }
 
 }
