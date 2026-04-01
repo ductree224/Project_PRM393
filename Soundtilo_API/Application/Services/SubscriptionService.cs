@@ -239,7 +239,8 @@ public class SubscriptionService
             isPremium,
             sub?.Plan?.Name,
             sub?.Plan?.Interval,
-            sub?.CurrentPeriodEnd);
+            sub?.CurrentPeriodEnd,
+            sub?.CancelledAt != null);
     }
 
     // ==================== ADMIN ====================
@@ -472,8 +473,8 @@ public class SubscriptionService
     {
         var sub = await _subscriptionRepository.GetByUserIdAsync(userId)
             ?? throw new KeyNotFoundException("Không tìm thấy đăng ký.");
-        if (sub.Status != "active")
-            throw new InvalidOperationException("Đăng ký không ở trạng thái active.");
+        if (sub.CancelledAt != null || sub.Status == "cancelled")
+            throw new InvalidOperationException("Đăng ký đã được hủy trước đó.");
         sub.CancelledAt = DateTime.UtcNow;
         await _subscriptionRepository.UpdateAsync(sub);
     }

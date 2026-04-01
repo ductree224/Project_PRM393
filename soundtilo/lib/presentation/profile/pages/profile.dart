@@ -19,6 +19,9 @@ import 'package:soundtilo/presentation/player/bloc/player_bloc.dart';
 import 'package:soundtilo/presentation/player/bloc/player_state.dart';
 import 'package:soundtilo/presentation/player/widgets/mini_player.dart';
 import 'package:soundtilo/presentation/premium/pages/premium_paywall_page.dart';
+import 'package:soundtilo/presentation/feedback/bloc/feedback_bloc.dart';
+import 'package:soundtilo/presentation/feedback/pages/feedback_page.dart';
+import 'package:soundtilo/domain/usecases/feedback_usecases.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
@@ -341,6 +344,23 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 12),
+                  _ProfileMenuCard(
+                    icon: Icons.feedback_outlined,
+                    title: 'Phản hồi',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider(
+                          create: (_) => FeedbackBloc(
+                            createFeedbackUseCase: sl<CreateFeedbackUseCase>(),
+                            getMyFeedbacksUseCase: sl<GetMyFeedbacksUseCase>(),
+                          ),
+                          child: const FeedbackPage(),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   _ProfileMenuCard(
                     icon: Icons.dark_mode_rounded,
